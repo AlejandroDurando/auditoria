@@ -27,7 +27,9 @@ import {
   Copy,
   Check,
   AlertTriangle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Hash,
+  ChevronDown
 } from 'lucide-react';
 import { PlanillaControlFF } from './components/PlanillaControlFF';
 import { motion, AnimatePresence } from 'motion/react';
@@ -68,6 +70,7 @@ export const SECTOR_MAPPING: Record<string, { label: string; responsible: string
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
+  const [planillasOpen, setPlanillasOpen] = useState(false);
   const [dashboardMode, setDashboardMode] = useState<'Expedientes' | 'Viáticos'>('Expedientes');
   const [activeCodeCategory, setActiveCodeCategory] = useState<keyof typeof PIMYS_CODES>('Sucursales');
   const [codeSearchQuery, setCodeSearchQuery] = useState('');
@@ -1086,10 +1089,48 @@ export default function App() {
         <nav className="flex-1 overflow-y-auto py-6">
           <div className="space-y-1">
             <SidebarItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'Dashboard'} onClick={() => setActiveTab('Dashboard')} />
-            <SidebarItem icon={FileText} label="Historial" active={activeTab === 'Historial'} onClick={() => setActiveTab('Historial')} />
-            <SidebarItem icon={CheckCircle2} label="Revisiva" active={activeTab === 'Revisiva'} onClick={() => setActiveTab('Revisiva')} />
-            <SidebarItem icon={FileSpreadsheet} label="Planilla control" active={activeTab === 'Planilla'} onClick={() => setActiveTab('Planilla')} />
-            <SidebarItem icon={FileCheck2} label="Códigos" active={activeTab === 'Códigos'} onClick={() => setActiveTab('Códigos')} />
+            <SidebarItem icon={Clock} label="Historial" active={activeTab === 'Historial'} onClick={() => setActiveTab('Historial')} />
+
+            {/* Planillas — desplegable */}
+            <div>
+              <div
+                onClick={() => setPlanillasOpen(o => !o)}
+                className={cn(
+                  "flex items-center gap-3 px-6 py-3 cursor-pointer transition-all duration-200 border-l-[3px] font-medium text-sm select-none",
+                  (activeTab === 'Revisiva' || activeTab === 'Planilla')
+                    ? "border-l-[#0F6E56] bg-[#F0FAF6] text-[#0F6E56]"
+                    : "border-l-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                )}
+              >
+                <FileSpreadsheet className={cn("w-5 h-5 shrink-0", (activeTab === 'Revisiva' || activeTab === 'Planilla') ? "text-[#0F6E56]" : "text-slate-400")} />
+                <span className="flex-1">Planillas</span>
+                <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", planillasOpen ? "rotate-180" : "")} />
+              </div>
+              {planillasOpen && (
+                <div className="ml-6 border-l-[0.5px] border-[#E8E6DE]">
+                  <div
+                    onClick={() => setActiveTab('Revisiva')}
+                    className={cn(
+                      "flex items-center gap-2 pl-5 pr-4 py-2.5 cursor-pointer text-[13px] transition-colors select-none",
+                      activeTab === 'Revisiva' ? "text-[#0F6E56] font-medium" : "text-slate-500 hover:text-slate-900"
+                    )}
+                  >
+                    Planilla Revisiva
+                  </div>
+                  <div
+                    onClick={() => setActiveTab('Planilla')}
+                    className={cn(
+                      "flex items-center gap-2 pl-5 pr-4 py-2.5 cursor-pointer text-[13px] transition-colors select-none",
+                      activeTab === 'Planilla' ? "text-[#0F6E56] font-medium" : "text-slate-500 hover:text-slate-900"
+                    )}
+                  >
+                    Planilla Control
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <SidebarItem icon={Hash} label="Códigos" active={activeTab === 'Códigos'} onClick={() => setActiveTab('Códigos')} />
             <SidebarItem icon={ShieldCheck} label="Normativa" active={activeTab === 'Normativa'} onClick={() => setActiveTab('Normativa')} />
           </div>
         </nav>

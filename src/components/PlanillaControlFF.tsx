@@ -262,7 +262,7 @@ export function PlanillaControlFF() {
         </div>
 
         {/* Botones acción */}
-        <div className="flex items-center gap-2 justify-end mt-4">
+        <div className="flex items-center gap-2 mt-4">
           <button
             type="button"
             onClick={() => setVista('formulario')}

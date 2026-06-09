@@ -1086,10 +1086,10 @@ export default function App() {
         <nav className="flex-1 overflow-y-auto py-6">
           <div className="space-y-1">
             <SidebarItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'Dashboard'} onClick={() => setActiveTab('Dashboard')} />
-            <SidebarItem icon={CheckCircle2} label="Revisiva" active={activeTab === 'Revisiva'} onClick={() => setActiveTab('Revisiva')} />
             <SidebarItem icon={FileText} label="Historial" active={activeTab === 'Historial'} onClick={() => setActiveTab('Historial')} />
-            <SidebarItem icon={FileCheck2} label="Códigos" active={activeTab === 'Códigos'} onClick={() => setActiveTab('Códigos')} />
+            <SidebarItem icon={CheckCircle2} label="Revisiva" active={activeTab === 'Revisiva'} onClick={() => setActiveTab('Revisiva')} />
             <SidebarItem icon={FileSpreadsheet} label="Planilla" active={activeTab === 'Planilla'} onClick={() => setActiveTab('Planilla')} />
+            <SidebarItem icon={FileCheck2} label="Códigos" active={activeTab === 'Códigos'} onClick={() => setActiveTab('Códigos')} />
             <SidebarItem icon={ShieldCheck} label="Normativa" active={activeTab === 'Normativa'} onClick={() => setActiveTab('Normativa')} />
           </div>
         </nav>

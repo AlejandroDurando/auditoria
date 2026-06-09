@@ -26,8 +26,10 @@ import {
   Loader2,
   Copy,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  FileSpreadsheet
 } from 'lucide-react';
+import { PlanillaControlFF } from './components/PlanillaControlFF';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn, formatCurrency } from './lib/utils';
 import { VALIDATIONS, VALIDATIONS_VIATICOS } from './constants';
@@ -1087,6 +1089,7 @@ export default function App() {
             <SidebarItem icon={CheckCircle2} label="Revisiva" active={activeTab === 'Revisiva'} onClick={() => setActiveTab('Revisiva')} />
             <SidebarItem icon={FileText} label="Historial" active={activeTab === 'Historial'} onClick={() => setActiveTab('Historial')} />
             <SidebarItem icon={FileCheck2} label="Códigos" active={activeTab === 'Códigos'} onClick={() => setActiveTab('Códigos')} />
+            <SidebarItem icon={FileSpreadsheet} label="Planilla" active={activeTab === 'Planilla'} onClick={() => setActiveTab('Planilla')} />
             <SidebarItem icon={ShieldCheck} label="Normativa" active={activeTab === 'Normativa'} onClick={() => setActiveTab('Normativa')} />
           </div>
         </nav>
@@ -2149,6 +2152,15 @@ export default function App() {
               </div>
 
               <InteractiveNormativa />
+            </motion.div>
+          )}
+
+          {activeTab === 'Planilla' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <PlanillaControlFF />
             </motion.div>
           )}
 

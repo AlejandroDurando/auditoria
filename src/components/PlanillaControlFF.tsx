@@ -6,6 +6,7 @@ import { cn } from '../lib/utils';
 
 interface Fila {
   id: number;
+  orden: string;
   observacion: string;
 }
 
@@ -31,7 +32,7 @@ function formatFecha(iso: string): string {
 }
 
 function buildFilas(n: number): Fila[] {
-  return Array.from({ length: n }, (_, i) => ({ id: i + 1, observacion: '' }));
+  return Array.from({ length: n }, (_, i) => ({ id: i + 1, orden: '', observacion: '' }));
 }
 
 function descargarPDF(meta: Metadata, filas: Fila[]) {
@@ -116,7 +117,7 @@ function descargarPDF(meta: Metadata, filas: Fila[]) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(15, 110, 86);
-    doc.text(String(fila.id).padStart(2, '0'), 17, y + 4.5);
+    doc.text(fila.orden || '—', 17, y + 4.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(26, 26, 26);
     doc.text(fila.observacion || '—', 57, y + 4.5, { maxWidth: 136 });
@@ -156,8 +157,8 @@ export function PlanillaControlFF() {
     setFilas(prev => [...prev, { id: prev.length + 1, observacion: '' }]);
   }
 
-  function actualizarFila(id: number, valor: string) {
-    setFilas(prev => prev.map(f => f.id === id ? { ...f, observacion: valor } : f));
+  function actualizarFila(id: number, campo: 'orden' | 'observacion', valor: string) {
+    setFilas(prev => prev.map(f => f.id === id ? { ...f, [campo]: valor } : f));
   }
 
   function actualizarMeta(campo: keyof Metadata, valor: string) {
@@ -240,7 +241,7 @@ export function PlanillaControlFF() {
               {filas.map((fila, i) => (
                 <tr key={fila.id} className={cn(i < filas.length - 1 && 'border-b-[0.5px] border-[#EEECE5]')}>
                   <td className="px-3 py-2.5 text-[13px] font-medium text-[#0F6E56] w-[140px]">
-                    {String(fila.id).padStart(2, '0')}
+                    {fila.orden || <span className="text-[#C8C6BE]">—</span>}
                   </td>
                   <td className="px-3 py-2.5 text-[13px] text-[#1A1A1A]">
                     {fila.observacion || <span className="text-[#C8C6BE]">—</span>}
@@ -349,14 +350,20 @@ export function PlanillaControlFF() {
           <tbody style={{ border: '0.5px solid #E8E6DE', borderTop: 'none' }}>
             {filas.map((fila, i) => (
               <tr key={fila.id} className={cn(i < filas.length - 1 && 'border-b-[0.5px] border-[#EEECE5]')}>
-                <td className="px-3 py-1.5 text-[13px] font-medium text-[#0F6E56] w-[140px]">
-                  {String(fila.id).padStart(2, '0')}
+                <td className="px-3 py-1.5 w-[140px]">
+                  <input
+                    type="text"
+                    value={fila.orden}
+                    onChange={e => actualizarFila(fila.id, 'orden', e.target.value)}
+                    placeholder="—"
+                    className="w-full text-[13px] font-medium text-[#0F6E56] outline-none bg-transparent placeholder:text-[#C8C6BE]"
+                  />
                 </td>
                 <td className="px-3 py-1.5">
                   <input
                     type="text"
                     value={fila.observacion}
-                    onChange={e => actualizarFila(fila.id, e.target.value)}
+                    onChange={e => actualizarFila(fila.id, 'observacion', e.target.value)}
                     placeholder="Escribí una observación..."
                     className="w-full text-[13px] text-[#1A1A1A] outline-none bg-transparent placeholder:text-[#C8C6BE]"
                   />

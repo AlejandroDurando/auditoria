@@ -787,7 +787,7 @@ export default function App() {
       doc.text('Gerencia de Administración - Área Finanzas - Primera Junta 2558', 15, 276);
       doc.text('3000 - Santa Fe - Teléfono / Fax: (042) 4505768 - 4505776 / 4505775', 15, 281);
       
-      const filename = pdfFdoFijoNo ? `Revisiva_${pdfFdoFijoNo.replace(/[\s/\\?%*:|"<>]+/g, '_')}.pdf` : 'Informe_Revisiva_EPE.pdf';
+      const filename = 'revisiva.pdf';
       doc.save(filename);
     } catch (e: any) {
       showNotification('Error al generar PDF', e.message || 'Ocurrió un error inesperado al intentar crear el documento.', 'error');

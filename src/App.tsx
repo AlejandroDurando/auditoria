@@ -1533,34 +1533,8 @@ export default function App() {
                   {/* Metadata Banner displaying Extracted Fields */}
                   {result && (result.expedienteNumero || result.expedienteFecha || result.fondoFijoNumero || result.agenciaSucursal) && (
                     <div className="bg-white border-[0.5px] border-[#E8E6DE] rounded-[12px] p-6 shadow-none flex flex-col sm:flex-row gap-6 sm:items-center">
-                      {result.expedienteNumero && (
-                        <div className="flex-1 min-w-[130px]">
-                          <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">N° de Expediente</span>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[13px] font-medium text-[#1A1A1A] font-mono">
-                              {result.expedienteNumero}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                navigator.clipboard.writeText(result.expedienteNumero || '');
-                                setCopiedExpediente(true);
-                                setTimeout(() => setCopiedExpediente(false), 2000);
-                              }}
-                              className="p-1 text-slate-400 hover:text-[#0F6E56] hover:bg-slate-100 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0"
-                              title="Copiar número de expediente"
-                            >
-                              {copiedExpediente ? (
-                                <Check className="w-3.5 h-3.5 text-[#0F6E56]" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      )}
                       {result.expedienteFecha && (
-                        <div className="flex-1 min-w-[130px] sm:border-l sm:border-[#E8E6DE] sm:pl-6">
+                        <div className="flex-1 min-w-[130px]">
                           <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Fecha Expediente</span>
                           <div className="flex items-center gap-1.5">
                             <span className="text-sm font-medium text-slate-750 font-mono">
@@ -1577,6 +1551,32 @@ export default function App() {
                               title="Copiar fecha de expediente"
                             >
                               {copiedFecha ? (
+                                <Check className="w-3.5 h-3.5 text-[#0F6E56]" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {result.expedienteNumero && (
+                        <div className="flex-1 min-w-[130px] sm:border-l sm:border-[#E8E6DE] sm:pl-6">
+                          <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">N° de Expediente</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[13px] font-medium text-[#1A1A1A] font-mono">
+                              {result.expedienteNumero}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(result.expedienteNumero || '');
+                                setCopiedExpediente(true);
+                                setTimeout(() => setCopiedExpediente(false), 2000);
+                              }}
+                              className="p-1 text-slate-400 hover:text-[#0F6E56] hover:bg-slate-100 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0"
+                              title="Copiar número de expediente"
+                            >
+                              {copiedExpediente ? (
                                 <Check className="w-3.5 h-3.5 text-[#0F6E56]" />
                               ) : (
                                 <Copy className="w-3.5 h-3.5" />

@@ -96,12 +96,12 @@ export default function App() {
   const [auditFilesMap, setAuditFilesMap] = useState<Record<string, { id: string; name: string; size: number; base64: string; objectUrl: string }[]>>({});
   const [activePdfViewer, setActivePdfViewer] = useState<{ fileUrl: string; fileName: string; pageNumber?: number; fileBase64?: string } | null>(null);
 
-  const [selectedModel, setSelectedModel] = useState<'gemini-3.5-flash' | 'gemini-3.1-pro-preview'>(() => {
+  const [selectedModel, setSelectedModel] = useState<'gemini-2.5-flash' | 'gemini-2.5-pro'>(() => {
     try {
       const saved = localStorage.getItem('epe_selected_model');
-      return saved === 'gemini-3.1-pro-preview' ? 'gemini-3.1-pro-preview' : 'gemini-3.5-flash';
+      return saved === 'gemini-2.5-pro' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
     } catch {
-      return 'gemini-3.5-flash';
+      return 'gemini-2.5-flash';
     }
   });
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -512,7 +512,7 @@ export default function App() {
       console.error('Error in processing:', err);
       showNotification(
         'Error de Auditoría',
-        selectedModel === 'gemini-3.1-pro-preview'
+        selectedModel === 'gemini-2.5-pro'
           ? 'Hubo un error al procesar los archivos. Al utilizar el modelo Pro con muchos archivos, es común sufrir demoras extremos o cortes por límites de tiempo del navegador. Te recomendamos reintentar seleccionando el modelo "Gemini 3.5 Flash" (Rápido) en la sección de arriba.'
           : 'Hubo un error al procesar los archivos de auditoría. Comprueba la conexión y vuelve a intentarlo o cámbiate al modelo rápido (Gemini 3.5 Flash).',
         'error'
@@ -1250,18 +1250,18 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedModel('gemini-3.5-flash');
-                            localStorage.setItem('epe_selected_model', 'gemini-3.5-flash');
+                            setSelectedModel('gemini-2.5-flash');
+                            localStorage.setItem('epe_selected_model', 'gemini-2.5-flash');
                           }}
                           className={cn(
                             "px-4 py-2 text-xs font-medium rounded-[8px] border flex flex-col items-start gap-0.5 transition-all cursor-pointer outline-none text-left w-full md:w-48 shadow-none",
-                            selectedModel === 'gemini-3.5-flash'
+                            selectedModel === 'gemini-2.5-flash'
                               ? "border-[#0F6E56] bg-[#F0FAF6] text-[#0F6E56]"
                               : "border-[#E8E6DE] bg-white hover:bg-slate-50 text-slate-600"
                           )}
                         >
                           <span className="flex items-center gap-1.5">
-                            <span className={cn("w-2 h-2 rounded-full", selectedModel === 'gemini-3.5-flash' ? "bg-[#0F6E56] animate-pulse" : "bg-[#E8E6DE]")} />
+                            <span className={cn("w-2 h-2 rounded-full", selectedModel === 'gemini-2.5-flash' ? "bg-[#0F6E56] animate-pulse" : "bg-[#E8E6DE]")} />
                             <span className="font-medium">Gemini Rápido (3.5 Flash)</span>
                           </span>
                           <span className="text-[10px] font-normal text-slate-500">Para muchos archivos / Recomendado</span>
@@ -1270,18 +1270,18 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedModel('gemini-3.1-pro-preview');
-                            localStorage.setItem('epe_selected_model', 'gemini-3.1-pro-preview');
+                            setSelectedModel('gemini-2.5-pro');
+                            localStorage.setItem('epe_selected_model', 'gemini-2.5-pro');
                           }}
                           className={cn(
                             "px-4 py-2 text-xs font-medium rounded-[8px] border flex flex-col items-start gap-0.5 transition-all cursor-pointer outline-none text-left w-full md:w-48 shadow-none",
-                            selectedModel === 'gemini-3.1-pro-preview'
+                            selectedModel === 'gemini-2.5-pro'
                               ? "border-[#0F6E56] bg-[#F0FAF6] text-[#0F6E56]"
                               : "border-[#E8E6DE] bg-white hover:bg-slate-50 text-slate-600"
                           )}
                         >
                           <span className="flex items-center gap-1.5">
-                            <span className={cn("w-2 h-2 rounded-full", selectedModel === 'gemini-3.1-pro-preview' ? "bg-[#0F6E56]" : "bg-[#E8E6DE]")} />
+                            <span className={cn("w-2 h-2 rounded-full", selectedModel === 'gemini-2.5-pro' ? "bg-[#0F6E56]" : "bg-[#E8E6DE]")} />
                             <span className="font-medium">Gemini Complejo (Pro)</span>
                           </span>
                           <span className="text-[10px] font-normal text-slate-500">Para casos con texto difuso / Lento</span>

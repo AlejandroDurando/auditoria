@@ -54,7 +54,7 @@ export interface AuditResult {
 export async function processDocument(
   pdfFiles: string[] | Array<{ name: string; base64: string }>,
   mode: 'Expedientes' | 'Viáticos' = 'Expedientes',
-  modelName: string = 'gemini-2.5-flash',
+  modelName: string = 'gemini-3.5-flash',
   signal?: AbortSignal
 ): Promise<AuditResult> {
   const localAi = new GoogleGenAI({

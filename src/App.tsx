@@ -90,6 +90,7 @@ export default function App() {
   const [pdfReparticion, setPdfReparticion] = useState('');
   const [pdfGciaSuc, setPdfGciaSuc] = useState('');
   const [selectedSector, setSelectedSector] = useState('');
+  const [planillaInitialData, setPlanillaInitialData] = useState<{sector:string;expediente:string;fondoFijo:string;fecha:string} | null>(null);
 
   const [activeAuditId, setActiveAuditId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -503,6 +504,24 @@ export default function App() {
 
       setResult(auditResult);
       saveToHistory(auditResult, newAuditId);
+
+      // Autocompletar Planilla Control con datos de la auditoría
+      const rawFecha = auditResult.expedienteFecha || '';
+      let fechaISO = '';
+      if (rawFecha) {
+        const parts = rawFecha.split('/');
+        if (parts.length === 3) {
+          const [d, m, y] = parts;
+          const year = y.length === 2 ? `20${y}` : y;
+          fechaISO = `${year}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+        }
+      }
+      setPlanillaInitialData({
+        sector: auditResult.agenciaSucursal || '',
+        expediente: auditResult.expedienteNumero || '',
+        fondoFijo: auditResult.fondoFijoNumero || '',
+        fecha: fechaISO || new Date().toISOString().split('T')[0],
+      });
     } catch (err: any) {
       clearInterval(interval);
       if (err.name === 'AbortError' || err.message?.includes('aborted') || err.message?.includes('Cancel')) {
@@ -1699,13 +1718,22 @@ export default function App() {
                             </p>
                           </div>
                         </div>
-                        <button
-                          onClick={() => setActiveTab('Revisiva')}
-                          className="md:self-center bg-[#0F6E56] hover:bg-[#0c5945] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer border-none outline-none shadow-none"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Ir a Planilla Revisiva</span>
-                        </button>
+                        <div className="flex flex-col sm:flex-row gap-2 md:self-center">
+                          <button
+                            onClick={() => setActiveTab('Revisiva')}
+                            className="bg-[#0F6E56] hover:bg-[#0c5945] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer border-none outline-none shadow-none"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Ir a Planilla Revisiva</span>
+                          </button>
+                          <button
+                            onClick={() => { setPlanillasOpen(true); setActiveTab('Planilla'); }}
+                            className="bg-white border border-[#0F6E56] text-[#0F6E56] text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer outline-none shadow-none hover:bg-[#F0FAF6]"
+                          >
+                            <FileSpreadsheet className="w-4 h-4" />
+                            <span>Ir a Planilla Control</span>
+                          </button>
+                        </div>
                       </div>
                     );
                   })()}
@@ -2201,7 +2229,7 @@ export default function App() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <PlanillaControlFF />
+              <PlanillaControlFF initialData={planillaInitialData} />
             </motion.div>
           )}
 

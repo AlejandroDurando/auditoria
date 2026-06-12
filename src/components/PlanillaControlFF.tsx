@@ -137,15 +137,40 @@ function descargarPDF(meta: Metadata, filas: Fila[]) {
   doc.text(`Fecha: ${formatFecha(meta.fecha)}`, 195, y, { align: 'right' });
 
   const nombre = meta.expediente
-    ? `Planilla_FF_${meta.expediente.replace(/[\s/\\?%*:|"<>]+/g, '_')}.pdf`
-    : 'Planilla_Control_FF.pdf';
+    ? `planilla control.pdf`
+    : 'planilla control.pdf';
   doc.save(nombre);
 }
 
-export function PlanillaControlFF() {
+interface Props {
+  initialData?: { sector: string; expediente: string; fondoFijo: string; fecha: string } | null;
+}
+
+export function PlanillaControlFF({ initialData }: Props) {
   const [vista, setVista] = useState<'formulario' | 'preview'>('formulario');
-  const [meta, setMeta] = useState<Metadata>({ sector: '', expediente: '', fondoFijo: '', fecha: hoy() });
+  const [meta, setMeta] = useState<Metadata>(() => ({
+    sector: initialData?.sector || '',
+    expediente: initialData?.expediente || '',
+    fondoFijo: initialData?.fondoFijo || '',
+    fecha: initialData?.fecha || hoy(),
+  }));
   const [filas, setFilas] = useState<Fila[]>(buildFilas(6));
+  const prevInitialData = React.useRef(initialData);
+
+  // Sincronizar cuando llegan nuevos datos de auditoría
+  React.useEffect(() => {
+    if (initialData && initialData !== prevInitialData.current) {
+      prevInitialData.current = initialData;
+      setMeta({
+        sector: initialData.sector,
+        expediente: initialData.expediente,
+        fondoFijo: initialData.fondoFijo,
+        fecha: initialData.fecha || hoy(),
+      });
+      setFilas(buildFilas(6));
+      setVista('formulario');
+    }
+  }, [initialData]);
 
   function reset() {
     setMeta({ sector: '', expediente: '', fondoFijo: '', fecha: hoy() });

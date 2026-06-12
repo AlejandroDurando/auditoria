@@ -51,7 +51,7 @@ export const SECTOR_MAPPING: Record<string, { label: string; responsible: string
     { label: "U.T. Adm Rafaela", responsible: "G. Cabrera" },
     { label: "Ag. Rafaela", responsible: "G. Cabrera" },
     { label: "Ag. Maria Juana", responsible: "C. Cernotti" },
-    { label: "Ag. Norte", responsible: "Mauro Re" }
+    { label: "Ag. Norte", responsible: "M. Re" }
   ],
   NOROESTE: [
     { label: "Suc Noroeste (Ceres)", responsible: "E. Argañaraz" },

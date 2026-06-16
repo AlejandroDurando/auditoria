@@ -51,14 +51,52 @@ export interface AuditResult {
   agenciaSucursal?: string;
   responsable?: string;
 }
+function isQuotaError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('quota') || msg.includes('high demand') || msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
+}
+
+function getApiKeys(): string[] {
+  const keys: string[] = [];
+  if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
+  if (process.env.GEMINI_API_KEY_2) keys.push(process.env.GEMINI_API_KEY_2);
+  if (process.env.GEMINI_API_KEY_3) keys.push(process.env.GEMINI_API_KEY_3);
+  return keys;
+}
+
 export async function processDocument(
   pdfFiles: string[] | Array<{ name: string; base64: string }>,
   mode: 'Expedientes' | 'Viáticos' = 'Expedientes',
   modelName: string = 'gemini-3.5-flash',
   signal?: AbortSignal
 ): Promise<AuditResult> {
+  const apiKeys = getApiKeys();
+  let lastError: unknown;
+
+  for (let i = 0; i < apiKeys.length; i++) {
+    try {
+      return await processDocumentWithKey(apiKeys[i], pdfFiles, mode, modelName, signal);
+    } catch (err) {
+      lastError = err;
+      if (isQuotaError(err) && i < apiKeys.length - 1) {
+        console.warn(`API key ${i + 1} agotada o no disponible, intentando con key ${i + 2}...`);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError;
+}
+
+async function processDocumentWithKey(
+  apiKey: string,
+  pdfFiles: string[] | Array<{ name: string; base64: string }>,
+  mode: 'Expedientes' | 'Viáticos',
+  modelName: string,
+  signal?: AbortSignal
+): Promise<AuditResult> {
   const localAi = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
+    apiKey,
     httpOptions: {
       headers: {
         'User-Agent': 'aistudio-build',

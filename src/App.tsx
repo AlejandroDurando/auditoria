@@ -39,6 +39,7 @@ import { VALIDATIONS, VALIDATIONS_VIATICOS } from './constants';
 import { processDocument, type AuditResult, type PaymentData } from './lib/gemini';
 import { PIMYS_CODES } from './lib/codes';
 import { PdfCanvasViewer } from './components/PdfCanvasViewer';
+import { PdfScrollViewer } from './components/PdfScrollViewer';
 import { InteractiveNormativa } from './components/InteractiveNormativa';
 import { useRef } from 'react';
 import { jsPDF } from 'jspdf';
@@ -224,7 +225,7 @@ function RapidaTab({ selectedModel, showNotification }: {
       {/* Right panel — PDF viewer */}
       <div className="flex-1 min-w-0 h-full bg-slate-100 flex flex-col">
         {file ? (
-          <PdfCanvasViewer base64={file.base64} initialPage={1} fileName={file.name} />
+          <PdfScrollViewer base64={file.base64} fileName={file.name} />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 text-[#BDBBB2]">
             <FileText className="w-12 h-12" />

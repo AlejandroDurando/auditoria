@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import { Mistral } from "@mistralai/mistralai";
 import { PIMYS_CODES } from "./codes";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -82,9 +83,23 @@ export async function processDocument(
         console.warn(`API key ${i + 1} agotada o no disponible, intentando con key ${i + 2}...`);
         continue;
       }
+      if (isQuotaError(err)) {
+        console.warn('Todas las keys de Gemini agotadas, intentando con Mistral...');
+        break;
+      }
       throw err;
     }
   }
+
+  if (process.env.MISTRAL_API_KEY) {
+    try {
+      return await processDocumentWithMistral(pdfFiles, mode, signal);
+    } catch (err) {
+      console.error('Mistral también falló:', err);
+      throw err;
+    }
+  }
+
   throw lastError;
 }
 
@@ -420,5 +435,65 @@ async function processDocumentWithKey(
   if (parsed.fondoFijoNumero) {
     parsed.fondoFijoId = parsed.fondoFijoNumero;
   }
+  return parsed;
+}
+
+async function processDocumentWithMistral(
+  pdfFiles: string[] | Array<{ name: string; base64: string }>,
+  mode: 'Expedientes' | 'Viáticos' | 'Rapida',
+  signal?: AbortSignal
+): Promise<AuditResult> {
+  const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
+
+  const filesList = Array.isArray(pdfFiles) && pdfFiles.length > 0 && typeof pdfFiles[0] === 'string'
+    ? (pdfFiles as string[]).map((base64, idx) => ({ name: `Documento_${idx + 1}.pdf`, base64 }))
+    : pdfFiles as Array<{ name: string; base64: string }>;
+
+  // Upload PDFs to Mistral Files API
+  const uploadedFiles: Array<{ fileId: string; name: string; idx: number }> = [];
+  for (let idx = 0; idx < filesList.length; idx++) {
+    const f = filesList[idx];
+    const binary = atob(f.base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const file = new File([blob], f.name, { type: 'application/pdf' });
+    const uploaded = await client.files.upload({ file, purpose: 'ocr' });
+    uploadedFiles.push({ fileId: uploaded.id, name: f.name, idx });
+  }
+
+  // Get signed URLs
+  const contentParts: any[] = [];
+  for (const uf of uploadedFiles) {
+    const signed = await client.files.getSignedUrl({ fileId: uf.fileId });
+    contentParts.push({ type: 'text', text: `=== ARCHIVO CON ÍNDICE DE ORIGEN ${uf.idx} ===\nNombre: "${uf.name}"` });
+    contentParts.push({ type: 'document_url', documentUrl: signed.url });
+    contentParts.push({ type: 'text', text: `=== FIN ARCHIVO ÍNDICE ${uf.idx} ===` });
+  }
+  contentParts.push({ type: 'text', text: `Analiza los documentos y genera el JSON requerido para una auditoría de tipo ${mode}.` });
+
+  // Build system prompt (same logic as Gemini — reuse mode-based instruction)
+  // We pass a simplified but aligned system prompt
+  const systemPrompt = `Eres un auditor experto de la Empresa Provincial de la Energía (EPE) de Santa Fe, Argentina. Tu tarea es auditar documentos de Fondos Fijos. Responde ÚNICAMENTE con un objeto JSON válido que contenga los campos: balance_inversion, payments (array con orderNumber, providerName, amount, pageNumber, sourceFileIdx, libroDiarioText, validations con id/status/observations para v1 a v10), overallSummary, totalAmount, expedienteNumero, expedienteFecha, fondoFijoNumero, agenciaSucursal, responsable. No incluyas texto fuera del JSON.`;
+
+  const response = await client.chat.complete({
+    model: 'mistral-small-latest',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: contentParts }
+    ],
+    responseFormat: { type: 'json_object' },
+  });
+
+  // Cleanup uploaded files
+  for (const uf of uploadedFiles) {
+    try { await client.files.delete({ fileId: uf.fileId }); } catch {}
+  }
+
+  const text = response.choices?.[0]?.message?.content;
+  if (!text || typeof text !== 'string') throw new Error('Mistral no devolvió respuesta válida.');
+  const parsed = JSON.parse(text);
+  parsed.mode = mode;
+  if (parsed.fondoFijoNumero) parsed.fondoFijoId = parsed.fondoFijoNumero;
   return parsed;
 }

@@ -71,8 +71,19 @@ export const SECTOR_MAPPING: Record<string, { label: string; responsible: string
   ]
 };
 
-function RapidaTab({ selectedModel, showNotification }: {
-  selectedModel: string;
+const MODELS = [
+  { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite', desc: '500 RPD — Recomendado' },
+  { id: 'gemini-3.5-flash',      label: 'Gemini 3.5 Flash',      desc: '20 RPD — Rápido' },
+  { id: 'gemini-2.5-flash',      label: 'Gemini 2.5 Flash',      desc: '20 RPD' },
+  { id: 'gemini-3-flash',        label: 'Gemini 3 Flash',        desc: '20 RPD' },
+  { id: 'gemini-3.1-pro-preview',label: 'Gemini 3.1 Pro',        desc: 'Complejo / Lento' },
+  { id: 'mistral-small-latest',  label: 'Mistral Small',         desc: 'Fallback gratuito' },
+] as const;
+type ModelId = typeof MODELS[number]['id'];
+
+function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
+  selectedModel: ModelId;
+  setSelectedModel: (m: ModelId) => void;
   showNotification: (title: string, msg: string, type?: 'success' | 'error' | 'info') => void;
 }) {
   const [file, setFile] = useState<{ name: string; base64: string } | null>(null);
@@ -159,10 +170,27 @@ function RapidaTab({ selectedModel, showNotification }: {
           <div className="w-9 h-9 bg-white rounded-[10px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
             <Zap className="w-4 h-4 text-[#0F6E56]" />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="text-[16px] font-semibold text-[#1A1A1A] tracking-tight leading-none">Auditoría Rápida</h1>
             <p className="text-[11px] text-[#9A9890] mt-0.5">Comprobante único, sin expediente.</p>
           </div>
+        </div>
+
+        {/* Model selector */}
+        <div className="mb-3">
+          <select
+            value={selectedModel}
+            onChange={(e) => {
+              const val = e.target.value as ModelId;
+              setSelectedModel(val);
+              localStorage.setItem('epe_selected_model', val);
+            }}
+            className="w-full px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-white text-slate-700 outline-none cursor-pointer hover:border-[#0F6E56]/40 transition-colors"
+          >
+            {MODELS.map(m => (
+              <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
+            ))}
+          </select>
         </div>
 
         {/* Dropzone */}
@@ -304,16 +332,6 @@ export default function App() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [auditFilesMap, setAuditFilesMap] = useState<Record<string, { id: string; name: string; size: number; base64: string; objectUrl: string }[]>>({});
   const [activePdfViewer, setActivePdfViewer] = useState<{ fileUrl: string; fileName: string; pageNumber?: number; fileBase64?: string } | null>(null);
-
-  const MODELS = [
-    { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite', desc: '500 RPD — Recomendado' },
-    { id: 'gemini-3.5-flash',      label: 'Gemini 3.5 Flash',      desc: '20 RPD — Rápido' },
-    { id: 'gemini-2.5-flash',      label: 'Gemini 2.5 Flash',      desc: '20 RPD' },
-    { id: 'gemini-3-flash',        label: 'Gemini 3 Flash',        desc: '20 RPD' },
-    { id: 'gemini-3.1-pro-preview',label: 'Gemini 3.1 Pro',        desc: 'Complejo / Lento' },
-    { id: 'mistral-small-latest',  label: 'Mistral Small',         desc: 'Fallback gratuito' },
-  ] as const;
-  type ModelId = typeof MODELS[number]['id'];
 
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     try {
@@ -2464,7 +2482,7 @@ export default function App() {
           )}
 
           {activeTab === 'Rapida' && (
-            <RapidaTab selectedModel={selectedModel} showNotification={showNotification} />
+            <RapidaTab selectedModel={selectedModel} setSelectedModel={setSelectedModel} showNotification={showNotification} />
           )}
 
           {activeTab === 'Códigos' && (

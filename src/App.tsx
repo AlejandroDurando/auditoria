@@ -324,8 +324,11 @@ export default function App() {
     setNotification({ title, message, type });
   }, []);
 
-  const [pdfWidth, setPdfWidth] = useState(600); // Dynamic width for resizable panel
+  const [pdfWidth, setPdfWidth] = useState(600);
   const [isDragging, setIsDragging] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(256);
+  const [isSidebarDragging, setIsSidebarDragging] = useState(false);
+  const sidebarDragRef = useRef<{ startX: number; startW: number } | null>(null);
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
 
@@ -378,6 +381,31 @@ export default function App() {
       document.body.style.userSelect = '';
     };
   }, [isDragging, pdfWidth]);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!isSidebarDragging || !sidebarDragRef.current) return;
+      const delta = e.clientX - sidebarDragRef.current.startX;
+      setSidebarWidth(Math.min(Math.max(sidebarDragRef.current.startW + delta, 180), 400));
+    };
+    const onUp = () => {
+      if (!isSidebarDragging) return;
+      setIsSidebarDragging(false);
+      sidebarDragRef.current = null;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    if (isSidebarDragging) {
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    }
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, [isSidebarDragging]);
 
   useEffect(() => {
     const saved = localStorage.getItem('epe_audit_history');
@@ -1298,7 +1326,16 @@ export default function App() {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <aside className="w-64 border-r-[0.5px] border-[#E8E6DE] flex flex-col bg-white shadow-none z-20">
+      <aside style={{ width: sidebarWidth }} className="shrink-0 border-r-[0.5px] border-[#E8E6DE] flex flex-col bg-white shadow-none z-20 relative">
+        {/* Sidebar resize handle */}
+        <div
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setIsSidebarDragging(true);
+            sidebarDragRef.current = { startX: e.clientX, startW: sidebarWidth };
+          }}
+          className="absolute right-0 top-0 h-full w-[5px] cursor-col-resize z-30 hover:bg-[#0F6E56]/40 transition-colors"
+        />
         <div className="p-6 border-b-[0.5px] border-[#E8E6DE]">
           <div className="flex flex-col select-none">
             <div className="flex items-center gap-2">

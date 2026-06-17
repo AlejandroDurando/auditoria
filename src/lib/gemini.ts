@@ -1,5 +1,4 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Mistral } from "@mistralai/mistralai";
 import { PIMYS_CODES } from "./codes";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -443,55 +442,79 @@ async function processDocumentWithMistral(
   mode: 'Expedientes' | 'Viáticos' | 'Rapida',
   signal?: AbortSignal
 ): Promise<AuditResult> {
-  const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
+  const apiKey = process.env.MISTRAL_API_KEY!;
+  const baseUrl = 'https://api.mistral.ai/v1';
 
   const filesList = Array.isArray(pdfFiles) && pdfFiles.length > 0 && typeof pdfFiles[0] === 'string'
     ? (pdfFiles as string[]).map((base64, idx) => ({ name: `Documento_${idx + 1}.pdf`, base64 }))
     : pdfFiles as Array<{ name: string; base64: string }>;
 
-  // Upload PDFs to Mistral Files API
+  // Upload PDFs via Files API
   const uploadedFiles: Array<{ fileId: string; name: string; idx: number }> = [];
   for (let idx = 0; idx < filesList.length; idx++) {
     const f = filesList[idx];
     const binary = atob(f.base64);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    const file = new File([blob], f.name, { type: 'application/pdf' });
-    const uploaded = await client.files.upload({ file, purpose: 'ocr' });
-    uploadedFiles.push({ fileId: uploaded.id, name: f.name, idx });
+    const formData = new FormData();
+    formData.append('purpose', 'ocr');
+    formData.append('file', new File([bytes], f.name, { type: 'application/pdf' }));
+    const res = await fetch(`${baseUrl}/files`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: formData,
+      signal,
+    });
+    if (!res.ok) throw new Error(`Mistral upload error: ${res.status}`);
+    const data = await res.json();
+    uploadedFiles.push({ fileId: data.id, name: f.name, idx });
   }
 
-  // Get signed URLs
+  // Get signed URLs and build content parts
   const contentParts: any[] = [];
   for (const uf of uploadedFiles) {
-    const signed = await client.files.getSignedUrl({ fileId: uf.fileId });
+    const res = await fetch(`${baseUrl}/files/${uf.fileId}/url?expiry=1`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      signal,
+    });
+    if (!res.ok) throw new Error(`Mistral signed URL error: ${res.status}`);
+    const data = await res.json();
     contentParts.push({ type: 'text', text: `=== ARCHIVO CON ÍNDICE DE ORIGEN ${uf.idx} ===\nNombre: "${uf.name}"` });
-    contentParts.push({ type: 'document_url', documentUrl: signed.url });
+    contentParts.push({ type: 'document_url', document_url: data.url });
     contentParts.push({ type: 'text', text: `=== FIN ARCHIVO ÍNDICE ${uf.idx} ===` });
   }
-  contentParts.push({ type: 'text', text: `Analiza los documentos y genera el JSON requerido para una auditoría de tipo ${mode}.` });
+  contentParts.push({ type: 'text', text: `Analiza los documentos y genera el JSON requerido para una auditoría de tipo ${mode}. Responde ÚNICAMENTE con JSON válido.` });
 
-  // Build system prompt (same logic as Gemini — reuse mode-based instruction)
-  // We pass a simplified but aligned system prompt
-  const systemPrompt = `Eres un auditor experto de la Empresa Provincial de la Energía (EPE) de Santa Fe, Argentina. Tu tarea es auditar documentos de Fondos Fijos. Responde ÚNICAMENTE con un objeto JSON válido que contenga los campos: balance_inversion, payments (array con orderNumber, providerName, amount, pageNumber, sourceFileIdx, libroDiarioText, validations con id/status/observations para v1 a v10), overallSummary, totalAmount, expedienteNumero, expedienteFecha, fondoFijoNumero, agenciaSucursal, responsable. No incluyas texto fuera del JSON.`;
+  const systemPrompt = `Eres un auditor experto de la Empresa Provincial de la Energía (EPE) de Santa Fe, Argentina. Audita documentos de Fondos Fijos. Responde ÚNICAMENTE con un objeto JSON con los campos: balance_inversion (presente, monto_asignado, rendiciones_pendientes, total_pendiente, saldo_banco_declarado, saldo_banco_calculado, validacion_v14), payments (array con orderNumber, providerName, amount, pageNumber, sourceFileIdx, libroDiarioText, validations con id/status/observations para v1 a v10), overallSummary, totalAmount, expedienteNumero, expedienteFecha, fondoFijoNumero, agenciaSucursal, responsable.`;
 
-  const response = await client.chat.complete({
-    model: 'mistral-small-latest',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: contentParts }
-    ],
-    responseFormat: { type: 'json_object' },
+  const chatRes = await fetch(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'mistral-small-latest',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: contentParts },
+      ],
+      response_format: { type: 'json_object' },
+    }),
+    signal,
   });
+  if (!chatRes.ok) throw new Error(`Mistral chat error: ${chatRes.status}`);
+  const chatData = await chatRes.json();
 
   // Cleanup uploaded files
   for (const uf of uploadedFiles) {
-    try { await client.files.delete({ fileId: uf.fileId }); } catch {}
+    try {
+      await fetch(`${baseUrl}/files/${uf.fileId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+    } catch {}
   }
 
-  const text = response.choices?.[0]?.message?.content;
-  if (!text || typeof text !== 'string') throw new Error('Mistral no devolvió respuesta válida.');
+  const text = chatData.choices?.[0]?.message?.content;
+  if (!text) throw new Error('Mistral no devolvió respuesta válida.');
   const parsed = JSON.parse(text);
   parsed.mode = mode;
   if (parsed.fondoFijoNumero) parsed.fondoFijoId = parsed.fondoFijoNumero;

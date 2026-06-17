@@ -56,24 +56,16 @@ function isQuotaError(err: unknown): boolean {
   return msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('quota') || msg.includes('high demand') || msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
 }
 
-function getEnv(key: string): string | undefined {
-  // Works both in Vite (import.meta.env) and Node (process.env)
-  return (import.meta as any).env?.[key] ?? (typeof process !== 'undefined' ? process.env[key] : undefined);
-}
-
 function getApiKeys(): string[] {
   const keys: string[] = [];
-  const k1 = getEnv('VITE_GEMINI_API_KEY') || getEnv('GEMINI_API_KEY');
-  const k2 = getEnv('VITE_GEMINI_API_KEY_2') || getEnv('GEMINI_API_KEY_2');
-  const k3 = getEnv('VITE_GEMINI_API_KEY_3') || getEnv('GEMINI_API_KEY_3');
-  if (k1) keys.push(k1);
-  if (k2) keys.push(k2);
-  if (k3) keys.push(k3);
+  if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
+  if (process.env.GEMINI_API_KEY_2) keys.push(process.env.GEMINI_API_KEY_2);
+  if (process.env.GEMINI_API_KEY_3) keys.push(process.env.GEMINI_API_KEY_3);
   return keys;
 }
 
 function getMistralKey(): string | undefined {
-  return getEnv('VITE_MISTRAL_API_KEY') || getEnv('MISTRAL_API_KEY');
+  return process.env.MISTRAL_API_KEY;
 }
 
 export async function processDocument(

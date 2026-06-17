@@ -79,6 +79,39 @@ function RapidaTab({ selectedModel, showNotification }: {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<import('./lib/gemini').AuditResult | null>(null);
   const [expandedPayment, setExpandedPayment] = useState<number | null>(0);
+  const [leftWidth, setLeftWidth] = useState(420);
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef<{ x: number; w: number } | null>(null);
+
+  const onDividerMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    dragStartRef.current = { x: e.clientX, w: leftWidth };
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current || !dragStartRef.current) return;
+      const delta = e.clientX - dragStartRef.current.x;
+      const newW = Math.min(Math.max(dragStartRef.current.w + delta, 280), 700);
+      setLeftWidth(newW);
+    };
+    const onMouseUp = () => {
+      if (!isDraggingRef.current) return;
+      isDraggingRef.current = false;
+      dragStartRef.current = null;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const f = acceptedFiles[0];
@@ -121,7 +154,7 @@ function RapidaTab({ selectedModel, showNotification }: {
   return (
     <div className="flex flex-1 min-h-0 h-full gap-0">
       {/* Left panel — form + results */}
-      <div className="w-[420px] shrink-0 flex flex-col h-full overflow-y-auto border-r border-[#E8E6DE] bg-[#F7F6F3] p-6">
+      <div style={{ width: leftWidth }} className="shrink-0 flex flex-col h-full overflow-y-auto bg-[#F7F6F3] p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-9 h-9 bg-white rounded-[10px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
             <Zap className="w-4 h-4 text-[#0F6E56]" />
@@ -221,6 +254,12 @@ function RapidaTab({ selectedModel, showNotification }: {
           </div>
         )}
       </div>
+
+      {/* Drag handle */}
+      <div
+        onMouseDown={onDividerMouseDown}
+        className="w-[5px] shrink-0 h-full cursor-col-resize bg-[#E8E6DE] hover:bg-[#0F6E56]/40 transition-colors active:bg-[#0F6E56]/60"
+      />
 
       {/* Right panel — PDF viewer */}
       <div className="flex-1 min-w-0 h-full bg-slate-100 flex flex-col">

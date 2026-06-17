@@ -56,12 +56,24 @@ function isQuotaError(err: unknown): boolean {
   return msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('quota') || msg.includes('high demand') || msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
 }
 
+function getEnv(key: string): string | undefined {
+  // Works both in Vite (import.meta.env) and Node (process.env)
+  return (import.meta as any).env?.[key] ?? (typeof process !== 'undefined' ? process.env[key] : undefined);
+}
+
 function getApiKeys(): string[] {
   const keys: string[] = [];
-  if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
-  if (process.env.GEMINI_API_KEY_2) keys.push(process.env.GEMINI_API_KEY_2);
-  if (process.env.GEMINI_API_KEY_3) keys.push(process.env.GEMINI_API_KEY_3);
+  const k1 = getEnv('VITE_GEMINI_API_KEY') || getEnv('GEMINI_API_KEY');
+  const k2 = getEnv('VITE_GEMINI_API_KEY_2') || getEnv('GEMINI_API_KEY_2');
+  const k3 = getEnv('VITE_GEMINI_API_KEY_3') || getEnv('GEMINI_API_KEY_3');
+  if (k1) keys.push(k1);
+  if (k2) keys.push(k2);
+  if (k3) keys.push(k3);
   return keys;
+}
+
+function getMistralKey(): string | undefined {
+  return getEnv('VITE_MISTRAL_API_KEY') || getEnv('MISTRAL_API_KEY');
 }
 
 export async function processDocument(
@@ -70,6 +82,11 @@ export async function processDocument(
   modelName: string = 'gemini-3.5-flash',
   signal?: AbortSignal
 ): Promise<AuditResult> {
+  // If Mistral is explicitly selected, skip Gemini entirely
+  if (modelName === 'mistral-small-latest') {
+    return await processDocumentWithMistral(pdfFiles, mode, signal);
+  }
+
   const apiKeys = getApiKeys();
   let lastError: unknown;
 
@@ -79,7 +96,7 @@ export async function processDocument(
     } catch (err) {
       lastError = err;
       if (isQuotaError(err) && i < apiKeys.length - 1) {
-        console.warn(`API key ${i + 1} agotada o no disponible, intentando con key ${i + 2}...`);
+        console.warn(`API key ${i + 1} agotada, intentando con key ${i + 2}...`);
         continue;
       }
       if (isQuotaError(err)) {
@@ -90,7 +107,8 @@ export async function processDocument(
     }
   }
 
-  if (process.env.MISTRAL_API_KEY) {
+  if (getMistralKey()) {
+    console.warn('Usando Mistral como fallback...');
     try {
       return await processDocumentWithMistral(pdfFiles, mode, signal);
     } catch (err) {
@@ -442,7 +460,7 @@ async function processDocumentWithMistral(
   mode: 'Expedientes' | 'Viáticos' | 'Rapida',
   signal?: AbortSignal
 ): Promise<AuditResult> {
-  const apiKey = process.env.MISTRAL_API_KEY!;
+  const apiKey = getMistralKey()!;
   const baseUrl = 'https://api.mistral.ai/v1';
 
   const filesList = Array.isArray(pdfFiles) && pdfFiles.length > 0 && typeof pdfFiles[0] === 'string'

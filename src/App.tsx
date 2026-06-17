@@ -305,12 +305,22 @@ export default function App() {
   const [auditFilesMap, setAuditFilesMap] = useState<Record<string, { id: string; name: string; size: number; base64: string; objectUrl: string }[]>>({});
   const [activePdfViewer, setActivePdfViewer] = useState<{ fileUrl: string; fileName: string; pageNumber?: number; fileBase64?: string } | null>(null);
 
-  const [selectedModel, setSelectedModel] = useState<'gemini-3.5-flash' | 'gemini-3.1-pro-preview'>(() => {
+  const MODELS = [
+    { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite', desc: '500 RPD — Recomendado' },
+    { id: 'gemini-3.5-flash',      label: 'Gemini 3.5 Flash',      desc: '20 RPD — Rápido' },
+    { id: 'gemini-2.5-flash',      label: 'Gemini 2.5 Flash',      desc: '20 RPD' },
+    { id: 'gemini-3-flash',        label: 'Gemini 3 Flash',        desc: '20 RPD' },
+    { id: 'gemini-3.1-pro-preview',label: 'Gemini 3.1 Pro',        desc: 'Complejo / Lento' },
+    { id: 'mistral-small-latest',  label: 'Mistral Small',         desc: 'Fallback gratuito' },
+  ] as const;
+  type ModelId = typeof MODELS[number]['id'];
+
+  const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     try {
-      const saved = localStorage.getItem('epe_selected_model');
-      return saved === 'gemini-3.1-pro-preview' ? 'gemini-3.1-pro-preview' : 'gemini-3.5-flash';
+      const saved = localStorage.getItem('epe_selected_model') as ModelId;
+      return MODELS.find(m => m.id === saved) ? saved : 'gemini-3.1-flash-lite';
     } catch {
-      return 'gemini-3.5-flash';
+      return 'gemini-3.1-flash-lite';
     }
   });
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -1511,46 +1521,20 @@ export default function App() {
                         </p>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-2 max-w-md w-full md:w-auto shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedModel('gemini-3.5-flash');
-                            localStorage.setItem('epe_selected_model', 'gemini-3.5-flash');
+                      <div className="shrink-0">
+                        <select
+                          value={selectedModel}
+                          onChange={(e) => {
+                            const val = e.target.value as ModelId;
+                            setSelectedModel(val);
+                            localStorage.setItem('epe_selected_model', val);
                           }}
-                          className={cn(
-                            "px-4 py-2 text-xs font-medium rounded-[8px] border flex flex-col items-start gap-0.5 transition-all cursor-pointer outline-none text-left w-full md:w-48 shadow-none",
-                            selectedModel === 'gemini-3.5-flash'
-                              ? "border-[#0F6E56] bg-[#F0FAF6] text-[#0F6E56]"
-                              : "border-[#E8E6DE] bg-white hover:bg-slate-50 text-slate-600"
-                          )}
+                          className="px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-white text-slate-700 outline-none cursor-pointer hover:border-[#0F6E56]/40 transition-colors"
                         >
-                          <span className="flex items-center gap-1.5">
-                            <span className={cn("w-2 h-2 rounded-full", selectedModel === 'gemini-3.5-flash' ? "bg-[#0F6E56] animate-pulse" : "bg-[#E8E6DE]")} />
-                            <span className="font-medium">Gemini Rápido (3.5 Flash)</span>
-                          </span>
-                          <span className="text-[10px] font-normal text-slate-500">Para muchos archivos / Recomendado</span>
-                        </button>
-                        
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedModel('gemini-3.1-pro-preview');
-                            localStorage.setItem('epe_selected_model', 'gemini-3.1-pro-preview');
-                          }}
-                          className={cn(
-                            "px-4 py-2 text-xs font-medium rounded-[8px] border flex flex-col items-start gap-0.5 transition-all cursor-pointer outline-none text-left w-full md:w-48 shadow-none",
-                            selectedModel === 'gemini-3.1-pro-preview'
-                              ? "border-[#0F6E56] bg-[#F0FAF6] text-[#0F6E56]"
-                              : "border-[#E8E6DE] bg-white hover:bg-slate-50 text-slate-600"
-                          )}
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <span className={cn("w-2 h-2 rounded-full", selectedModel === 'gemini-3.1-pro-preview' ? "bg-[#0F6E56]" : "bg-[#E8E6DE]")} />
-                            <span className="font-medium">Gemini Complejo (Pro)</span>
-                          </span>
-                          <span className="text-[10px] font-normal text-slate-500">Para casos con texto difuso / Lento</span>
-                        </button>
+                          {MODELS.map(m => (
+                            <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>

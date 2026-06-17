@@ -139,7 +139,20 @@ async function processDocumentWithKey(
       * Litoral Gas, Telecom, etc.: tomar el "TOTAL A PAGAR" o "IMPORTE A PAGAR" del primer vencimiento.
     Regla general: ante cualquier duda entre dos importes, elegir SIEMPRE el menor (que corresponde al primer vencimiento sin recargo).
     
-    2. Si el lote de documentos contiene una planilla de "Libro Diario" o listado de movimientos de caja: considera que cada renglón o fila de gasto de esa planilla representa un pago individual que DEBES extraer y auditar. Si un gasto del Libro Diario carece de comprobante de factura física individual en el lote de PDFs, de todas formas lo DEBES incluir en la lista de 'payments' y calificar sus correspondientes validaciones v1 a v10 como 'warning' detallando que se verificó según el Libro Diario pero sin comprobante físico adjunto ("Sin comprobante físico en PDF, verificado según registro en Libro Diario").
+    2. PROGRAMA PROSUMIDORES (reintegros a usuarios con paneles solares):
+    Si encuentras una nota EPE cuyo asunto menciona "Programa Prosumidores" o "PROSUMIDORES":
+    - Extrae de la nota: el nombre del usuario (ej. "GARRONE JUAN CARLOS"), el N° de nota (ej. "2-2026-6436") y el monto de reintegro indicado (ej. "$4.932,17").
+    - Busca la factura EPE correspondiente en el lote. En ella aparece el mismo usuario (campo nombre del cliente) y una línea "Reintegro Monetario" con el importe (ej. "$ ****4.932,17"). El TOTAL de la factura suele ser $0,00 porque el reintegro cancela el saldo.
+    - Extrae este caso como un payment individual con:
+      * orderNumber: N° de la nota (ej. "2-2026-6436")
+      * providerName: "Prosumidores – [nombre usuario]" (ej. "Prosumidores – GARRONE JUAN CARLOS")
+      * amount: el importe del "Reintegro Monetario" de la factura (ej. 4932.17)
+    - Validaciones específicas para PROSUMIDORES (en el campo validations, usando ids "v1", "v2", etc.):
+      * Verificar que el nombre del usuario en la nota coincide con el nombre en la factura EPE. Si coincide: pass. Si no coincide: fail.
+      * Verificar que el monto indicado en la nota ($4.932,17) coincide con el "Reintegro Monetario" de la factura. Si coincide: pass. Si no: fail con detalle de la diferencia.
+      * Las demás validaciones (v1 a v10) aplican normalmente.
+
+    3. Si el lote de documentos contiene una planilla de "Libro Diario" o listado de movimientos de caja: considera que cada renglón o fila de gasto de esa planilla representa un pago individual que DEBES extraer y auditar. Si un gasto del Libro Diario carece de comprobante de factura física individual en el lote de PDFs, de todas formas lo DEBES incluir en la lista de 'payments' y calificar sus correspondientes validaciones v1 a v10 como 'warning' detallando que se verificó según el Libro Diario pero sin comprobante físico adjunto ("Sin comprobante físico en PDF, verificado según registro en Libro Diario").
     3. Para Notas de Débito de Banco Santa Fe o "Débitos y Créditos Bancarios": extráelas siempre como un pago individual en la lista 'payments'. Utiliza como 'orderNumber' su número de documento (ej: '0321') o similar, 'Banco de Santa Fe' como 'providerName' y el total de la planilla como 'amount'. Realiza las correspondientes validaciones v1 a v10 para este documento.
     
     ¡REGLA DE ORO DE EXTRACCIÓN (CRÍTICA)!:

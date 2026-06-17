@@ -72,10 +72,10 @@ export const SECTOR_MAPPING: Record<string, { label: string; responsible: string
 };
 
 const MODELS = [
-  { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite', desc: '500 RPD — Recomendado' },
-  { id: 'gemini-3.5-flash',      label: 'Gemini 3.5 Flash',      desc: '20 RPD — Rápido' },
+  { id: 'gemini-3.5-flash',      label: 'Gemini 3.5 Flash',      desc: 'Recomendado — 20 RPD' },
   { id: 'gemini-2.5-flash',      label: 'Gemini 2.5 Flash',      desc: '20 RPD' },
   { id: 'gemini-3-flash',        label: 'Gemini 3 Flash',        desc: '20 RPD' },
+  { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite', desc: '500 RPD — básico' },
   { id: 'gemini-3.1-pro-preview',label: 'Gemini 3.1 Pro',        desc: 'Complejo / Lento' },
   { id: 'mistral-small-latest',  label: 'Mistral Small',         desc: 'Fallback gratuito' },
 ] as const;
@@ -336,7 +336,7 @@ export default function App() {
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     try {
       const saved = localStorage.getItem('epe_selected_model') as ModelId;
-      return MODELS.find(m => m.id === saved) ? saved : 'gemini-3.1-flash-lite';
+      return MODELS.find(m => m.id === saved) ? saved : 'gemini-3.5-flash';
     } catch {
       return 'gemini-3.1-flash-lite';
     }

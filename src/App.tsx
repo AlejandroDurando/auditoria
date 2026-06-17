@@ -74,10 +74,10 @@ function RapidaTab({ selectedModel, showNotification }: {
   selectedModel: string;
   showNotification: (title: string, msg: string, type?: 'success' | 'error' | 'info') => void;
 }) {
-  const [file, setFile] = useState<{ name: string; base64: string; objectUrl: string } | null>(null);
+  const [file, setFile] = useState<{ name: string; base64: string } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<import('./lib/gemini').AuditResult | null>(null);
-  const [expandedPayment, setExpandedPayment] = useState<number | null>(null);
+  const [expandedPayment, setExpandedPayment] = useState<number | null>(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const f = acceptedFiles[0];
@@ -85,7 +85,7 @@ function RapidaTab({ selectedModel, showNotification }: {
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = (e.target?.result as string).split(',')[1];
-      setFile({ name: f.name, base64, objectUrl: URL.createObjectURL(f) });
+      setFile({ name: f.name, base64 });
       setResult(null);
     };
     reader.readAsDataURL(f);
@@ -118,105 +118,120 @@ function RapidaTab({ selectedModel, showNotification }: {
   };
 
   return (
-    <div className="max-w-2xl">
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
-          <Zap className="w-5 h-5 text-[#0F6E56]" />
-        </div>
-        <div>
-          <h1 className="text-[22px] font-semibold text-[#1A1A1A] tracking-tight leading-none">Auditoría Rápida</h1>
-          <p className="text-[13px] text-[#9A9890] mt-1">Analizá un único comprobante sin carátula ni Libro Diario.</p>
-        </div>
-      </div>
-
-      {/* Dropzone */}
-      <div
-        {...getRootProps()}
-        className={cn(
-          "border-[1.5px] border-dashed rounded-[12px] p-8 text-center cursor-pointer transition-colors mb-4",
-          isDragActive ? "border-[#0F6E56] bg-[#F0FAF6]" : "border-[#E8E6DE] bg-white hover:border-[#0F6E56]/40"
-        )}
-      >
-        <input {...getInputProps()} />
-        {file ? (
-          <div className="flex items-center justify-center gap-3">
-            <FileText className="w-5 h-5 text-[#0F6E56]" />
-            <span className="text-sm font-medium text-[#1A1A1A]">{file.name}</span>
-            <button onClick={(e) => { e.stopPropagation(); setFile(null); setResult(null); }} className="text-[#9A9890] hover:text-red-500 transition-colors">
-              <X className="w-4 h-4" />
-            </button>
+    <div className="flex flex-1 min-h-0 h-full gap-0">
+      {/* Left panel — form + results */}
+      <div className="w-[420px] shrink-0 flex flex-col h-full overflow-y-auto border-r border-[#E8E6DE] bg-[#F7F6F3] p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-9 h-9 bg-white rounded-[10px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
+            <Zap className="w-4 h-4 text-[#0F6E56]" />
           </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2">
-            <Upload className="w-8 h-8 text-[#BDBBB2]" />
-            <p className="text-sm text-[#9A9890]">Arrastrá el comprobante o hacé clic para seleccionarlo</p>
-            <p className="text-xs text-[#BDBBB2]">Solo PDF</p>
+          <div>
+            <h1 className="text-[16px] font-semibold text-[#1A1A1A] tracking-tight leading-none">Auditoría Rápida</h1>
+            <p className="text-[11px] text-[#9A9890] mt-0.5">Comprobante único, sin expediente.</p>
           </div>
-        )}
-      </div>
+        </div>
 
-      <button
-        onClick={handleAnalizar}
-        disabled={!file || isProcessing}
-        className={cn(
-          "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-[10px] text-sm font-medium transition-all",
-          file && !isProcessing
-            ? "bg-[#0F6E56] text-white hover:bg-[#0a5843]"
-            : "bg-[#E8E6DE] text-[#BDBBB2] cursor-not-allowed"
-        )}
-      >
-        {isProcessing ? (
-          <><Loader2 className="w-4 h-4 animate-spin" /><span>Analizando...</span></>
-        ) : (
-          <><Zap className="w-4 h-4" /><span>Analizar comprobante</span></>
-        )}
-      </button>
-
-      {/* Results */}
-      {result && result.payments && result.payments.length > 0 && (
-        <div className="mt-6 space-y-4">
-          <div className="bg-white border-[0.5px] border-[#E8E6DE] rounded-[12px] p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-xs text-[#9A9890] uppercase tracking-wide font-medium mb-1">Proveedor</p>
-                <p className="text-base font-semibold text-[#1A1A1A]">{result.payments[0].providerName || '—'}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-[#9A9890] uppercase tracking-wide font-medium mb-1">Importe</p>
-                <p className="text-base font-semibold text-[#0F6E56]">{formatCurrency(result.payments[0].amount)}</p>
-              </div>
+        {/* Dropzone */}
+        <div
+          {...getRootProps()}
+          className={cn(
+            "border-[1.5px] border-dashed rounded-[10px] p-5 text-center cursor-pointer transition-colors mb-3",
+            isDragActive ? "border-[#0F6E56] bg-[#F0FAF6]" : "border-[#E8E6DE] bg-white hover:border-[#0F6E56]/40"
+          )}
+        >
+          <input {...getInputProps()} />
+          {file ? (
+            <div className="flex items-center justify-center gap-2">
+              <FileText className="w-4 h-4 text-[#0F6E56]" />
+              <span className="text-sm font-medium text-[#1A1A1A] truncate max-w-[220px]">{file.name}</span>
+              <button onClick={(e) => { e.stopPropagation(); setFile(null); setResult(null); }} className="text-[#9A9890] hover:text-red-500 transition-colors shrink-0">
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <div className="text-xs text-[#9A9890]">N° {result.payments[0].orderNumber}</div>
-            {result.overallSummary && (
-              <p className="text-xs text-[#6B6963] mt-3 pt-3 border-t border-[#F0EDE8]">{result.overallSummary}</p>
-            )}
-          </div>
-
-          {/* Validations */}
-          <div className="bg-white border-[0.5px] border-[#E8E6DE] rounded-[12px] overflow-hidden">
-            <button
-              onClick={() => setExpandedPayment(expandedPayment === 0 ? null : 0)}
-              className="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-[#1A1A1A] hover:bg-[#FAFAF8] transition-colors"
-            >
-              <span>Ver validaciones</span>
-              <ChevronDown className={cn("w-4 h-4 text-[#9A9890] transition-transform", expandedPayment === 0 ? "rotate-180" : "")} />
-            </button>
-            {expandedPayment === 0 && (
-              <div className="border-t border-[#F0EDE8] divide-y divide-[#F0EDE8]">
-                {result.payments[0].validations?.map((v) => (
-                  <div key={v.id} className="flex items-start gap-3 px-5 py-3">
-                    {statusIcon(v.status)}
-                    <div className="flex-1 min-w-0">
-                      <span className="text-xs font-semibold text-[#1A1A1A] uppercase mr-2">{v.id}</span>
-                      <p className="text-xs text-[#6B6963] mt-0.5 whitespace-pre-line">{v.observations}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          ) : (
+            <div className="flex flex-col items-center gap-1.5">
+              <Upload className="w-6 h-6 text-[#BDBBB2]" />
+              <p className="text-xs text-[#9A9890]">Arrastrá el comprobante o hacé clic</p>
+              <p className="text-[10px] text-[#BDBBB2]">Solo PDF</p>
+            </div>
+          )}
         </div>
-      )}
+
+        <button
+          onClick={handleAnalizar}
+          disabled={!file || isProcessing}
+          className={cn(
+            "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium transition-all mb-5",
+            file && !isProcessing
+              ? "bg-[#0F6E56] text-white hover:bg-[#0a5843]"
+              : "bg-[#E8E6DE] text-[#BDBBB2] cursor-not-allowed"
+          )}
+        >
+          {isProcessing ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /><span>Analizando...</span></>
+          ) : (
+            <><Zap className="w-4 h-4" /><span>Analizar comprobante</span></>
+          )}
+        </button>
+
+        {/* Results */}
+        {result && result.payments && result.payments.length > 0 && (
+          <div className="space-y-3">
+            <div className="bg-white border-[0.5px] border-[#E8E6DE] rounded-[10px] p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 min-w-0 pr-3">
+                  <p className="text-[10px] text-[#9A9890] uppercase tracking-wide font-medium mb-0.5">Proveedor</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A] leading-tight">{result.payments[0].providerName || '—'}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-[10px] text-[#9A9890] uppercase tracking-wide font-medium mb-0.5">Importe</p>
+                  <p className="text-sm font-semibold text-[#0F6E56]">{formatCurrency(result.payments[0].amount)}</p>
+                </div>
+              </div>
+              <div className="text-[11px] text-[#9A9890]">N° {result.payments[0].orderNumber}</div>
+              {result.overallSummary && (
+                <p className="text-[11px] text-[#6B6963] mt-2 pt-2 border-t border-[#F0EDE8] leading-relaxed">{result.overallSummary}</p>
+              )}
+            </div>
+
+            {/* Validations */}
+            <div className="bg-white border-[0.5px] border-[#E8E6DE] rounded-[10px] overflow-hidden">
+              <button
+                onClick={() => setExpandedPayment(expandedPayment === 0 ? null : 0)}
+                className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAF8] transition-colors"
+              >
+                <span>Validaciones</span>
+                <ChevronDown className={cn("w-3.5 h-3.5 text-[#9A9890] transition-transform", expandedPayment === 0 ? "rotate-180" : "")} />
+              </button>
+              {expandedPayment === 0 && (
+                <div className="border-t border-[#F0EDE8] divide-y divide-[#F0EDE8]">
+                  {result.payments[0].validations?.map((v) => (
+                    <div key={v.id} className="flex items-start gap-2.5 px-4 py-2.5">
+                      {statusIcon(v.status)}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[10px] font-bold text-[#1A1A1A] uppercase mr-1.5">{v.id}</span>
+                        <p className="text-[11px] text-[#6B6963] mt-0.5 whitespace-pre-line leading-relaxed">{v.observations}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Right panel — PDF viewer */}
+      <div className="flex-1 min-w-0 h-full bg-slate-100 flex flex-col">
+        {file ? (
+          <PdfCanvasViewer base64={file.base64} initialPage={1} fileName={file.name} />
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-[#BDBBB2]">
+            <FileText className="w-12 h-12" />
+            <p className="text-sm">El comprobante aparecerá aquí</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1360,7 +1375,7 @@ export default function App() {
           </div>
         </header>
 
-        <div className="p-8 max-w-6xl mx-auto w-full">
+        <div className={cn(activeTab === 'Rapida' ? "flex-1 flex flex-col overflow-hidden" : "p-8 max-w-6xl mx-auto w-full")}>
           {activeTab === 'Dashboard' && (
             <>
               <div className="flex w-fit p-[3px] bg-[#EEECE5] rounded-[8px] mb-8 gap-[2px] items-center select-none">

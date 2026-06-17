@@ -66,7 +66,7 @@ function getApiKeys(): string[] {
 
 export async function processDocument(
   pdfFiles: string[] | Array<{ name: string; base64: string }>,
-  mode: 'Expedientes' | 'Viáticos' = 'Expedientes',
+  mode: 'Expedientes' | 'Viáticos' | 'Rapida' = 'Expedientes',
   modelName: string = 'gemini-3.5-flash',
   signal?: AbortSignal
 ): Promise<AuditResult> {
@@ -91,7 +91,7 @@ export async function processDocument(
 async function processDocumentWithKey(
   apiKey: string,
   pdfFiles: string[] | Array<{ name: string; base64: string }>,
-  mode: 'Expedientes' | 'Viáticos',
+  mode: 'Expedientes' | 'Viáticos' | 'Rapida',
   modelName: string,
   signal?: AbortSignal
 ): Promise<AuditResult> {
@@ -238,6 +238,37 @@ async function processDocumentWithKey(
     
     Analiza los documentos PDF proporcionados y genera un resultado estructurado en JSON.
     Si un dato no se encuentra, márcalo como 'warning' con la observación correspondiente.
+  `;
+  } else if (mode === 'Rapida') {
+    systemInstruction = `
+    Eres un auditor experto de la Empresa Provincial de la Energía (EPE) de Santa Fe, Argentina.
+    Tu tarea es analizar UN ÚNICO comprobante de pago (factura, ticket, liquidación de servicio, nota de débito, etc.) de forma rápida y precisa, SIN carátula de expediente, SIN Balance de Inversión y SIN Libro Diario.
+
+    Extrae del documento los siguientes datos del pago:
+    - orderNumber: N° de factura, N° de ticket, N° de boleta, N° de liquidación o identificador más relevante del comprobante.
+    - providerName: Nombre del emisor/proveedor (empresa, cooperativa, municipalidad, etc.).
+    - amount: Importe total del comprobante. Si hay 1er y 2do vencimiento, usar SIEMPRE el 1er vencimiento (el menor). Si hay cuotas, usar el TOTAL general.
+    - pageNumber: 1 (es un único documento).
+    - sourceFileIdx: 0.
+    - libroDiarioText: dejar vacío "".
+
+    Luego realiza las validaciones que correspondan según la documentación disponible:
+    - V1 (Fecha PIMyS vs Factura): Si no hay PIMyS, marcar 'warning' indicando "Sin PIMyS adjunto en auditoría rápida".
+    - V2 (Recibo de pago): Si no hay recibo, marcar 'warning' indicando "Sin recibo adjunto en auditoría rápida".
+    - V3 (CUIT del emisor): Verificar si el CUIT figura en el comprobante. Si no hay con qué contrastar, marcar 'warning'.
+    - V4 (Importe factura vs recibo): Si no hay recibo, marcar 'warning'.
+    - V5 (Código PIMyS): Si no hay PIMyS, marcar 'warning' indicando "Sin PIMyS en auditoría rápida".
+    - V6 (Importe dentro del límite $1.170.000): Verificar que el importe no supere el límite.
+    - V7 (Período correcto): Si la factura tiene período, verificar que corresponda al bimestre auditable.
+    - V8 (CUIT coincide entre documentos): Si solo hay un documento, marcar 'warning' indicando "Único documento disponible".
+    - V9 (Firma/sello habilitante): Si no hay PIMyS, marcar 'warning'.
+    - V10 (Importe transferido coincide): Si no hay recibo de transferencia, marcar 'warning'.
+
+    Completa el JSON con:
+    - overallSummary: Resumen breve del comprobante analizado (proveedor, importe, observaciones relevantes).
+    - balance_inversion: { presente: false }
+    - totalAmount: el mismo importe del pago extraído.
+    - expedienteNumero, expedienteFecha, fondoFijoNumero, agenciaSucursal, responsable: dejarlos vacíos "" ya que no aplican en auditoría rápida.
   `;
   } else if (mode === 'Viáticos') {
     systemInstruction = `

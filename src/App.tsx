@@ -29,7 +29,8 @@ import {
   AlertTriangle,
   FileSpreadsheet,
   Hash,
-  ChevronDown
+  ChevronDown,
+  Zap
 } from 'lucide-react';
 import { PlanillaControlFF } from './components/PlanillaControlFF';
 import { motion, AnimatePresence } from 'motion/react';
@@ -68,6 +69,157 @@ export const SECTOR_MAPPING: Record<string, { label: string; responsible: string
     { label: "Ag. San Jorge", responsible: "M. Bravin" }
   ]
 };
+
+function RapidaTab({ selectedModel, showNotification }: {
+  selectedModel: string;
+  showNotification: (title: string, msg: string, type?: 'success' | 'error' | 'info') => void;
+}) {
+  const [file, setFile] = useState<{ name: string; base64: string; objectUrl: string } | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [result, setResult] = useState<import('./lib/gemini').AuditResult | null>(null);
+  const [expandedPayment, setExpandedPayment] = useState<number | null>(null);
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const f = acceptedFiles[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = (e.target?.result as string).split(',')[1];
+      setFile({ name: f.name, base64, objectUrl: URL.createObjectURL(f) });
+      setResult(null);
+    };
+    reader.readAsDataURL(f);
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'application/pdf': ['.pdf'] },
+    maxFiles: 1,
+  } as any);
+
+  const handleAnalizar = async () => {
+    if (!file) return;
+    setIsProcessing(true);
+    setResult(null);
+    try {
+      const res = await processDocument([{ name: file.name, base64: file.base64 }], 'Rapida', selectedModel as any);
+      setResult(res);
+    } catch (err) {
+      showNotification('Error', 'No se pudo analizar el comprobante. Verificá la conexión e intentá de nuevo.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const statusIcon = (status: string) => {
+    if (status === 'pass') return <CheckCircle2 className="w-4 h-4 text-[#0F6E56]" />;
+    if (status === 'fail') return <XCircle className="w-4 h-4 text-red-500" />;
+    return <AlertTriangle className="w-4 h-4 text-amber-500" />;
+  };
+
+  return (
+    <div className="max-w-2xl">
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
+          <Zap className="w-5 h-5 text-[#0F6E56]" />
+        </div>
+        <div>
+          <h1 className="text-[22px] font-semibold text-[#1A1A1A] tracking-tight leading-none">Auditoría Rápida</h1>
+          <p className="text-[13px] text-[#9A9890] mt-1">Analizá un único comprobante sin carátula ni Libro Diario.</p>
+        </div>
+      </div>
+
+      {/* Dropzone */}
+      <div
+        {...getRootProps()}
+        className={cn(
+          "border-[1.5px] border-dashed rounded-[12px] p-8 text-center cursor-pointer transition-colors mb-4",
+          isDragActive ? "border-[#0F6E56] bg-[#F0FAF6]" : "border-[#E8E6DE] bg-white hover:border-[#0F6E56]/40"
+        )}
+      >
+        <input {...getInputProps()} />
+        {file ? (
+          <div className="flex items-center justify-center gap-3">
+            <FileText className="w-5 h-5 text-[#0F6E56]" />
+            <span className="text-sm font-medium text-[#1A1A1A]">{file.name}</span>
+            <button onClick={(e) => { e.stopPropagation(); setFile(null); setResult(null); }} className="text-[#9A9890] hover:text-red-500 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2">
+            <Upload className="w-8 h-8 text-[#BDBBB2]" />
+            <p className="text-sm text-[#9A9890]">Arrastrá el comprobante o hacé clic para seleccionarlo</p>
+            <p className="text-xs text-[#BDBBB2]">Solo PDF</p>
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={handleAnalizar}
+        disabled={!file || isProcessing}
+        className={cn(
+          "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-[10px] text-sm font-medium transition-all",
+          file && !isProcessing
+            ? "bg-[#0F6E56] text-white hover:bg-[#0a5843]"
+            : "bg-[#E8E6DE] text-[#BDBBB2] cursor-not-allowed"
+        )}
+      >
+        {isProcessing ? (
+          <><Loader2 className="w-4 h-4 animate-spin" /><span>Analizando...</span></>
+        ) : (
+          <><Zap className="w-4 h-4" /><span>Analizar comprobante</span></>
+        )}
+      </button>
+
+      {/* Results */}
+      {result && result.payments && result.payments.length > 0 && (
+        <div className="mt-6 space-y-4">
+          <div className="bg-white border-[0.5px] border-[#E8E6DE] rounded-[12px] p-5">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-xs text-[#9A9890] uppercase tracking-wide font-medium mb-1">Proveedor</p>
+                <p className="text-base font-semibold text-[#1A1A1A]">{result.payments[0].providerName || '—'}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-[#9A9890] uppercase tracking-wide font-medium mb-1">Importe</p>
+                <p className="text-base font-semibold text-[#0F6E56]">{formatCurrency(result.payments[0].amount)}</p>
+              </div>
+            </div>
+            <div className="text-xs text-[#9A9890]">N° {result.payments[0].orderNumber}</div>
+            {result.overallSummary && (
+              <p className="text-xs text-[#6B6963] mt-3 pt-3 border-t border-[#F0EDE8]">{result.overallSummary}</p>
+            )}
+          </div>
+
+          {/* Validations */}
+          <div className="bg-white border-[0.5px] border-[#E8E6DE] rounded-[12px] overflow-hidden">
+            <button
+              onClick={() => setExpandedPayment(expandedPayment === 0 ? null : 0)}
+              className="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-[#1A1A1A] hover:bg-[#FAFAF8] transition-colors"
+            >
+              <span>Ver validaciones</span>
+              <ChevronDown className={cn("w-4 h-4 text-[#9A9890] transition-transform", expandedPayment === 0 ? "rotate-180" : "")} />
+            </button>
+            {expandedPayment === 0 && (
+              <div className="border-t border-[#F0EDE8] divide-y divide-[#F0EDE8]">
+                {result.payments[0].validations?.map((v) => (
+                  <div key={v.id} className="flex items-start gap-3 px-5 py-3">
+                    {statusIcon(v.status)}
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-semibold text-[#1A1A1A] uppercase mr-2">{v.id}</span>
+                      <p className="text-xs text-[#6B6963] mt-0.5 whitespace-pre-line">{v.observations}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
@@ -1150,6 +1302,7 @@ export default function App() {
               )}
             </div>
 
+            <SidebarItem icon={Zap} label="Auditoría Rápida" active={activeTab === 'Rapida'} onClick={() => setActiveTab('Rapida')} />
             <SidebarItem icon={Hash} label="Códigos" active={activeTab === 'Códigos'} onClick={() => setActiveTab('Códigos')} />
             <SidebarItem icon={ShieldCheck} label="Normativa" active={activeTab === 'Normativa'} onClick={() => setActiveTab('Normativa')} />
           </div>
@@ -2232,6 +2385,10 @@ export default function App() {
             >
               <PlanillaControlFF initialData={planillaInitialData} />
             </motion.div>
+          )}
+
+          {activeTab === 'Rapida' && (
+            <RapidaTab selectedModel={selectedModel} showNotification={showNotification} />
           )}
 
           {activeTab === 'Códigos' && (

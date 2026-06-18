@@ -239,7 +239,7 @@ export function PlanillaControlFF({ initialData }: Props) {
                 className={cn('grid items-stretch', i < arr.length - 1 && 'border-b-[0.5px] border-[#E8E6DE]')}
                 style={{ gridTemplateColumns: '160px 1fr' }}
               >
-                <div className="bg-[#F0EDE4] px-3 py-2.5 flex items-center">
+                <div className="bg-[#F6F3EC] px-3 py-2.5 flex items-center">
                   <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">{row.label}</span>
                 </div>
                 <div className="bg-white px-3 py-2.5 flex items-center border-l-[0.5px] border-[#E8E6DE]">
@@ -253,7 +253,7 @@ export function PlanillaControlFF({ initialData }: Props) {
           <p className="text-[13px] font-medium text-[#1A1A1A] mb-2">Observaciones</p>
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-[#F0EDE4] border-[0.5px] border-[#E8E6DE]">
+              <tr className="bg-[#F6F3EC] border-[0.5px] border-[#E8E6DE]">
                 <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890] px-3 py-2 w-[140px]">
                   N.º de orden
                 </th>
@@ -292,7 +292,7 @@ export function PlanillaControlFF({ initialData }: Props) {
           <button
             type="button"
             onClick={() => setVista('formulario')}
-            className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium text-[#004741] bg-white border-[0.5px] border-[#D3D1C7] rounded-[8px] cursor-pointer hover:bg-[#F0EDE4] transition-colors outline-none"
+            className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium text-[#004741] bg-white border-[0.5px] border-[#D3D1C7] rounded-[8px] cursor-pointer hover:bg-[#F6F3EC] transition-colors outline-none"
           >
             <Pencil className="w-3.5 h-3.5" />
             Editar
@@ -353,7 +353,7 @@ export function PlanillaControlFF({ initialData }: Props) {
                 type={type}
                 value={meta[campo]}
                 onChange={e => actualizarMeta(campo, e.target.value)}
-                className="border-[0.5px] border-[#E8E6DE] rounded-[6px] px-3 py-2 text-[13px] text-[#1A1A1A] outline-none focus:border-[#004741] transition-colors bg-[#F0EDE4] focus:bg-white"
+                className="border-[0.5px] border-[#E8E6DE] rounded-[6px] px-3 py-2 text-[13px] text-[#1A1A1A] outline-none focus:border-[#004741] transition-colors bg-[#F6F3EC] focus:bg-white"
               />
             </div>
           ))}
@@ -363,7 +363,7 @@ export function PlanillaControlFF({ initialData }: Props) {
         <p className="text-[13px] font-medium text-[#1A1A1A] mb-2">Observaciones</p>
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-[#F0EDE4]" style={{ border: '0.5px solid #E8E6DE' }}>
+            <tr className="bg-[#F6F3EC]" style={{ border: '0.5px solid #E8E6DE' }}>
               <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890] px-3 py-2 w-[140px]">
                 N.º de orden
               </th>

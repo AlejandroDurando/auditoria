@@ -165,7 +165,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
   return (
     <div className="flex flex-1 min-h-0 h-full gap-0">
       {/* Left panel — form + results */}
-      <div style={{ width: leftWidth }} className="shrink-0 flex flex-col h-full overflow-y-auto bg-[#F0EDE4] p-6">
+      <div style={{ width: leftWidth }} className="shrink-0 flex flex-col h-full overflow-y-auto bg-[#F6F3EC] p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-9 h-9 bg-white rounded-[10px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
             <Zap className="w-4 h-4 text-[#004741]" />
@@ -1271,7 +1271,7 @@ export default function App() {
   } as any);
 
   return (
-    <div className="flex h-screen bg-[#F0EDE4] text-slate-900 font-sans overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#F6F3EC] text-slate-900 font-sans overflow-hidden font-sans">
       {/* Custom Notification Modal/Toast Overlay */}
       <AnimatePresence>
         {notification && (
@@ -1302,7 +1302,7 @@ export default function App() {
                 </div>
               </div>
               
-              <div className="px-6 py-4 bg-[#F0EDE4] border-t-[0.5px] border-[#E8E6DE] flex justify-end">
+              <div className="px-6 py-4 bg-[#F6F3EC] border-t-[0.5px] border-[#E8E6DE] flex justify-end">
                 <button
                   type="button"
                   onClick={() => setNotification(null)}
@@ -1340,7 +1340,7 @@ export default function App() {
                 </div>
               </div>
               
-              <div className="px-6 py-4 bg-[#F0EDE4] border-t-[0.5px] border-[#E8E6DE] flex justify-end gap-2.5">
+              <div className="px-6 py-4 bg-[#F6F3EC] border-t-[0.5px] border-[#E8E6DE] flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setDeleteConfirmId(null)}
@@ -1455,7 +1455,7 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto flex flex-col bg-[#F0EDE4]">
+      <main className="flex-1 overflow-y-auto flex flex-col bg-[#F6F3EC]">
         {/* Header */}
         <header className="h-[42px] border-b-[0.5px] border-[#E8E6DE] flex items-center justify-between px-8 bg-white sticky top-0 z-10 shadow-none">
           <div className="flex items-center gap-4">
@@ -1478,7 +1478,7 @@ export default function App() {
                     setActiveTab('Historial');
                   }
                 }}
-                className="bg-[#F0EDE4] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-64 focus:border-[#004741] focus:bg-white transition-all outline-none text-[#1A1A1A]"
+                className="bg-[#F6F3EC] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-64 focus:border-[#004741] focus:bg-white transition-all outline-none text-[#1A1A1A]"
               />
               {auditSearchQuery && (
                 <button
@@ -1574,7 +1574,7 @@ export default function App() {
                     {...getRootProps()} 
                     className={cn(
                       "border-[2px] border-dashed rounded-[12px] h-64 flex flex-col items-center justify-center transition-all cursor-pointer bg-white group shadow-none",
-                      isDragActive ? "border-[#004741] bg-[#E8EFEE]" : "border-[#E8E6DE] hover:border-[#004741]/40 hover:bg-[#F0EDE4]"
+                      isDragActive ? "border-[#004741] bg-[#E8EFEE]" : "border-[#E8E6DE] hover:border-[#004741]/40 hover:bg-[#F6F3EC]"
                     )}
                   >
                     <input {...getInputProps()} />
@@ -1675,7 +1675,7 @@ export default function App() {
                     </div>
 
                     {/* Progress Bar Container */}
-                    <div className="w-full h-1.5 bg-[#F0EDE4] rounded-full overflow-hidden mt-3 relative">
+                    <div className="w-full h-1.5 bg-[#F6F3EC] rounded-full overflow-hidden mt-3 relative">
                       <div 
                         className="h-full bg-[#004741] rounded-full transition-all duration-500 ease-out" 
                         style={{ width: `${auditProgress}%` }}
@@ -2049,19 +2049,19 @@ export default function App() {
                         <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
                           <div className="space-y-6">
                             <div className="grid grid-cols-2 gap-[10px]">
-                              <div className="bg-[#F0EDE4] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
+                              <div className="bg-[#F6F3EC] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
                                 <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Monto Fijo Asignado</p>
                                 <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.monto_asignado || 0)}</p>
                               </div>
-                              <div className="bg-[#F0EDE4] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
+                              <div className="bg-[#F6F3EC] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
                                 <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Total Pendiente</p>
                                 <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.total_pendiente || 0)}</p>
                               </div>
-                              <div className="bg-[#F0EDE4] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
+                              <div className="bg-[#F6F3EC] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
                                 <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Saldo en Banco</p>
                                 <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.saldo_banco_declarado || 0)}</p>
                               </div>
-                              <div className="bg-[#F0EDE4] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
+                              <div className="bg-[#F6F3EC] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
                                 <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Saldo Calculado</p>
                                 <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.saldo_banco_calculado || 0)}</p>
                               </div>
@@ -2071,7 +2071,7 @@ export default function App() {
                                 "p-4 rounded-r-[8px] rounded-l-none border-l-2",
                                 result.balance_inversion.validacion_v14.resultado === 'ok' ? "bg-[#E8EFEE] border-l-[#004741] text-[#003330]" :
                                 result.balance_inversion.validacion_v14.resultado === 'error' ? "bg-[#FFF8F8] border-l-[#E24B4A] text-[#A32D2D]" :
-                                "bg-[#F0EDE4] border-l-[#9A9890] text-slate-700"
+                                "bg-[#F6F3EC] border-l-[#9A9890] text-slate-700"
                               )}>
                                 <p className="text-xs font-medium leading-relaxed">
                                   {result.balance_inversion.validacion_v14.detalle}
@@ -2085,7 +2085,7 @@ export default function App() {
                             {result.balance_inversion.rendiciones_pendientes && result.balance_inversion.rendiciones_pendientes.length > 0 ? (
                               <div className="border-[0.5px] border-[#E8E6DE] rounded-[8px] overflow-hidden bg-white shadow-none">
                                 <table className="w-full text-xs text-left border-collapse">
-                                  <thead className="bg-[#F0EDE4] text-[10px] text-[#9A9890] uppercase font-medium border-b-[0.5px] border-[#E8E6DE]">
+                                  <thead className="bg-[#F6F3EC] text-[10px] text-[#9A9890] uppercase font-medium border-b-[0.5px] border-[#E8E6DE]">
                                     <tr>
                                       <th className="px-4 py-2.5 font-medium tracking-[0.06em]">Rendición N°</th>
                                       <th className="px-4 py-2.5 text-right font-medium tracking-[0.06em]">Importe</th>
@@ -2093,7 +2093,7 @@ export default function App() {
                                   </thead>
                                   <tbody className="divide-y divide-slate-100">
                                     {result.balance_inversion.rendiciones_pendientes.map((rendicion, idx) => (
-                                      <tr key={idx} className="hover:bg-[#F0EDE4]/50 transition-colors">
+                                      <tr key={idx} className="hover:bg-[#F6F3EC]/50 transition-colors">
                                         <td className="px-4 py-2.5 font-normal text-slate-800">{rendicion.numero}</td>
                                         <td className="px-4 py-2.5 text-right font-mono font-normal text-slate-700">{formatCurrency(rendicion.importe)}</td>
                                       </tr>
@@ -2413,13 +2413,13 @@ export default function App() {
                               {entry.result.fondoFijoNumero ? formatHistoryTitle(entry.result.fondoFijoNumero) : ''}
                             </h3>
                           ) : (
-                            <span className="text-xs font-medium bg-[#F0EDE4] text-slate-600 px-2.5 py-1 rounded-md">
+                            <span className="text-xs font-medium bg-[#F6F3EC] text-slate-600 px-2.5 py-1 rounded-md">
                               FF-{entry.FF || 'Sin ID'}
                             </span>
                           )}
 
                           {entry.result?.expedienteNumero && (
-                            <span className="text-xs font-medium bg-[#F0EDE4] text-slate-500 border border-[#E8E6DE] px-2 py-0.5 rounded-md font-mono">
+                            <span className="text-xs font-medium bg-[#F6F3EC] text-slate-500 border border-[#E8E6DE] px-2 py-0.5 rounded-md font-mono">
                               Exp. {entry.result.expedienteNumero}
                               {entry.result.expedienteFecha ? ` (${entry.result.expedienteFecha})` : ''}
                             </span>
@@ -2550,8 +2550,8 @@ export default function App() {
               <div className="bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] shadow-none overflow-hidden mb-6">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left border-collapse">
-                    <thead className="bg-[#F0EDE4]/50 text-[10px] text-[#9A9890] uppercase font-medium tracking-[0.06em]">
-                      <tr className="bg-[#F0EDE4] border-b-[1.5px] border-[#D3D1C7]">
+                    <thead className="bg-[#F6F3EC]/50 text-[10px] text-[#9A9890] uppercase font-medium tracking-[0.06em]">
+                      <tr className="bg-[#F6F3EC] border-b-[1.5px] border-[#D3D1C7]">
                         <th className="p-[12px_16px] border-r-[0.5px] border-[#E8E6DE]" style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}>Código</th>
                         <th className="p-[12px_16px]">Descripción Completa</th>
                       </tr>
@@ -3321,7 +3321,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
             initial={{ height: 0 }}
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
-            className="border-t-[0.5px] border-[#E8E6DE] bg-[#F0EDE4]/40"
+            className="border-t-[0.5px] border-[#E8E6DE] bg-[#F6F3EC]/40"
           >
             <div className="p-6 sm:p-8">
               <h4 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-6">Detalle de Validaciones</h4>

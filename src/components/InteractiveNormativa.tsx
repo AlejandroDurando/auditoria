@@ -380,7 +380,7 @@ export function InteractiveNormativa() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Fondos List column */}
               <div className="md:col-span-5 space-y-3 max-h-[500px] overflow-y-auto pr-2">
-                <div className="text-xs font-semibold text-slate-500 mb-2 sticky top-0 bg-[#F0EDE4] py-1">
+                <div className="text-xs font-semibold text-slate-500 mb-2 sticky top-0 bg-[#F6F3EC] py-1">
                   Encontrados ({filteredFondos.length})
                 </div>
                 {filteredFondos.length === 0 ? (

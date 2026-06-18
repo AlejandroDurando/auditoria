@@ -50,7 +50,7 @@ export const SECTOR_MAPPING: Record<string, { label: string; responsible: string
   RAFAELA: [
     { label: "Compras", responsible: "D. Cordero" },
     { label: "Movilidades", responsible: "C. Ternengo" },
-    { label: "U.T. Adm Rafaela", responsible: "G. Cabrera" },
+    { label: "U.T. Adm Rafaela", responsible: "J. Chianalino" },
     { label: "Ag. Rafaela", responsible: "G. Cabrera" },
     { label: "Ag. Maria Juana", responsible: "C. Cernotti" },
     { label: "Ag. Norte", responsible: "M. Re" },

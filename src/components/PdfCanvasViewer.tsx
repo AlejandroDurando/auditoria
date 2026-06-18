@@ -218,7 +218,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
   return (
     <div className="flex flex-col h-full bg-slate-100 select-none">
       {/* Viewer Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-b border-slate-200 bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-b border-slate-200 bg-[#FAF8F4]">
         {/* Navigation Contols */}
         <div className="flex items-center gap-1.5">
           <button
@@ -291,7 +291,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
         )}
 
         {error && (
-          <div className="max-w-md mx-auto my-12 bg-white p-6 rounded-2xl border border-rose-200 shadow-sm flex flex-col items-center text-center gap-3">
+          <div className="max-w-md mx-auto my-12 bg-[#FAF8F4] p-6 rounded-2xl border border-rose-200 shadow-sm flex flex-col items-center text-center gap-3">
             <AlertTriangle className="w-12 h-12 text-rose-500" />
             <h4 className="text-base font-bold text-slate-900">No se pudo visualizar el PDF</h4>
             <p className="text-sm text-slate-500 leading-relaxed">{error}</p>
@@ -299,7 +299,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
         )}
 
         {!error && (
-          <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden shrink-0">
+          <div className="bg-[#FAF8F4] rounded-xl shadow-md border border-slate-200 overflow-hidden shrink-0">
             <canvas ref={canvasRef} className="block bg-white" />
           </div>
         )}

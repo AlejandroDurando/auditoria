@@ -167,7 +167,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
       {/* Left panel — form + results */}
       <div style={{ width: leftWidth }} className="shrink-0 flex flex-col h-full overflow-y-auto bg-[#F6F3EC] p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-9 h-9 bg-white rounded-[10px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
+          <div className="w-9 h-9 bg-[#FAF8F4] rounded-[10px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
             <Zap className="w-4 h-4 text-[#004741]" />
           </div>
           <div className="flex-1 min-w-0">
@@ -185,7 +185,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
               setSelectedModel(val);
               localStorage.setItem('epe_selected_model', val);
             }}
-            className="w-full px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-white text-slate-700 outline-none cursor-pointer hover:border-[#004741]/40 transition-colors"
+            className="w-full px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-[#FAF8F4] text-slate-700 outline-none cursor-pointer hover:border-[#004741]/40 transition-colors"
           >
             {MODELS.map(m => (
               <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
@@ -198,7 +198,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
           {...getRootProps()}
           className={cn(
             "border-[1.5px] border-dashed rounded-[10px] p-5 text-center cursor-pointer transition-colors mb-3",
-            isDragActive ? "border-[#004741] bg-[#E8EFEE]" : "border-[#E8E6DE] bg-white hover:border-[#004741]/40"
+            isDragActive ? "border-[#004741] bg-[#E8EFEE]" : "border-[#E8E6DE] bg-[#FAF8F4] hover:border-[#004741]/40"
           )}
         >
           <input {...getInputProps()} />
@@ -239,7 +239,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
         {/* Results */}
         {result && result.payments && result.payments.length > 0 && (
           <div className="space-y-3">
-            <div className="bg-white border-[0.5px] border-[#E8E6DE] rounded-[10px] p-4">
+            <div className="bg-[#FAF8F4] border-[0.5px] border-[#E8E6DE] rounded-[10px] p-4">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0 pr-3">
                   <p className="text-[10px] text-[#9A9890] uppercase tracking-wide font-medium mb-0.5">Proveedor</p>
@@ -257,7 +257,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
             </div>
 
             {/* Validations */}
-            <div className="bg-white border-[0.5px] border-[#E8E6DE] rounded-[10px] overflow-hidden">
+            <div className="bg-[#FAF8F4] border-[0.5px] border-[#E8E6DE] rounded-[10px] overflow-hidden">
               <button
                 onClick={() => setExpandedPayment(expandedPayment === 0 ? null : 0)}
                 className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAF8] transition-colors"
@@ -1280,7 +1280,7 @@ export default function App() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-[12px] max-w-md w-full shadow-none border-[0.5px] border-[#E8E6DE] overflow-hidden"
+              className="bg-[#FAF8F4] rounded-[12px] max-w-md w-full shadow-none border-[0.5px] border-[#E8E6DE] overflow-hidden"
             >
               <div className="p-6">
                 <div className="flex items-start gap-4">
@@ -1323,7 +1323,7 @@ export default function App() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-[12px] max-w-md w-full shadow-none border-[0.5px] border-[#E8E6DE] overflow-hidden"
+              className="bg-[#FAF8F4] rounded-[12px] max-w-md w-full shadow-none border-[0.5px] border-[#E8E6DE] overflow-hidden"
             >
               <div className="p-6">
                 <div className="flex items-start gap-4">
@@ -1344,7 +1344,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setDeleteConfirmId(null)}
-                  className="px-4 py-1.5 bg-white border border-[#D3D1C7] hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none shadow-none"
+                  className="px-4 py-1.5 bg-[#FAF8F4] border border-[#D3D1C7] hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none shadow-none"
                 >
                   Cancelar
                 </button>
@@ -1367,7 +1367,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <aside style={{ width: sidebarWidth }} className="shrink-0 border-r-[0.5px] border-[#E8E6DE] flex flex-col bg-white shadow-none z-20 relative">
+      <aside style={{ width: sidebarWidth }} className="shrink-0 border-r-[0.5px] border-[#E8E6DE] flex flex-col bg-[#FAF8F4] shadow-none z-20 relative">
         {/* Sidebar resize handle */}
         <div
           onMouseDown={(e) => {
@@ -1441,7 +1441,7 @@ export default function App() {
           </div>
         </nav>
 
-        <div className="p-4 border-t-[0.5px] border-[#E8E6DE] bg-white">
+        <div className="p-4 border-t-[0.5px] border-[#E8E6DE] bg-[#FAF8F4]">
           <div className="flex items-center gap-3 px-2">
             <div className="w-9 h-9 bg-[#E8EFEE] text-[#004741] rounded-full flex items-center justify-center text-xs font-medium">
               AL
@@ -1457,7 +1457,7 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto flex flex-col bg-[#F6F3EC]">
         {/* Header */}
-        <header className="h-[42px] border-b-[0.5px] border-[#E8E6DE] flex items-center justify-between px-8 bg-white sticky top-0 z-10 shadow-none">
+        <header className="h-[42px] border-b-[0.5px] border-[#E8E6DE] flex items-center justify-between px-8 bg-[#FAF8F4] sticky top-0 z-10 shadow-none">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5 text-[12px] text-[#9A9890] font-normal">
               <span>Home</span>
@@ -1478,7 +1478,7 @@ export default function App() {
                     setActiveTab('Historial');
                   }
                 }}
-                className="bg-[#F6F3EC] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-64 focus:border-[#004741] focus:bg-white transition-all outline-none text-[#1A1A1A]"
+                className="bg-[#F6F3EC] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-64 focus:border-[#004741] focus:bg-[#FAF8F4] transition-all outline-none text-[#1A1A1A]"
               />
               {auditSearchQuery && (
                 <button
@@ -1503,7 +1503,7 @@ export default function App() {
                   className={cn(
                     "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] border-none",
                     dashboardMode === 'Expedientes'
-                      ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
+                      ? "bg-[#FAF8F4] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
                       : "bg-transparent text-[#6B6A65] font-normal"
                   )}
                 >
@@ -1516,7 +1516,7 @@ export default function App() {
                   className={cn(
                     "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] border-none",
                     dashboardMode === 'Viáticos'
-                      ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
+                      ? "bg-[#FAF8F4] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
                       : "bg-transparent text-[#6B6A65] font-normal"
                   )}
                 >
@@ -1540,7 +1540,7 @@ export default function App() {
                   </div>
 
                   {/* Model Selector Card */}
-                  <div className="mb-8 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] p-5 shadow-none">
+                  <div className="mb-8 bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-5 shadow-none">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-0.5">
                         <h4 className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
@@ -1560,7 +1560,7 @@ export default function App() {
                             setSelectedModel(val);
                             localStorage.setItem('epe_selected_model', val);
                           }}
-                          className="px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-white text-slate-700 outline-none cursor-pointer hover:border-[#004741]/40 transition-colors"
+                          className="px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-[#FAF8F4] text-slate-700 outline-none cursor-pointer hover:border-[#004741]/40 transition-colors"
                         >
                           {MODELS.map(m => (
                             <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
@@ -1573,7 +1573,7 @@ export default function App() {
                   <div 
                     {...getRootProps()} 
                     className={cn(
-                      "border-[2px] border-dashed rounded-[12px] h-64 flex flex-col items-center justify-center transition-all cursor-pointer bg-white group shadow-none",
+                      "border-[2px] border-dashed rounded-[12px] h-64 flex flex-col items-center justify-center transition-all cursor-pointer bg-[#FAF8F4] group shadow-none",
                       isDragActive ? "border-[#004741] bg-[#E8EFEE]" : "border-[#E8E6DE] hover:border-[#004741]/40 hover:bg-[#F6F3EC]"
                     )}
                   >
@@ -1593,7 +1593,7 @@ export default function App() {
 
                   {/* List of files with clean, premium design */}
                   {selectedFiles.length > 0 && (
-                    <div className="mt-8 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] p-6 shadow-none">
+                    <div className="mt-8 bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-6 shadow-none">
                       <div className="flex items-center justify-between mb-4 pb-3 border-b-[0.5px] border-[#E8E6DE]">
                         <div className="flex items-center gap-2">
                           <Paperclip className="w-5 h-5 text-[#004741]" />
@@ -1658,7 +1658,7 @@ export default function App() {
                 </motion.div>
               ) : isProcessing ? (
                 <div className="mt-16 max-w-xl mx-auto flex flex-col items-center justify-center px-4">
-                  <div className="w-full bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] p-8 shadow-none flex flex-col relative overflow-hidden">
+                  <div className="w-full bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-8 shadow-none flex flex-col relative overflow-hidden">
                     {/* Visual gradient accent */}
                     <div className="absolute top-0 left-0 right-0 h-1 bg-[#004741]" />
                     
@@ -1720,7 +1720,7 @@ export default function App() {
                             <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-slate-205 bg-white shrink-0" />
+                          <div className="w-5 h-5 rounded-full border-2 border-slate-205 bg-[#FAF8F4] shrink-0" />
                         )}
                         <span className={cn(
                           "text-xs transition-colors duration-200",
@@ -1740,7 +1740,7 @@ export default function App() {
                             <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-white shrink-0" />
+                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-[#FAF8F4] shrink-0" />
                         )}
                         <span className={cn(
                           "text-xs transition-colors duration-200",
@@ -1760,7 +1760,7 @@ export default function App() {
                             <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-white shrink-0" />
+                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-[#FAF8F4] shrink-0" />
                         )}
                         <span className={cn(
                           "text-xs transition-colors duration-200",
@@ -1812,7 +1812,7 @@ export default function App() {
 
                   {/* Metadata Banner displaying Extracted Fields */}
                   {result && (result.expedienteNumero || result.expedienteFecha || result.fondoFijoNumero || result.agenciaSucursal) && (
-                    <div className="bg-white border-[0.5px] border-[#E8E6DE] rounded-[12px] p-6 shadow-none flex flex-col sm:flex-row gap-6 sm:items-center">
+                    <div className="bg-[#FAF8F4] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-6 shadow-none flex flex-col sm:flex-row gap-6 sm:items-center">
                       {result.expedienteFecha && (
                         <div className="flex-1 min-w-[130px]">
                           <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Fecha Expediente</span>
@@ -1895,11 +1895,11 @@ export default function App() {
                     
                     return (
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between gap-4 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+                        <div className="bg-[#FAF8F4] p-6 rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between gap-4 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
                           <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Pagos Analizados</p>
                           <p className="text-2xl font-bold text-slate-900">{totalPagos}</p>
                         </div>
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between gap-4 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+                        <div className="bg-[#FAF8F4] p-6 rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between gap-4 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
                           <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Importe Total</p>
                           <div className="flex items-center gap-1.5 justify-between">
                             <p className="text-2xl font-mono font-bold text-slate-900">{formatCurrency(finalTotalImporte)}</p>
@@ -1938,7 +1938,7 @@ export default function App() {
                             </p>
                           </div>
                         ) : (
-                          <div className="bg-white p-6 rounded-[12px] border-[0.5px] border-[#E8E6DE] shadow-none flex flex-col justify-between gap-4 transition-all hover:shadow-none">
+                          <div className="bg-[#FAF8F4] p-6 rounded-[12px] border-[0.5px] border-[#E8E6DE] shadow-none flex flex-col justify-between gap-4 transition-all hover:shadow-none">
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Estado General</p>
                             <div className={cn(
                               "inline-flex items-center justify-center font-bold w-fit",
@@ -1969,7 +1969,7 @@ export default function App() {
                     return (
                       <div className="bg-[#E8EFEE] border border-[#004741]/15 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 transition-all hover:bg-[#ebf8f3] shadow-sm">
                         <div className="flex gap-4 items-start">
-                          <div className="w-12 h-12 bg-white rounded-xl border border-emerald-500/10 flex items-center justify-center shrink-0 shadow-[0_4px_12px_rgba(15,110,86,0.04)] text-[#004741]">
+                          <div className="w-12 h-12 bg-[#FAF8F4] rounded-xl border border-emerald-500/10 flex items-center justify-center shrink-0 shadow-[0_4px_12px_rgba(15,110,86,0.04)] text-[#004741]">
                             <FileCheck2 className="w-6 h-6" />
                           </div>
                           <div>
@@ -1989,7 +1989,7 @@ export default function App() {
                           </button>
                           <button
                             onClick={() => { setPlanillasOpen(true); setActiveTab('Planilla'); }}
-                            className="bg-white border border-[#004741] text-[#004741] text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer outline-none shadow-none hover:bg-[#E8EFEE]"
+                            className="bg-[#FAF8F4] border border-[#004741] text-[#004741] text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer outline-none shadow-none hover:bg-[#E8EFEE]"
                           >
                             <FileSpreadsheet className="w-4 h-4" />
                             <span>Ir a Planilla Control</span>
@@ -2014,9 +2014,9 @@ export default function App() {
                   </div>
 
                   {result?.balance_inversion && result.mode !== 'Viáticos' && (
-                    <div className="bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] overflow-hidden transition-all shadow-none">
+                    <div className="bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] overflow-hidden transition-all shadow-none">
                       <div className="p-6 border-b-[0.5px] border-[#E8E6DE] flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shrink-0">
                           <Landmark className="w-6 h-6 text-[#004741]" />
                         </div>
                         <div>
@@ -2083,7 +2083,7 @@ export default function App() {
                           <div>
                             <h4 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-4">Rendiciones Pendientes de Reintegro</h4>
                             {result.balance_inversion.rendiciones_pendientes && result.balance_inversion.rendiciones_pendientes.length > 0 ? (
-                              <div className="border-[0.5px] border-[#E8E6DE] rounded-[8px] overflow-hidden bg-white shadow-none">
+                              <div className="border-[0.5px] border-[#E8E6DE] rounded-[8px] overflow-hidden bg-[#FAF8F4] shadow-none">
                                 <table className="w-full text-xs text-left border-collapse">
                                   <thead className="bg-[#F6F3EC] text-[10px] text-[#9A9890] uppercase font-medium border-b-[0.5px] border-[#E8E6DE]">
                                     <tr>
@@ -2137,7 +2137,7 @@ export default function App() {
                           <p className="text-[10px] font-bold text-amber-900 uppercase tracking-wider mb-2.5">Comprobantes identificados con Código 202:</p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             {paymentsWith202.map((p, idx) => (
-                              <div key={idx} className="bg-white/80 p-3 rounded-lg border border-amber-200/60 flex flex-col shadow-sm">
+                              <div key={idx} className="bg-[#FAF8F4]/80 p-3 rounded-lg border border-amber-200/60 flex flex-col shadow-sm">
                                 <span className="text-xs font-semibold text-slate-800">
                                   {p.providerName ? toSentenceCase(p.providerName) : 'Proveedor no identificado'}
                                 </span>
@@ -2227,7 +2227,7 @@ export default function App() {
                                                      (v4Val?.status === 'pass' && !v4Obs.includes("FALTA"));
 
                               return (
-                                <div key={idx} className="bg-white/90 p-3 rounded-lg border border-yellow-250 flex flex-col shadow-sm">
+                                <div key={idx} className="bg-[#FAF8F4]/90 p-3 rounded-lg border border-yellow-250 flex flex-col shadow-sm">
                                   <div className="flex justify-between items-start gap-1">
                                     <span className="text-xs font-semibold text-slate-800">
                                       {p.providerName ? toSentenceCase(p.providerName) : 'Proveedor no identificado'}
@@ -2257,10 +2257,10 @@ export default function App() {
                   })()}
 
                   {/* Sección Informe Copiable */}
-                  <div id="informe-copiable" className="bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] overflow-hidden transition-all shadow-none">
-                    <div className="p-6 border-b-[0.5px] border-[#E8E6DE] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
+                  <div id="informe-copiable" className="bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] overflow-hidden transition-all shadow-none">
+                    <div className="p-6 border-b-[0.5px] border-[#E8E6DE] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#FAF8F4]">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shrink-0">
                           <FileText className="w-6 h-6 text-[#004741]" />
                         </div>
                         <div>
@@ -2317,7 +2317,7 @@ export default function App() {
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
+                  <div className="w-12 h-12 bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
                     <FileText className="w-6 h-6 text-[#9A9890]" />
                   </div>
                   <div>
@@ -2330,7 +2330,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={exportHistory}
-                    className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-white border border-[#D3D1C7] text-slate-700 text-xs font-medium rounded-[7px] hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer shadow-none outline-none select-none"
+                    className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-[#FAF8F4] border border-[#D3D1C7] text-slate-700 text-xs font-medium rounded-[7px] hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer shadow-none outline-none select-none"
                     title="Exportar respaldo de historial en formato JSON"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -2353,12 +2353,12 @@ export default function App() {
               </div>
 
               {history.length === 0 ? (
-                <div className="p-16 text-center border-[0.5px] border-dashed border-[#E8E6DE] rounded-[12px] bg-white/50">
+                <div className="p-16 text-center border-[0.5px] border-dashed border-[#E8E6DE] rounded-[12px] bg-[#FAF8F4]/50">
                   <FileText className="w-12 h-12 text-[#9A9890]/40 mx-auto mb-4" />
                   <p className="text-[#9A9890] font-medium text-sm">No hay auditorías registradas todavía.</p>
                 </div>
               ) : filteredHistory.length === 0 ? (
-                <div className="p-16 text-center border-[0.5px] border-dashed border-[#E8E6DE] rounded-[12px] bg-white/50 animate-fade-in">
+                <div className="p-16 text-center border-[0.5px] border-dashed border-[#E8E6DE] rounded-[12px] bg-[#FAF8F4]/50 animate-fade-in">
                   <Search className="w-12 h-12 text-[#9A9890]/30 mx-auto mb-4" />
                   <p className="text-slate-800 font-semibold text-sm mb-1">No se encontraron resultados para "{auditSearchQuery}"</p>
                   <p className="text-xs text-[#9A9890] max-w-sm mx-auto leading-relaxed">
@@ -2367,7 +2367,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setAuditSearchQuery('')}
-                    className="mt-4 px-4 py-1.5 bg-white border border-[#D3D1C7] hover:bg-slate-50 hover:text-slate-900 text-slate-700 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none shadow-none"
+                    className="mt-4 px-4 py-1.5 bg-[#FAF8F4] border border-[#D3D1C7] hover:bg-slate-50 hover:text-slate-900 text-slate-700 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none shadow-none"
                   >
                     Limpiar Búsqueda
                   </button>
@@ -2377,7 +2377,7 @@ export default function App() {
                   {filteredHistory.map(entry => (
                     <div 
                       key={entry.id} 
-                      className="bg-white border-[0.5px] border-[#E8E6DE] p-6 rounded-[12px] shadow-none flex flex-col sm:flex-row gap-6 sm:items-center justify-between group animate-fade-in"
+                      className="bg-[#FAF8F4] border-[0.5px] border-[#E8E6DE] p-6 rounded-[12px] shadow-none flex flex-col sm:flex-row gap-6 sm:items-center justify-between group animate-fade-in"
                     >
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
@@ -2443,7 +2443,7 @@ export default function App() {
                             }
                             setActiveTab('Dashboard');
                           }}
-                          className="py-[6px] px-[14px] bg-white border border-[#D3D1C7] text-[#004741] text-[13px] font-medium rounded-[7px] hover:bg-[#E8EFEE] transition-all shadow-none cursor-pointer select-none outline-none"
+                          className="py-[6px] px-[14px] bg-[#FAF8F4] border border-[#D3D1C7] text-[#004741] text-[13px] font-medium rounded-[7px] hover:bg-[#E8EFEE] transition-all shadow-none cursor-pointer select-none outline-none"
                         >
                           Ver Reporte
                         </button>
@@ -2472,7 +2472,7 @@ export default function App() {
               className="max-w-5xl"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
+                <div className="w-12 h-12 bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
                   <ShieldCheck className="w-6 h-6 text-[#004741]" />
                 </div>
                 <div>
@@ -2505,7 +2505,7 @@ export default function App() {
               className="max-w-5xl"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
+                <div className="w-12 h-12 bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
                   <FileCheck2 className="w-6 h-6 text-[#004741]" />
                 </div>
                 <div>
@@ -2523,7 +2523,7 @@ export default function App() {
                     className={cn(
                       "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] whitespace-nowrap border-none leading-none",
                       activeCodeCategory === cat 
-                        ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
+                        ? "bg-[#FAF8F4] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
                         : "bg-transparent text-[#6B6A65] font-normal"
                     )}
                   >
@@ -2541,13 +2541,13 @@ export default function App() {
                     type="text"
                     value={codeSearchQuery}
                     onChange={(e) => setCodeSearchQuery(e.target.value)}
-                    className="block w-full pl-[36px] pr-[12px] py-[8px] border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] text-[#1A1A1A] placeholder-[#9A9890] focus:border-[#004741] focus:ring-0 outline-none"
+                    className="block w-full pl-[36px] pr-[12px] py-[8px] border border-[#D3D1C7] rounded-[8px] bg-[#FAF8F4] text-[13px] text-[#1A1A1A] placeholder-[#9A9890] focus:border-[#004741] focus:ring-0 outline-none"
                     placeholder="Buscar por código o palabra..."
                   />
                 </div>
               </div>
 
-              <div className="bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] shadow-none overflow-hidden mb-6">
+              <div className="bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] shadow-none overflow-hidden mb-6">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left border-collapse">
                     <thead className="bg-[#F6F3EC]/50 text-[10px] text-[#9A9890] uppercase font-medium tracking-[0.06em]">
@@ -2589,7 +2589,7 @@ export default function App() {
               id="revisiva-tab-container"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none text-[#004741]">
+                <div className="w-12 h-12 bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none text-[#004741]">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div>
@@ -2604,7 +2604,7 @@ export default function App() {
                   <div className="flex items-center justify-between h-5">
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Parámetros de Entrada</span>
                   </div>
-                  <div className="bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] p-6 shadow-none space-y-4">
+                  <div className="bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-6 shadow-none space-y-4">
                     <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-[#004741]" />
                       <span>Filtro y Autocompletado</span>
@@ -2625,7 +2625,7 @@ export default function App() {
                           setPdfResponsable('');
                           setPdfReparticion('');
                         }}
-                        className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#004741] outline-none font-medium"
+                        className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#FAF8F4] text-slate-900 focus:border-[#004741] outline-none font-medium"
                       >
                         <option value="">Seleccionar...</option>
                         <option value="RAFAELA">RAFAELA</option>
@@ -2659,7 +2659,7 @@ export default function App() {
                           }
                         }}
                         className={cn(
-                          "block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#004741] outline-none font-medium",
+                          "block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#FAF8F4] text-slate-900 focus:border-[#004741] outline-none font-medium",
                           !pdfGciaSuc && "opacity-60 cursor-not-allowed bg-slate-50"
                         )}
                       >
@@ -2686,7 +2686,7 @@ export default function App() {
                           type="text"
                           value={pdfResponsable}
                           onChange={(e) => setPdfResponsable(e.target.value)}
-                          className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#004741] outline-none font-medium"
+                          className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#FAF8F4] text-slate-900 focus:border-[#004741] outline-none font-medium"
                           placeholder="Responsable oficial del sector"
                         />
                       </div>
@@ -2701,7 +2701,7 @@ export default function App() {
                           type="text"
                           value={pdfReparticion}
                           onChange={(e) => setPdfReparticion(e.target.value)}
-                          className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#004741] outline-none font-medium"
+                          className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#FAF8F4] text-slate-900 focus:border-[#004741] outline-none font-medium"
                           placeholder="Nombre asignado de la repartición"
                         />
                       </div>
@@ -2716,7 +2716,7 @@ export default function App() {
                             type="text"
                             value={pdfFdoFijoNo}
                             onChange={(e) => setPdfFdoFijoNo(e.target.value)}
-                            className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#004741] outline-none font-medium font-mono"
+                            className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#FAF8F4] text-slate-900 focus:border-[#004741] outline-none font-medium font-mono"
                             placeholder="Ej. FF-01"
                           />
                         </div>
@@ -2743,7 +2743,7 @@ export default function App() {
                           setPdfReparticion('');
                           setPdfFdoFijoNo('');
                         }}
-                        className="w-full py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                        className="w-full py-2 border border-slate-200 bg-[#FAF8F4] hover:bg-slate-50 text-slate-600 text-xs font-semibold rounded-lg transition-all cursor-pointer"
                       >
                         Limpiar Selección
                       </button>
@@ -2792,10 +2792,10 @@ export default function App() {
 
                   <div className="bg-[#EEECE5] rounded-[12px] p-6 shadow-inner overflow-x-hidden">
                     {/* Simulated Paper Sheet */}
-                    <div className="w-[580px] mx-auto bg-white text-black font-sans border-[0.5px] border-slate-300 p-8 space-y-4 shadow-md" style={{ minHeight: '750px' }} id="simulated-paper-page">
+                    <div className="w-[580px] mx-auto bg-[#FAF8F4] text-black font-sans border-[0.5px] border-slate-300 p-8 space-y-4 shadow-md" style={{ minHeight: '750px' }} id="simulated-paper-page">
                       {/* Paper Header */}
                       <div className="border border-black grid grid-cols-12 items-center text-center divide-x divide-black text-[9px]">
-                        <div className="col-span-4 p-2 flex flex-col items-center justify-center bg-white">
+                        <div className="col-span-4 p-2 flex flex-col items-center justify-center bg-[#FAF8F4]">
                           <div className="flex flex-col items-center justify-center select-none">
                             {/* Official-specification EPE Brand Logo (Uploaded by the user as Base64) */}
                             <img 
@@ -3004,7 +3004,7 @@ export default function App() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0.95 }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="w-full lg:w-auto h-full border-l border-slate-200 bg-white shadow-2xl flex flex-col relative z-30 shrink-0"
+              className="w-full lg:w-auto h-full border-l border-slate-200 bg-[#FAF8F4] shadow-2xl flex flex-col relative z-30 shrink-0"
               style={{ width: isLargeScreen ? `${pdfWidth}px` : '100%' }}
             >
               {/* Splitter Handle for resizing */}
@@ -3108,7 +3108,7 @@ export default function App() {
                                 "px-2.5 py-1 rounded-md border text-xs font-semibold transition-all cursor-pointer truncate max-w-[120px] outline-none",
                                 isActive 
                                   ? "bg-[#1f4e79] text-white border-[#1f4e79]" 
-                                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                                  : "bg-[#FAF8F4] text-slate-600 border-slate-200 hover:bg-slate-100"
                               )}
                               title={file.name}
                             >
@@ -3156,7 +3156,7 @@ function SidebarItem({ icon: Icon, label, active = false, onClick }: { icon: any
 
 function InfoCard({ icon: Icon, iconColor, iconBg, title, description }: { icon: any, iconColor: string, iconBg: string, title: string, description: string }) {
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-[#FAF8F4] p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
       <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-5", iconBg)}>
         <Icon className={cn("w-6 h-6", iconColor)} />
       </div>
@@ -3272,7 +3272,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
     <div 
       ref={rowRef} 
       className={cn(
-        "bg-white border-[0.5px] border-[#E8E6DE] mb-4 last:mb-0 overflow-hidden transition-all shadow-none",
+        "bg-[#FAF8F4] border-[0.5px] border-[#E8E6DE] mb-4 last:mb-0 overflow-hidden transition-all shadow-none",
         errorCnt > 0 ? "border-l-3 border-l-[#E24B4A] rounded-r-[8px] rounded-l-none" : "rounded-[8px]"
       )}
     >
@@ -3332,7 +3332,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                   
                   return (
                     <div key={v.id} className="flex gap-4 items-start pb-6 border-b-[0.5px] border-[#E8E6DE] last:border-0 last:pb-0">
-                      <div className="mt-1 shrink-0 bg-white p-1 rounded-full shadow-none border-[0.5px] border-[#E8E6DE]">
+                      <div className="mt-1 shrink-0 bg-[#FAF8F4] p-1 rounded-full shadow-none border-[0.5px] border-[#E8E6DE]">
                         <StatusIcon status={status} />
                       </div>
                       <div className="flex-1">
@@ -3363,7 +3363,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                           )}
                         </div>
                         <p className={cn(
-                          "text-[13px] leading-relaxed mt-1.5 p-3.5 rounded-[8px] bg-white border-[0.5px] border-[#E8E6DE] shadow-none whitespace-pre-wrap border-l-2",
+                          "text-[13px] leading-relaxed mt-1.5 p-3.5 rounded-[8px] bg-[#FAF8F4] border-[0.5px] border-[#E8E6DE] shadow-none whitespace-pre-wrap border-l-2",
                           status === 'pass' ? "border-l-emerald-500 text-slate-650" :
                           status === 'fail' ? "border-l-[#E24B4A] text-slate-800" :
                           "border-l-amber-400 text-slate-600 italic"
@@ -3390,7 +3390,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                       <div 
                         key={idx} 
                         className={cn(
-                          "bg-white border-[0.5px] rounded-[12px] p-4 transition-all flex flex-col justify-between gap-3 shadow-none",
+                          "bg-[#FAF8F4] border-[0.5px] rounded-[12px] p-4 transition-all flex flex-col justify-between gap-3 shadow-none",
                           vale.legible ? "border-[#E8E6DE]" : "border-amber-300 bg-amber-50/10"
                         )}
                       >

@@ -70,14 +70,14 @@ export function InteractiveNormativa() {
   return (
     <div className="space-y-6">
       {/* Tab Switcher & Interactive Header */}
-      <div className="bg-white border-[0.5px] border-[#E8E6DE] p-4 rounded-[12px] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#FAF8F4] border-[0.5px] border-[#E8E6DE] p-4 rounded-[12px] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex p-[3px] bg-[#EEECE5] rounded-[8px] gap-[2px] w-fit select-none items-center self-start">
           <button
             type="button"
             onClick={() => setSubTab('disposiciones')}
             className={`transition-all duration-200 outline-none cursor-pointer text-xs py-1.5 px-4 whitespace-nowrap border-none leading-none ${
               subTab === 'disposiciones' 
-                ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
+                ? "bg-[#FAF8F4] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
                 : "bg-transparent text-[#6B6A65] font-normal hover:text-slate-800"
             }`}
           >
@@ -91,7 +91,7 @@ export function InteractiveNormativa() {
             onClick={() => setSubTab('fondos')}
             className={`transition-all duration-200 outline-none cursor-pointer text-xs py-1.5 px-4 whitespace-nowrap border-none leading-none ${
               subTab === 'fondos' 
-                ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
+                ? "bg-[#FAF8F4] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
                 : "bg-transparent text-[#6B6A65] font-normal hover:text-slate-800"
             }`}
           >
@@ -111,7 +111,7 @@ export function InteractiveNormativa() {
                   onClick={() => setSelectedDispId(disp.id)}
                   className={`px-3 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
                     selectedDispId === disp.id 
-                      ? 'bg-white text-slate-900 shadow-sm' 
+                      ? 'bg-[#FAF8F4] text-slate-900 shadow-sm' 
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -125,7 +125,7 @@ export function InteractiveNormativa() {
               className={`inline-flex items-center gap-1.5 py-1 px-3 border rounded-[6px] text-xs font-semibold select-none transition-all cursor-pointer outline-none ${
                 showOriginalDocumentMock
                   ? 'bg-[#D4E8E6] border-[#BFEDDB] text-[#003330]'
-                  : 'bg-white border-[#D3D1C7] text-slate-700 hover:bg-slate-50'
+                  : 'bg-[#FAF8F4] border-[#D3D1C7] text-slate-700 hover:bg-slate-50'
               }`}
               title="Alternar entre la vista analítica limpia y el facsímil oficial del documento"
             >
@@ -161,7 +161,7 @@ export function InteractiveNormativa() {
                       return (
                         <div 
                           key={art.numero}
-                          className={`bg-white border rounded-[10px] transition-all overflow-hidden ${
+                          className={`bg-[#FAF8F4] border rounded-[10px] transition-all overflow-hidden ${
                             art.destacado 
                               ? 'border-[#004741]/40 shadow-xs' 
                               : 'border-[#E8E6DE]'
@@ -207,7 +207,7 @@ export function InteractiveNormativa() {
                                 exit={{ height: 0, opacity: 0 }}
                                 transition={{ duration: 0.15 }}
                               >
-                                <div className="p-4 border-t border-slate-100 bg-white space-y-3">
+                                <div className="p-4 border-t border-slate-100 bg-[#FAF8F4] space-y-3">
                                   <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line font-medium">
                                     {art.texto}
                                   </p>
@@ -230,7 +230,7 @@ export function InteractiveNormativa() {
                 </div>
               ) : (
                 /* Original Document Mock View (Vibe of real paper Disposición) */
-                <div className="bg-white border-[0.5px] border-[#D3D1C7] rounded-[12px] p-8 md:p-12 shadow-md max-w-2xl mx-auto space-y-8 text-slate-800 font-sans relative overflow-hidden">
+                <div className="bg-[#FAF8F4] border-[0.5px] border-[#D3D1C7] rounded-[12px] p-8 md:p-12 shadow-md max-w-2xl mx-auto space-y-8 text-slate-800 font-sans relative overflow-hidden">
                   <div className="absolute right-0 top-0 w-24 h-24 overflow-hidden pointer-events-none select-none opacity-10">
                     <div className="bg-[#004741] text-white text-center text-[10px] font-bold py-1.5 transform rotate-45 translate-x-7 translate-y-4">
                       EPE OFICIAL
@@ -364,7 +364,7 @@ export function InteractiveNormativa() {
                 placeholder="Buscar por nombre de agente, legajo, DNI, o nombre de agencia..."
                 value={fondoSearchQuery}
                 onChange={(e) => setFondoSearchQuery(e.target.value)}
-                className="bg-white border-[0.5px] border-[#E2E0D8] rounded-[8px] pl-10 pr-10 py-2.5 text-xs w-full focus:outline-none focus:border-[#004741] font-medium text-slate-900 placeholder:text-slate-400 transition-all shadow-none"
+                className="bg-[#FAF8F4] border-[0.5px] border-[#E2E0D8] rounded-[8px] pl-10 pr-10 py-2.5 text-xs w-full focus:outline-none focus:border-[#004741] font-medium text-slate-900 placeholder:text-slate-400 transition-all shadow-none"
               />
               {fondoSearchQuery && (
                 <button
@@ -384,7 +384,7 @@ export function InteractiveNormativa() {
                   Encontrados ({filteredFondos.length})
                 </div>
                 {filteredFondos.length === 0 ? (
-                  <div className="p-8 text-center bg-white border border-[#E8E6DE] rounded-xl text-slate-400 text-xs">
+                  <div className="p-8 text-center bg-[#FAF8F4] border border-[#E8E6DE] rounded-xl text-slate-400 text-xs">
                     Ningún fondo coincide con el filtro.
                   </div>
                 ) : (
@@ -395,7 +395,7 @@ export function InteractiveNormativa() {
                       className={`w-full text-left p-3.5 border rounded-xl transition-all cursor-pointer block outline-none ${
                         selectedFondoId === fondo.id 
                           ? 'bg-[#D4E8E6] border-[#BFEDDB] shadow-xs' 
-                          : 'bg-white border-[#E8E6DE] hover:border-slate-300'
+                          : 'bg-[#FAF8F4] border-[#E8E6DE] hover:border-slate-300'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -414,7 +414,7 @@ export function InteractiveNormativa() {
               </div>
 
               {/* Detail view of the selected Fondo */}
-              <div className="md:col-span-7 bg-white border border-[#E8E6DE] rounded-xl p-6 shadow-none">
+              <div className="md:col-span-7 bg-[#FAF8F4] border border-[#E8E6DE] rounded-xl p-6 shadow-none">
                 {selectedFondo ? (
                   <div className="space-y-6">
                     <div className="pb-4 border-b border-slate-100 flex justify-between items-start">
@@ -463,10 +463,10 @@ export function InteractiveNormativa() {
                                 {resp.nombre}
                               </span>
                               <div className="flex items-center gap-2 font-mono text-[10px]">
-                                <span className="bg-white border border-[#E8E6DE] text-slate-600 px-1.5 py-0.5 rounded">
+                                <span className="bg-[#FAF8F4] border border-[#E8E6DE] text-slate-600 px-1.5 py-0.5 rounded">
                                   Legajo: {resp.legajo}
                                 </span>
-                                <span className="bg-white border border-[#E8E6DE] text-slate-500 px-1.5 py-0.5 rounded">
+                                <span className="bg-[#FAF8F4] border border-[#E8E6DE] text-slate-500 px-1.5 py-0.5 rounded">
                                   {resp.dni}
                                 </span>
                               </div>

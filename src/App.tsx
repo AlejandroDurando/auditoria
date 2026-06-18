@@ -439,8 +439,21 @@ export default function App() {
     const saved = localStorage.getItem('epe_audit_history');
     if (saved) {
       try {
-        setHistory(JSON.parse(saved));
-      } catch (e) {}
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // Filter out entries with old/incompatible format
+          const valid = parsed.filter(item =>
+            item && typeof item === 'object' &&
+            item.result && Array.isArray(item.result.payments)
+          );
+          setHistory(valid);
+          if (valid.length !== parsed.length) {
+            localStorage.setItem('epe_audit_history', JSON.stringify(valid));
+          }
+        }
+      } catch (e) {
+        localStorage.removeItem('epe_audit_history');
+      }
     }
   }, []);
 

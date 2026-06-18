@@ -64,8 +64,60 @@ function getApiKeys(): string[] {
   return keys;
 }
 
-function getMistralKey(): string | undefined {
-  return process.env.MISTRAL_API_KEY;
+// Convierte cualquier valor a un string seguro para renderizar.
+// Si el modelo devuelve un objeto donde se esperaba texto (ej. overallSummary),
+// lo aplanamos a una frase legible en vez de romper el render de React.
+function toSafeString(val: unknown): string {
+  if (val == null) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (typeof val === 'object') {
+    try {
+      return Object.entries(val as Record<string, unknown>)
+        .map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`)
+        .join(' · ');
+    } catch {
+      return '';
+    }
+  }
+  return String(val);
+}
+
+// Garantiza que el resultado tenga siempre los tipos correctos, sin importar
+// cómo se comporte el modelo. Evita pantallas en blanco por datos malformados.
+function normalizeResult(raw: any, mode: 'Expedientes' | 'Viáticos' | 'Rapida'): AuditResult {
+  const parsed: any = raw && typeof raw === 'object' ? raw : {};
+  parsed.mode = mode;
+  parsed.overallSummary = toSafeString(parsed.overallSummary);
+
+  if (!Array.isArray(parsed.payments)) parsed.payments = [];
+  parsed.payments = parsed.payments.map((p: any) => {
+    const pay = p && typeof p === 'object' ? p : {};
+    pay.orderNumber = toSafeString(pay.orderNumber);
+    pay.providerName = toSafeString(pay.providerName);
+    pay.amount = typeof pay.amount === 'number' && !isNaN(pay.amount) ? pay.amount : (Number(pay.amount) || 0);
+    pay.libroDiarioText = toSafeString(pay.libroDiarioText);
+    if (!Array.isArray(pay.validations)) pay.validations = [];
+    pay.validations = pay.validations.map((v: any) => ({
+      id: toSafeString(v?.id),
+      status: (v?.status === 'pass' || v?.status === 'fail' || v?.status === 'warning') ? v.status : 'warning',
+      observations: toSafeString(v?.observations ?? v?.observation),
+    }));
+    return pay;
+  });
+
+  parsed.expedienteNumero = toSafeString(parsed.expedienteNumero);
+  parsed.expedienteFecha = toSafeString(parsed.expedienteFecha);
+  parsed.fondoFijoNumero = toSafeString(parsed.fondoFijoNumero);
+  parsed.agenciaSucursal = toSafeString(parsed.agenciaSucursal);
+  parsed.responsable = toSafeString(parsed.responsable);
+
+  if (parsed.balance_inversion?.validacion_v14) {
+    parsed.balance_inversion.validacion_v14.detalle = toSafeString(parsed.balance_inversion.validacion_v14.detalle);
+  }
+  if (parsed.fondoFijoNumero) parsed.fondoFijoId = parsed.fondoFijoNumero;
+
+  return parsed as AuditResult;
 }
 
 export async function processDocument(
@@ -74,37 +126,22 @@ export async function processDocument(
   modelName: string = 'gemini-3.5-flash',
   signal?: AbortSignal
 ): Promise<AuditResult> {
-  // If Mistral is explicitly selected, skip Gemini entirely
-  if (modelName === 'mistral-small-latest') {
-    return await processDocumentWithMistral(pdfFiles, mode, signal);
+  const apiKeys = getApiKeys();
+  if (apiKeys.length === 0) {
+    throw new Error('No hay API keys de Gemini configuradas.');
   }
 
-  const apiKeys = getApiKeys();
   let lastError: unknown;
-
   for (let i = 0; i < apiKeys.length; i++) {
     try {
       return await processDocumentWithKey(apiKeys[i], pdfFiles, mode, modelName, signal);
     } catch (err) {
       lastError = err;
+      // Solo rotamos a la siguiente key si fue un error de cuota/saturación.
       if (isQuotaError(err) && i < apiKeys.length - 1) {
         console.warn(`API key ${i + 1} agotada, intentando con key ${i + 2}...`);
         continue;
       }
-      if (isQuotaError(err)) {
-        console.warn('Todas las keys de Gemini agotadas, intentando con Mistral...');
-        break;
-      }
-      throw err;
-    }
-  }
-
-  if (getMistralKey()) {
-    console.warn('Usando Mistral como fallback...');
-    try {
-      return await processDocumentWithMistral(pdfFiles, mode, signal);
-    } catch (err) {
-      console.error('Mistral también falló:', err);
       throw err;
     }
   }
@@ -439,94 +476,5 @@ async function processDocumentWithKey(
     }
   });
 
-  const parsed = JSON.parse(response.text);
-  parsed.mode = mode;
-  if (parsed.fondoFijoNumero) {
-    parsed.fondoFijoId = parsed.fondoFijoNumero;
-  }
-  return parsed;
-}
-
-async function processDocumentWithMistral(
-  pdfFiles: string[] | Array<{ name: string; base64: string }>,
-  mode: 'Expedientes' | 'Viáticos' | 'Rapida',
-  signal?: AbortSignal
-): Promise<AuditResult> {
-  const apiKey = getMistralKey()!;
-  const baseUrl = 'https://api.mistral.ai/v1';
-
-  const filesList = Array.isArray(pdfFiles) && pdfFiles.length > 0 && typeof pdfFiles[0] === 'string'
-    ? (pdfFiles as string[]).map((base64, idx) => ({ name: `Documento_${idx + 1}.pdf`, base64 }))
-    : pdfFiles as Array<{ name: string; base64: string }>;
-
-  // Upload PDFs via Files API
-  const uploadedFiles: Array<{ fileId: string; name: string; idx: number }> = [];
-  for (let idx = 0; idx < filesList.length; idx++) {
-    const f = filesList[idx];
-    const binary = atob(f.base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    const formData = new FormData();
-    formData.append('purpose', 'ocr');
-    formData.append('file', new File([bytes], f.name, { type: 'application/pdf' }));
-    const res = await fetch(`${baseUrl}/files`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: formData,
-      signal,
-    });
-    if (!res.ok) throw new Error(`Mistral upload error: ${res.status}`);
-    const data = await res.json();
-    uploadedFiles.push({ fileId: data.id, name: f.name, idx });
-  }
-
-  // Get signed URLs and build content parts
-  const contentParts: any[] = [];
-  for (const uf of uploadedFiles) {
-    const res = await fetch(`${baseUrl}/files/${uf.fileId}/url?expiry=1`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-      signal,
-    });
-    if (!res.ok) throw new Error(`Mistral signed URL error: ${res.status}`);
-    const data = await res.json();
-    contentParts.push({ type: 'text', text: `=== ARCHIVO CON ÍNDICE DE ORIGEN ${uf.idx} ===\nNombre: "${uf.name}"` });
-    contentParts.push({ type: 'document_url', document_url: data.url });
-    contentParts.push({ type: 'text', text: `=== FIN ARCHIVO ÍNDICE ${uf.idx} ===` });
-  }
-  contentParts.push({ type: 'text', text: `Analiza los documentos y genera el JSON requerido para una auditoría de tipo ${mode}. Responde ÚNICAMENTE con JSON válido.` });
-
-  const systemPrompt = `Eres un auditor experto de la Empresa Provincial de la Energía (EPE) de Santa Fe, Argentina. Audita documentos de Fondos Fijos. Responde ÚNICAMENTE con un objeto JSON con los campos: balance_inversion (presente, monto_asignado, rendiciones_pendientes, total_pendiente, saldo_banco_declarado, saldo_banco_calculado, validacion_v14), payments (array con orderNumber, providerName, amount, pageNumber, sourceFileIdx, libroDiarioText, validations con id/status/observations para v1 a v10), overallSummary, totalAmount, expedienteNumero, expedienteFecha, fondoFijoNumero, agenciaSucursal, responsable.`;
-
-  const chatRes = await fetch(`${baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'mistral-small-latest',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: contentParts },
-      ],
-      response_format: { type: 'json_object' },
-    }),
-    signal,
-  });
-  if (!chatRes.ok) throw new Error(`Mistral chat error: ${chatRes.status}`);
-  const chatData = await chatRes.json();
-
-  // Cleanup uploaded files
-  for (const uf of uploadedFiles) {
-    try {
-      await fetch(`${baseUrl}/files/${uf.fileId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${apiKey}` },
-      });
-    } catch {}
-  }
-
-  const text = chatData.choices?.[0]?.message?.content;
-  if (!text) throw new Error('Mistral no devolvió respuesta válida.');
-  const parsed = JSON.parse(text);
-  parsed.mode = mode;
-  if (parsed.fondoFijoNumero) parsed.fondoFijoId = parsed.fondoFijoNumero;
-  return parsed;
+  return normalizeResult(JSON.parse(response.text), mode);
 }

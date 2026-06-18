@@ -72,12 +72,8 @@ export const SECTOR_MAPPING: Record<string, { label: string; responsible: string
 };
 
 const MODELS = [
-  { id: 'gemini-3.5-flash',      label: 'Gemini 3.5 Flash',      desc: 'Recomendado — 20 RPD' },
-  { id: 'gemini-2.5-flash',      label: 'Gemini 2.5 Flash',      desc: '20 RPD' },
-  { id: 'gemini-3-flash',        label: 'Gemini 3 Flash',        desc: '20 RPD' },
-  { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite', desc: '500 RPD — básico' },
-  { id: 'gemini-3.1-pro-preview',label: 'Gemini 3.1 Pro',        desc: 'Complejo / Lento' },
-  { id: 'mistral-small-latest',  label: 'Mistral Small',         desc: 'Fallback gratuito' },
+  { id: 'gemini-3.5-flash',       label: 'Gemini Rápido (3.5 Flash)', desc: 'Para muchos archivos / Recomendado' },
+  { id: 'gemini-3.1-pro-preview', label: 'Gemini Complejo (Pro)',     desc: 'Para texto difuso / Lento' },
 ] as const;
 type ModelId = typeof MODELS[number]['id'];
 
@@ -252,7 +248,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
               </div>
               <div className="text-[11px] text-[#9A9890]">N° {result.payments[0].orderNumber}</div>
               {result.overallSummary && (
-                <p className="text-[11px] text-[#6B6963] mt-2 pt-2 border-t border-[#F0EDE8] leading-relaxed">{result.overallSummary}</p>
+                <p className="text-[11px] text-[#6B6963] mt-2 pt-2 border-t border-[#F0EDE8] leading-relaxed">{safeText(result.overallSummary)}</p>
               )}
             </div>
 
@@ -338,7 +334,7 @@ export default function App() {
       const saved = localStorage.getItem('epe_selected_model') as ModelId;
       return MODELS.find(m => m.id === saved) ? saved : 'gemini-3.5-flash';
     } catch {
-      return 'gemini-3.1-flash-lite';
+      return 'gemini-3.5-flash';
     }
   });
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -441,15 +437,23 @@ export default function App() {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          // Filter out entries with old/incompatible format
-          const valid = parsed.filter(item =>
-            item && typeof item === 'object' &&
-            item.result && Array.isArray(item.result.payments)
-          );
+          // Filtrar entradas con formato viejo/incompatible y reparar las que tengan
+          // campos de tipo incorrecto (ej. summary u overallSummary como objeto).
+          const valid = parsed
+            .filter(item =>
+              item && typeof item === 'object' &&
+              item.result && Array.isArray(item.result.payments)
+            )
+            .map(item => ({
+              ...item,
+              summary: safeText(item.summary ?? item.result?.overallSummary),
+              result: {
+                ...item.result,
+                overallSummary: safeText(item.result?.overallSummary),
+              },
+            }));
           setHistory(valid);
-          if (valid.length !== parsed.length) {
-            localStorage.setItem('epe_audit_history', JSON.stringify(valid));
-          }
+          localStorage.setItem('epe_audit_history', JSON.stringify(valid));
         }
       } catch (e) {
         localStorage.removeItem('epe_audit_history');
@@ -2429,7 +2433,7 @@ export default function App() {
                             {new Date(entry.date).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">{entry.summary}</p>
+                        <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">{safeText(entry.summary)}</p>
                       </div>
                       <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
                         <button 
@@ -3181,6 +3185,25 @@ function toSentenceCase(str: string): string {
     if (!word) return '';
     return word.charAt(0).toUpperCase() + word.slice(1);
   }).join(' ');
+}
+
+// Convierte cualquier valor a string seguro para renderizar en JSX.
+// Protege contra datos viejos o respuestas del modelo donde un campo de texto
+// llegó como objeto (causa del error React #31 / pantalla en blanco).
+function safeText(val: unknown): string {
+  if (val == null) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (typeof val === 'object') {
+    try {
+      return Object.entries(val as Record<string, unknown>)
+        .map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`)
+        .join(' · ');
+    } catch {
+      return '';
+    }
+  }
+  return String(val);
 }
 
 function hasAccountingCode(text: string | null | undefined, code: string): boolean {

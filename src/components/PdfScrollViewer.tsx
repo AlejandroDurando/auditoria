@@ -142,7 +142,7 @@ export function PdfScrollViewer({ base64, fileName }: Props) {
       <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center gap-4">
         {loading && (
           <div className="flex flex-col items-center justify-center gap-3 mt-20">
-            <Loader2 className="w-8 h-8 text-[#0F6E56] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#004741] animate-spin" />
             <p className="text-sm text-slate-500">Cargando documento...</p>
           </div>
         )}

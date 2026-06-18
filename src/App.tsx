@@ -157,7 +157,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
   };
 
   const statusIcon = (status: string) => {
-    if (status === 'pass') return <CheckCircle2 className="w-4 h-4 text-[#0F6E56]" />;
+    if (status === 'pass') return <CheckCircle2 className="w-4 h-4 text-[#004741]" />;
     if (status === 'fail') return <XCircle className="w-4 h-4 text-red-500" />;
     return <AlertTriangle className="w-4 h-4 text-amber-500" />;
   };
@@ -165,10 +165,10 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
   return (
     <div className="flex flex-1 min-h-0 h-full gap-0">
       {/* Left panel — form + results */}
-      <div style={{ width: leftWidth }} className="shrink-0 flex flex-col h-full overflow-y-auto bg-[#F7F6F3] p-6">
+      <div style={{ width: leftWidth }} className="shrink-0 flex flex-col h-full overflow-y-auto bg-[#F0EDE4] p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-9 h-9 bg-white rounded-[10px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
-            <Zap className="w-4 h-4 text-[#0F6E56]" />
+            <Zap className="w-4 h-4 text-[#004741]" />
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-[16px] font-semibold text-[#1A1A1A] tracking-tight leading-none">Auditoría Rápida</h1>
@@ -185,7 +185,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
               setSelectedModel(val);
               localStorage.setItem('epe_selected_model', val);
             }}
-            className="w-full px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-white text-slate-700 outline-none cursor-pointer hover:border-[#0F6E56]/40 transition-colors"
+            className="w-full px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-white text-slate-700 outline-none cursor-pointer hover:border-[#004741]/40 transition-colors"
           >
             {MODELS.map(m => (
               <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
@@ -198,13 +198,13 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
           {...getRootProps()}
           className={cn(
             "border-[1.5px] border-dashed rounded-[10px] p-5 text-center cursor-pointer transition-colors mb-3",
-            isDragActive ? "border-[#0F6E56] bg-[#F0FAF6]" : "border-[#E8E6DE] bg-white hover:border-[#0F6E56]/40"
+            isDragActive ? "border-[#004741] bg-[#E8EFEE]" : "border-[#E8E6DE] bg-white hover:border-[#004741]/40"
           )}
         >
           <input {...getInputProps()} />
           {file ? (
             <div className="flex items-center justify-center gap-2">
-              <FileText className="w-4 h-4 text-[#0F6E56]" />
+              <FileText className="w-4 h-4 text-[#004741]" />
               <span className="text-sm font-medium text-[#1A1A1A] truncate max-w-[220px]">{file.name}</span>
               <button onClick={(e) => { e.stopPropagation(); setFile(null); setResult(null); }} className="text-[#9A9890] hover:text-red-500 transition-colors shrink-0">
                 <X className="w-3.5 h-3.5" />
@@ -225,7 +225,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
           className={cn(
             "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium transition-all mb-5",
             file && !isProcessing
-              ? "bg-[#0F6E56] text-white hover:bg-[#0a5843]"
+              ? "bg-[#004741] text-white hover:bg-[#003330]"
               : "bg-[#E8E6DE] text-[#BDBBB2] cursor-not-allowed"
           )}
         >
@@ -247,7 +247,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-[10px] text-[#9A9890] uppercase tracking-wide font-medium mb-0.5">Importe</p>
-                  <p className="text-sm font-semibold text-[#0F6E56]">{formatCurrency(result.payments[0].amount)}</p>
+                  <p className="text-sm font-semibold text-[#004741]">{formatCurrency(result.payments[0].amount)}</p>
                 </div>
               </div>
               <div className="text-[11px] text-[#9A9890]">N° {result.payments[0].orderNumber}</div>
@@ -286,7 +286,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
       {/* Drag handle */}
       <div
         onMouseDown={onDividerMouseDown}
-        className="w-[5px] shrink-0 h-full cursor-col-resize bg-[#E8E6DE] hover:bg-[#0F6E56]/40 transition-colors active:bg-[#0F6E56]/60"
+        className="w-[5px] shrink-0 h-full cursor-col-resize bg-[#E8E6DE] hover:bg-[#004741]/40 transition-colors active:bg-[#004741]/60"
       />
 
       {/* Right panel — PDF viewer */}
@@ -1271,7 +1271,7 @@ export default function App() {
   } as any);
 
   return (
-    <div className="flex h-screen bg-[#F7F6F3] text-slate-900 font-sans overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#F0EDE4] text-slate-900 font-sans overflow-hidden font-sans">
       {/* Custom Notification Modal/Toast Overlay */}
       <AnimatePresence>
         {notification && (
@@ -1287,7 +1287,7 @@ export default function App() {
                   <div className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
                     notification.type === 'error' && "bg-[#FCEBEB] text-[#A32D2D]",
-                    notification.type === 'success' && "bg-[#E1F5EE] text-[#085041]",
+                    notification.type === 'success' && "bg-[#D4E8E6] text-[#003330]",
                     notification.type === 'info' && "bg-blue-50 text-[#1f4e79]"
                   )}>
                     {notification.type === 'error' && <AlertCircle className="w-5 h-5" />}
@@ -1302,11 +1302,11 @@ export default function App() {
                 </div>
               </div>
               
-              <div className="px-6 py-4 bg-[#F7F6F3] border-t-[0.5px] border-[#E8E6DE] flex justify-end">
+              <div className="px-6 py-4 bg-[#F0EDE4] border-t-[0.5px] border-[#E8E6DE] flex justify-end">
                 <button
                   type="button"
                   onClick={() => setNotification(null)}
-                  className="px-4 py-1.5 bg-[#0F6E56] hover:bg-[#0c5945] text-white text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none border-none shadow-none"
+                  className="px-4 py-1.5 bg-[#004741] hover:bg-[#003330] text-white text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none border-none shadow-none"
                 >
                   Entendido
                 </button>
@@ -1340,7 +1340,7 @@ export default function App() {
                 </div>
               </div>
               
-              <div className="px-6 py-4 bg-[#F7F6F3] border-t-[0.5px] border-[#E8E6DE] flex justify-end gap-2.5">
+              <div className="px-6 py-4 bg-[#F0EDE4] border-t-[0.5px] border-[#E8E6DE] flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setDeleteConfirmId(null)}
@@ -1375,12 +1375,12 @@ export default function App() {
             setIsSidebarDragging(true);
             sidebarDragRef.current = { startX: e.clientX, startW: sidebarWidth };
           }}
-          className="absolute right-0 top-0 h-full w-[5px] cursor-col-resize z-30 hover:bg-[#0F6E56]/40 transition-colors"
+          className="absolute right-0 top-0 h-full w-[5px] cursor-col-resize z-30 hover:bg-[#004741]/40 transition-colors"
         />
         <div className="p-6 border-b-[0.5px] border-[#E8E6DE]">
           <div className="flex flex-col select-none">
             <div className="flex items-center gap-2">
-              <div className="w-[28px] h-[28px] bg-[#0F6E56] rounded-[6px] flex items-center justify-center text-white shrink-0">
+              <div className="w-[28px] h-[28px] bg-[#004741] rounded-[6px] flex items-center justify-center text-white shrink-0">
                 <ShieldCheck className="w-3.5 h-3.5 text-white" />
               </div>
               <h1 className="text-[13px] font-medium text-[#1A1A1A] tracking-tight leading-none">Auditor EPE</h1>
@@ -1403,11 +1403,11 @@ export default function App() {
                 className={cn(
                   "flex items-center gap-3 px-6 py-3 cursor-pointer transition-all duration-200 border-l-[3px] font-medium text-sm select-none",
                   (activeTab === 'Revisiva' || activeTab === 'Planilla')
-                    ? "border-l-[#0F6E56] bg-[#F0FAF6] text-[#0F6E56]"
+                    ? "border-l-[#004741] bg-[#E8EFEE] text-[#004741]"
                     : "border-l-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 )}
               >
-                <FileSpreadsheet className={cn("w-5 h-5 shrink-0", (activeTab === 'Revisiva' || activeTab === 'Planilla') ? "text-[#0F6E56]" : "text-slate-400")} />
+                <FileSpreadsheet className={cn("w-5 h-5 shrink-0", (activeTab === 'Revisiva' || activeTab === 'Planilla') ? "text-[#004741]" : "text-slate-400")} />
                 <span className="flex-1">Planillas</span>
                 <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", planillasOpen ? "rotate-180" : "")} />
               </div>
@@ -1417,7 +1417,7 @@ export default function App() {
                     onClick={() => setActiveTab('Revisiva')}
                     className={cn(
                       "flex items-center gap-2 pl-5 pr-4 py-2.5 cursor-pointer text-[13px] transition-colors select-none",
-                      activeTab === 'Revisiva' ? "text-[#0F6E56] font-medium" : "text-slate-500 hover:text-slate-900"
+                      activeTab === 'Revisiva' ? "text-[#004741] font-medium" : "text-slate-500 hover:text-slate-900"
                     )}
                   >
                     Planilla Revisiva
@@ -1426,7 +1426,7 @@ export default function App() {
                     onClick={() => setActiveTab('Planilla')}
                     className={cn(
                       "flex items-center gap-2 pl-5 pr-4 py-2.5 cursor-pointer text-[13px] transition-colors select-none",
-                      activeTab === 'Planilla' ? "text-[#0F6E56] font-medium" : "text-slate-500 hover:text-slate-900"
+                      activeTab === 'Planilla' ? "text-[#004741] font-medium" : "text-slate-500 hover:text-slate-900"
                     )}
                   >
                     Planilla Control
@@ -1443,7 +1443,7 @@ export default function App() {
 
         <div className="p-4 border-t-[0.5px] border-[#E8E6DE] bg-white">
           <div className="flex items-center gap-3 px-2">
-            <div className="w-9 h-9 bg-[#F0FAF6] text-[#0F6E56] rounded-full flex items-center justify-center text-xs font-medium">
+            <div className="w-9 h-9 bg-[#E8EFEE] text-[#004741] rounded-full flex items-center justify-center text-xs font-medium">
               AL
             </div>
             <div>
@@ -1455,7 +1455,7 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto flex flex-col bg-[#F7F6F3]">
+      <main className="flex-1 overflow-y-auto flex flex-col bg-[#F0EDE4]">
         {/* Header */}
         <header className="h-[42px] border-b-[0.5px] border-[#E8E6DE] flex items-center justify-between px-8 bg-white sticky top-0 z-10 shadow-none">
           <div className="flex items-center gap-4">
@@ -1478,7 +1478,7 @@ export default function App() {
                     setActiveTab('Historial');
                   }
                 }}
-                className="bg-[#F7F6F3] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-64 focus:border-[#0F6E56] focus:bg-white transition-all outline-none text-[#1A1A1A]"
+                className="bg-[#F0EDE4] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-64 focus:border-[#004741] focus:bg-white transition-all outline-none text-[#1A1A1A]"
               />
               {auditSearchQuery && (
                 <button
@@ -1503,7 +1503,7 @@ export default function App() {
                   className={cn(
                     "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] border-none",
                     dashboardMode === 'Expedientes'
-                      ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#0F6E56] font-medium shadow-none"
+                      ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
                       : "bg-transparent text-[#6B6A65] font-normal"
                   )}
                 >
@@ -1516,7 +1516,7 @@ export default function App() {
                   className={cn(
                     "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] border-none",
                     dashboardMode === 'Viáticos'
-                      ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#0F6E56] font-medium shadow-none"
+                      ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
                       : "bg-transparent text-[#6B6A65] font-normal"
                   )}
                 >
@@ -1544,7 +1544,7 @@ export default function App() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-0.5">
                         <h4 className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
-                          <Sparkles className="w-4 h-4 text-[#0F6E56]" />
+                          <Sparkles className="w-4 h-4 text-[#004741]" />
                           <span>Motor de Inteligencia Artificial (IA)</span>
                         </h4>
                         <p className="text-xs text-slate-500 max-w-md leading-relaxed">
@@ -1560,7 +1560,7 @@ export default function App() {
                             setSelectedModel(val);
                             localStorage.setItem('epe_selected_model', val);
                           }}
-                          className="px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-white text-slate-700 outline-none cursor-pointer hover:border-[#0F6E56]/40 transition-colors"
+                          className="px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-white text-slate-700 outline-none cursor-pointer hover:border-[#004741]/40 transition-colors"
                         >
                           {MODELS.map(m => (
                             <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
@@ -1574,13 +1574,13 @@ export default function App() {
                     {...getRootProps()} 
                     className={cn(
                       "border-[2px] border-dashed rounded-[12px] h-64 flex flex-col items-center justify-center transition-all cursor-pointer bg-white group shadow-none",
-                      isDragActive ? "border-[#0F6E56] bg-[#F0FAF6]" : "border-[#E8E6DE] hover:border-[#0F6E56]/40 hover:bg-[#F7F6F3]"
+                      isDragActive ? "border-[#004741] bg-[#E8EFEE]" : "border-[#E8E6DE] hover:border-[#004741]/40 hover:bg-[#F0EDE4]"
                     )}
                   >
                     <input {...getInputProps()} />
                     <div className={cn(
                       "w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-105",
-                      isDragActive ? "bg-[#F0FAF6] text-[#0F6E56]" : "bg-slate-100 text-slate-400"
+                      isDragActive ? "bg-[#E8EFEE] text-[#004741]" : "bg-slate-100 text-slate-400"
                     )}>
                       <Upload className="w-6 h-6" />
                     </div>
@@ -1596,7 +1596,7 @@ export default function App() {
                     <div className="mt-8 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] p-6 shadow-none">
                       <div className="flex items-center justify-between mb-4 pb-3 border-b-[0.5px] border-[#E8E6DE]">
                         <div className="flex items-center gap-2">
-                          <Paperclip className="w-5 h-5 text-[#0F6E56]" />
+                          <Paperclip className="w-5 h-5 text-[#004741]" />
                           <h3 className="text-sm font-medium text-slate-800">Archivos para Auditar ({selectedFiles.length})</h3>
                         </div>
                         <button
@@ -1647,7 +1647,7 @@ export default function App() {
                         </p>
                         <button
                           onClick={handleStartAudit}
-                          className="w-full sm:w-auto px-4 py-2 bg-[#0F6E56] text-white text-xs font-medium rounded-[7px] hover:bg-[#0c5945] transition-all shadow-none flex items-center justify-center gap-1.5 cursor-pointer outline-none border-none"
+                          className="w-full sm:w-auto px-4 py-2 bg-[#004741] text-white text-xs font-medium rounded-[7px] hover:bg-[#003330] transition-all shadow-none flex items-center justify-center gap-1.5 cursor-pointer outline-none border-none"
                         >
                           <Sparkles className="w-4 h-4" />
                           <span>Iniciar Auditoría Combinada</span>
@@ -1660,7 +1660,7 @@ export default function App() {
                 <div className="mt-16 max-w-xl mx-auto flex flex-col items-center justify-center px-4">
                   <div className="w-full bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] p-8 shadow-none flex flex-col relative overflow-hidden">
                     {/* Visual gradient accent */}
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-[#0F6E56]" />
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-[#004741]" />
                     
                     {/* Live Percentage Circle or Big Display */}
                     <div className="flex items-baseline justify-between mb-2">
@@ -1668,16 +1668,16 @@ export default function App() {
                         <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">Procesamiento de IA</span>
                         <h3 className="text-sm font-medium text-slate-900 mt-0.5">Auditoría EPE Digital</h3>
                       </div>
-                      <div className="flex items-baseline font-mono text-3xl font-medium text-[#0F6E56] select-none">
+                      <div className="flex items-baseline font-mono text-3xl font-medium text-[#004741] select-none">
                         <span>{auditProgress}</span>
                         <span className="text-xs text-[#9A9890] font-normal">%</span>
                       </div>
                     </div>
 
                     {/* Progress Bar Container */}
-                    <div className="w-full h-1.5 bg-[#F7F6F3] rounded-full overflow-hidden mt-3 relative">
+                    <div className="w-full h-1.5 bg-[#F0EDE4] rounded-full overflow-hidden mt-3 relative">
                       <div 
-                        className="h-full bg-[#0F6E56] rounded-full transition-all duration-500 ease-out" 
+                        className="h-full bg-[#004741] rounded-full transition-all duration-500 ease-out" 
                         style={{ width: `${auditProgress}%` }}
                       />
                     </div>
@@ -1700,7 +1700,7 @@ export default function App() {
                            <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         ) : (
                           <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-[#0F6E56] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
                           </div>
                       )}
                         <span className={cn(
@@ -1717,7 +1717,7 @@ export default function App() {
                           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         ) : auditProgress >= 30 ? (
                           <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-[#0F6E56] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
                           </div>
                         ) : (
                           <div className="w-5 h-5 rounded-full border-2 border-slate-205 bg-white shrink-0" />
@@ -1737,7 +1737,7 @@ export default function App() {
                           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         ) : auditProgress >= 60 ? (
                           <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-[#0F6E56] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
                           </div>
                         ) : (
                           <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-white shrink-0" />
@@ -1757,7 +1757,7 @@ export default function App() {
                           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         ) : auditProgress >= 85 ? (
                           <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-[#0F6E56] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
                           </div>
                         ) : (
                           <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-white shrink-0" />
@@ -1798,13 +1798,13 @@ export default function App() {
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="px-2 py-0.5 bg-[#E1F5EE] text-[#085041] rounded-[4px] text-[10px] font-medium uppercase tracking-[0.06em]">Auditoría Completada</span>
+                        <span className="px-2 py-0.5 bg-[#D4E8E6] text-[#003330] rounded-[4px] text-[10px] font-medium uppercase tracking-[0.06em]">Auditoría Completada</span>
                       </div>
                       <h2 className="text-xl font-medium tracking-tight text-slate-900 mt-2">Resultados Generales</h2>
                     </div>
                     <button 
                       onClick={() => { setResult(null); setSelectedFiles([]); setActiveAuditId(null); setActivePdfViewer(null); }}
-                      className="py-[7px] px-[13px] bg-[#0F6E56] text-white text-[13px] font-medium rounded-[7px] hover:bg-[#0c5945] transition-all outline-none whitespace-nowrap cursor-pointer border-none shadow-none"
+                      className="py-[7px] px-[13px] bg-[#004741] text-white text-[13px] font-medium rounded-[7px] hover:bg-[#003330] transition-all outline-none whitespace-nowrap cursor-pointer border-none shadow-none"
                     >
                       Nueva Auditoría
                     </button>
@@ -1827,11 +1827,11 @@ export default function App() {
                                 setCopiedFecha(true);
                                 setTimeout(() => setCopiedFecha(false), 2000);
                               }}
-                              className="p-1 text-slate-400 hover:text-[#0F6E56] hover:bg-slate-100 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0"
+                              className="p-1 text-slate-400 hover:text-[#004741] hover:bg-slate-100 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0"
                               title="Copiar fecha de expediente"
                             >
                               {copiedFecha ? (
-                                <Check className="w-3.5 h-3.5 text-[#0F6E56]" />
+                                <Check className="w-3.5 h-3.5 text-[#004741]" />
                               ) : (
                                 <Copy className="w-3.5 h-3.5" />
                               )}
@@ -1853,11 +1853,11 @@ export default function App() {
                                 setCopiedExpediente(true);
                                 setTimeout(() => setCopiedExpediente(false), 2000);
                               }}
-                              className="p-1 text-slate-400 hover:text-[#0F6E56] hover:bg-slate-100 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0"
+                              className="p-1 text-slate-400 hover:text-[#004741] hover:bg-slate-100 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0"
                               title="Copiar número de expediente"
                             >
                               {copiedExpediente ? (
-                                <Check className="w-3.5 h-3.5 text-[#0F6E56]" />
+                                <Check className="w-3.5 h-3.5 text-[#004741]" />
                               ) : (
                                 <Copy className="w-3.5 h-3.5" />
                               )}
@@ -1868,7 +1868,7 @@ export default function App() {
                       {result.fondoFijoNumero && (
                         <div className="flex-1 min-w-[130px] sm:border-l sm:border-[#E8E6DE] sm:pl-6">
                           <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Fondo Fijo</span>
-                          <span className="text-sm font-medium text-[#0F6E56]">
+                          <span className="text-sm font-medium text-[#004741]">
                             {result.fondoFijoNumero}
                           </span>
                         </div>
@@ -1910,11 +1910,11 @@ export default function App() {
                                 setCopiedImporte(true);
                                 setTimeout(() => setCopiedImporte(false), 2000);
                               }}
-                              className="p-1 text-slate-400 hover:text-[#0F6E56] hover:bg-slate-100 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0 animate-fade-in"
+                              className="p-1 text-slate-400 hover:text-[#004741] hover:bg-slate-100 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0 animate-fade-in"
                               title="Copiar importe total"
                             >
                               {copiedImporte ? (
-                                <Check className="w-3.5 h-3.5 text-[#0F6E56]" />
+                                <Check className="w-3.5 h-3.5 text-[#004741]" />
                               ) : (
                                 <Copy className="w-3.5 h-3.5" />
                               )}
@@ -1942,7 +1942,7 @@ export default function App() {
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Estado General</p>
                             <div className={cn(
                               "inline-flex items-center justify-center font-bold w-fit",
-                              hasWarnings ? "text-amber-500" : "text-[#0F6E56]"
+                              hasWarnings ? "text-amber-500" : "text-[#004741]"
                             )}>
                               {hasWarnings ? (
                                 <div className="flex items-center gap-1.5 text-amber-700">
@@ -1950,8 +1950,8 @@ export default function App() {
                                   <span className="text-sm font-medium">Con observaciones</span>
                                 </div>
                               ) : (
-                                <div className="flex items-center gap-1.5 text-[#0F6E56]">
-                                  <CheckCircle2 className="w-5 h-5 text-[#0F6E56] shrink-0" />
+                                <div className="flex items-center gap-1.5 text-[#004741]">
+                                  <CheckCircle2 className="w-5 h-5 text-[#004741] shrink-0" />
                                   <span className="text-sm font-medium">Excelente</span>
                                 </div>
                               )}
@@ -1967,9 +1967,9 @@ export default function App() {
                     const hasErrors = payments.some(p => p?.validations?.some(v => v?.status === 'fail')) || result?.balance_inversion?.validacion_v14?.resultado === 'error';
                     if (payments.length === 0 || hasErrors) return null;
                     return (
-                      <div className="bg-[#F0FAF6] border border-[#0F6E56]/15 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 transition-all hover:bg-[#ebf8f3] shadow-sm">
+                      <div className="bg-[#E8EFEE] border border-[#004741]/15 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 transition-all hover:bg-[#ebf8f3] shadow-sm">
                         <div className="flex gap-4 items-start">
-                          <div className="w-12 h-12 bg-white rounded-xl border border-emerald-500/10 flex items-center justify-center shrink-0 shadow-[0_4px_12px_rgba(15,110,86,0.04)] text-[#0F6E56]">
+                          <div className="w-12 h-12 bg-white rounded-xl border border-emerald-500/10 flex items-center justify-center shrink-0 shadow-[0_4px_12px_rgba(15,110,86,0.04)] text-[#004741]">
                             <FileCheck2 className="w-6 h-6" />
                           </div>
                           <div>
@@ -1982,14 +1982,14 @@ export default function App() {
                         <div className="flex flex-col sm:flex-row gap-2 md:self-center">
                           <button
                             onClick={() => setActiveTab('Revisiva')}
-                            className="bg-[#0F6E56] hover:bg-[#0c5945] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer border-none outline-none shadow-none"
+                            className="bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer border-none outline-none shadow-none"
                           >
                             <CheckCircle2 className="w-4 h-4" />
                             <span>Ir a Planilla Revisiva</span>
                           </button>
                           <button
                             onClick={() => { setPlanillasOpen(true); setActiveTab('Planilla'); }}
-                            className="bg-white border border-[#0F6E56] text-[#0F6E56] text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer outline-none shadow-none hover:bg-[#F0FAF6]"
+                            className="bg-white border border-[#004741] text-[#004741] text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer outline-none shadow-none hover:bg-[#E8EFEE]"
                           >
                             <FileSpreadsheet className="w-4 h-4" />
                             <span>Ir a Planilla Control</span>
@@ -2017,7 +2017,7 @@ export default function App() {
                     <div className="bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] overflow-hidden transition-all shadow-none">
                       <div className="p-6 border-b-[0.5px] border-[#E8E6DE] flex items-center gap-4">
                         <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shrink-0">
-                          <Landmark className="w-6 h-6 text-[#0F6E56]" />
+                          <Landmark className="w-6 h-6 text-[#004741]" />
                         </div>
                         <div>
                           <h3 className="text-base font-medium text-slate-900 leading-tight">Balance de Inversión</h3>
@@ -2031,7 +2031,7 @@ export default function App() {
                           <div className="ml-auto">
                             <span className={cn(
                               "px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border-none select-none",
-                              result.balance_inversion.validacion_v14.resultado === 'ok' ? 'bg-[#E1F5EE] text-[#085041]' :
+                              result.balance_inversion.validacion_v14.resultado === 'ok' ? 'bg-[#D4E8E6] text-[#003330]' :
                               result.balance_inversion.validacion_v14.resultado === 'error' ? 'bg-[#FCEBEB] text-[#A32D2D]' :
                               'bg-amber-50 text-amber-850'
                             )}>
@@ -2049,19 +2049,19 @@ export default function App() {
                         <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
                           <div className="space-y-6">
                             <div className="grid grid-cols-2 gap-[10px]">
-                              <div className="bg-[#F7F6F3] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
+                              <div className="bg-[#F0EDE4] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
                                 <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Monto Fijo Asignado</p>
                                 <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.monto_asignado || 0)}</p>
                               </div>
-                              <div className="bg-[#F7F6F3] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
+                              <div className="bg-[#F0EDE4] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
                                 <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Total Pendiente</p>
                                 <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.total_pendiente || 0)}</p>
                               </div>
-                              <div className="bg-[#F7F6F3] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
+                              <div className="bg-[#F0EDE4] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
                                 <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Saldo en Banco</p>
                                 <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.saldo_banco_declarado || 0)}</p>
                               </div>
-                              <div className="bg-[#F7F6F3] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
+                              <div className="bg-[#F0EDE4] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
                                 <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Saldo Calculado</p>
                                 <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.saldo_banco_calculado || 0)}</p>
                               </div>
@@ -2069,9 +2069,9 @@ export default function App() {
                             {result.balance_inversion.validacion_v14?.detalle && (
                               <div className={cn(
                                 "p-4 rounded-r-[8px] rounded-l-none border-l-2",
-                                result.balance_inversion.validacion_v14.resultado === 'ok' ? "bg-[#F0FAF6] border-l-[#0F6E56] text-[#085041]" :
+                                result.balance_inversion.validacion_v14.resultado === 'ok' ? "bg-[#E8EFEE] border-l-[#004741] text-[#003330]" :
                                 result.balance_inversion.validacion_v14.resultado === 'error' ? "bg-[#FFF8F8] border-l-[#E24B4A] text-[#A32D2D]" :
-                                "bg-[#F7F6F3] border-l-[#9A9890] text-slate-700"
+                                "bg-[#F0EDE4] border-l-[#9A9890] text-slate-700"
                               )}>
                                 <p className="text-xs font-medium leading-relaxed">
                                   {result.balance_inversion.validacion_v14.detalle}
@@ -2085,7 +2085,7 @@ export default function App() {
                             {result.balance_inversion.rendiciones_pendientes && result.balance_inversion.rendiciones_pendientes.length > 0 ? (
                               <div className="border-[0.5px] border-[#E8E6DE] rounded-[8px] overflow-hidden bg-white shadow-none">
                                 <table className="w-full text-xs text-left border-collapse">
-                                  <thead className="bg-[#F7F6F3] text-[10px] text-[#9A9890] uppercase font-medium border-b-[0.5px] border-[#E8E6DE]">
+                                  <thead className="bg-[#F0EDE4] text-[10px] text-[#9A9890] uppercase font-medium border-b-[0.5px] border-[#E8E6DE]">
                                     <tr>
                                       <th className="px-4 py-2.5 font-medium tracking-[0.06em]">Rendición N°</th>
                                       <th className="px-4 py-2.5 text-right font-medium tracking-[0.06em]">Importe</th>
@@ -2093,7 +2093,7 @@ export default function App() {
                                   </thead>
                                   <tbody className="divide-y divide-slate-100">
                                     {result.balance_inversion.rendiciones_pendientes.map((rendicion, idx) => (
-                                      <tr key={idx} className="hover:bg-[#F7F6F3]/50 transition-colors">
+                                      <tr key={idx} className="hover:bg-[#F0EDE4]/50 transition-colors">
                                         <td className="px-4 py-2.5 font-normal text-slate-800">{rendicion.numero}</td>
                                         <td className="px-4 py-2.5 text-right font-mono font-normal text-slate-700">{formatCurrency(rendicion.importe)}</td>
                                       </tr>
@@ -2261,7 +2261,7 @@ export default function App() {
                     <div className="p-6 border-b-[0.5px] border-[#E8E6DE] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shrink-0">
-                          <FileText className="w-6 h-6 text-[#0F6E56]" />
+                          <FileText className="w-6 h-6 text-[#004741]" />
                         </div>
                         <div>
                           <h3 className="text-base font-medium text-slate-900 leading-tight">Informe de Auditoría</h3>
@@ -2276,8 +2276,8 @@ export default function App() {
                         className={cn(
                           "inline-flex items-center justify-center gap-1.5 py-[7px] px-[13px] rounded-[7px] text-[13px] font-medium transition-all border-none outline-none cursor-pointer shadow-none",
                           copiedInforme 
-                            ? "bg-[#E1F5EE] text-[#085041] hover:bg-[#d0f0e5]"
-                            : "bg-[#0F6E56] text-white hover:bg-[#0c5945]"
+                            ? "bg-[#D4E8E6] text-[#003330] hover:bg-[#d0f0e5]"
+                            : "bg-[#004741] text-white hover:bg-[#003330]"
                         )}
                       >
                         {copiedInforme ? (
@@ -2298,7 +2298,7 @@ export default function App() {
                       <div className="absolute top-4 right-4 bg-[#3A3A3A] text-[#9A9890] text-[9px] uppercase font-medium tracking-[0.06em] px-2 py-0.5 rounded select-none">
                         Vista Previa
                       </div>
-                      <pre className="whitespace-pre-wrap leading-relaxed overflow-x-auto selection:bg-[#0F6E56]/40 max-h-[400px] pr-2">
+                      <pre className="whitespace-pre-wrap leading-relaxed overflow-x-auto selection:bg-[#004741]/40 max-h-[400px] pr-2">
                         {generateReportText()}
                       </pre>
                     </div>
@@ -2337,7 +2337,7 @@ export default function App() {
                     <span>Exportar Copia</span>
                   </button>
                   <label
-                    className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-[#E1F5EE] border border-[#BFEDDB] text-[#085041] text-xs font-medium rounded-[7px] hover:bg-[#d0f0e5] transition-all cursor-pointer shadow-none outline-none select-none"
+                    className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-[#D4E8E6] border border-[#BFEDDB] text-[#003330] text-xs font-medium rounded-[7px] hover:bg-[#d0f0e5] transition-all cursor-pointer shadow-none outline-none select-none"
                     title="Importar un archivo de respaldo JSON"
                   >
                     <Upload className="w-3.5 h-3.5" />
@@ -2386,7 +2386,7 @@ export default function App() {
                               Viáticos
                             </span>
                           ) : (
-                            <span className="px-[10px] py-[3px] bg-[#E1F5EE] text-[#085041] rounded-[20px] text-[11px] font-medium leading-none">
+                            <span className="px-[10px] py-[3px] bg-[#D4E8E6] text-[#003330] rounded-[20px] text-[11px] font-medium leading-none">
                               Expediente
                             </span>
                           )}
@@ -2413,13 +2413,13 @@ export default function App() {
                               {entry.result.fondoFijoNumero ? formatHistoryTitle(entry.result.fondoFijoNumero) : ''}
                             </h3>
                           ) : (
-                            <span className="text-xs font-medium bg-[#F7F6F3] text-slate-600 px-2.5 py-1 rounded-md">
+                            <span className="text-xs font-medium bg-[#F0EDE4] text-slate-600 px-2.5 py-1 rounded-md">
                               FF-{entry.FF || 'Sin ID'}
                             </span>
                           )}
 
                           {entry.result?.expedienteNumero && (
-                            <span className="text-xs font-medium bg-[#F7F6F3] text-slate-500 border border-[#E8E6DE] px-2 py-0.5 rounded-md font-mono">
+                            <span className="text-xs font-medium bg-[#F0EDE4] text-slate-500 border border-[#E8E6DE] px-2 py-0.5 rounded-md font-mono">
                               Exp. {entry.result.expedienteNumero}
                               {entry.result.expedienteFecha ? ` (${entry.result.expedienteFecha})` : ''}
                             </span>
@@ -2443,7 +2443,7 @@ export default function App() {
                             }
                             setActiveTab('Dashboard');
                           }}
-                          className="py-[6px] px-[14px] bg-white border border-[#D3D1C7] text-[#0F6E56] text-[13px] font-medium rounded-[7px] hover:bg-[#F0FAF6] transition-all shadow-none cursor-pointer select-none outline-none"
+                          className="py-[6px] px-[14px] bg-white border border-[#D3D1C7] text-[#004741] text-[13px] font-medium rounded-[7px] hover:bg-[#E8EFEE] transition-all shadow-none cursor-pointer select-none outline-none"
                         >
                           Ver Reporte
                         </button>
@@ -2473,7 +2473,7 @@ export default function App() {
             >
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
-                  <ShieldCheck className="w-6 h-6 text-[#0F6E56]" />
+                  <ShieldCheck className="w-6 h-6 text-[#004741]" />
                 </div>
                 <div>
                   <h2 className="text-xl font-medium tracking-tight text-slate-900">Marco Normativo</h2>
@@ -2506,7 +2506,7 @@ export default function App() {
             >
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
-                  <FileCheck2 className="w-6 h-6 text-[#0F6E56]" />
+                  <FileCheck2 className="w-6 h-6 text-[#004741]" />
                 </div>
                 <div>
                   <h2 className="text-xl font-medium tracking-tight text-slate-900">Códigos PIMyS</h2>
@@ -2523,7 +2523,7 @@ export default function App() {
                     className={cn(
                       "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] whitespace-nowrap border-none leading-none",
                       activeCodeCategory === cat 
-                        ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#0F6E56] font-medium shadow-none"
+                        ? "bg-white border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
                         : "bg-transparent text-[#6B6A65] font-normal"
                     )}
                   >
@@ -2541,7 +2541,7 @@ export default function App() {
                     type="text"
                     value={codeSearchQuery}
                     onChange={(e) => setCodeSearchQuery(e.target.value)}
-                    className="block w-full pl-[36px] pr-[12px] py-[8px] border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] text-[#1A1A1A] placeholder-[#9A9890] focus:border-[#0F6E56] focus:ring-0 outline-none"
+                    className="block w-full pl-[36px] pr-[12px] py-[8px] border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] text-[#1A1A1A] placeholder-[#9A9890] focus:border-[#004741] focus:ring-0 outline-none"
                     placeholder="Buscar por código o palabra..."
                   />
                 </div>
@@ -2550,8 +2550,8 @@ export default function App() {
               <div className="bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] shadow-none overflow-hidden mb-6">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left border-collapse">
-                    <thead className="bg-[#F7F6F3]/50 text-[10px] text-[#9A9890] uppercase font-medium tracking-[0.06em]">
-                      <tr className="bg-[#F7F6F3] border-b-[1.5px] border-[#D3D1C7]">
+                    <thead className="bg-[#F0EDE4]/50 text-[10px] text-[#9A9890] uppercase font-medium tracking-[0.06em]">
+                      <tr className="bg-[#F0EDE4] border-b-[1.5px] border-[#D3D1C7]">
                         <th className="p-[12px_16px] border-r-[0.5px] border-[#E8E6DE]" style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}>Código</th>
                         <th className="p-[12px_16px]">Descripción Completa</th>
                       </tr>
@@ -2566,7 +2566,7 @@ export default function App() {
                         })
                         .map((item, idx) => (
                         <tr key={idx} className="border-b border-[#E8E6DE] hover:bg-slate-50/50 transition-colors">
-                          <td className="p-[12px_16px] font-mono font-medium text-[#0F6E56] border-r-[0.5px] border-[#E8E6DE] align-top text-base whitespace-nowrap" style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}>
+                          <td className="p-[12px_16px] font-mono font-medium text-[#004741] border-r-[0.5px] border-[#E8E6DE] align-top text-base whitespace-nowrap" style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}>
                             {item.code}
                           </td>
                           <td className="p-[12px_16px] text-[#1A1A1A] leading-[1.5] font-normal align-top text-[13px]">
@@ -2589,7 +2589,7 @@ export default function App() {
               id="revisiva-tab-container"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none text-[#0F6E56]">
+                <div className="w-12 h-12 bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none text-[#004741]">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div>
@@ -2606,7 +2606,7 @@ export default function App() {
                   </div>
                   <div className="bg-white rounded-[12px] border-[0.5px] border-[#E8E6DE] p-6 shadow-none space-y-4">
                     <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-[#0F6E56]" />
+                      <Sparkles className="w-4 h-4 text-[#004741]" />
                       <span>Filtro y Autocompletado</span>
                     </h3>
 
@@ -2625,7 +2625,7 @@ export default function App() {
                           setPdfResponsable('');
                           setPdfReparticion('');
                         }}
-                        className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#0F6E56] outline-none font-medium"
+                        className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#004741] outline-none font-medium"
                       >
                         <option value="">Seleccionar...</option>
                         <option value="RAFAELA">RAFAELA</option>
@@ -2659,7 +2659,7 @@ export default function App() {
                           }
                         }}
                         className={cn(
-                          "block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#0F6E56] outline-none font-medium",
+                          "block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#004741] outline-none font-medium",
                           !pdfGciaSuc && "opacity-60 cursor-not-allowed bg-slate-50"
                         )}
                       >
@@ -2677,7 +2677,7 @@ export default function App() {
                     {/* Mapped Fields (Pre-filled + Editable) */}
                     <div className="border-t border-slate-150 pt-4 mt-2 space-y-4">
                       <div>
-                        <label className="block text-xs font-semibold text-[#0F6E56] uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-[#004741] uppercase tracking-wider mb-1.5 flex items-center justify-between">
                           <span>Responsable (Autocompletado)</span>
                           <span className="text-[10px] text-slate-400 font-normal">Editable</span>
                         </label>
@@ -2686,7 +2686,7 @@ export default function App() {
                           type="text"
                           value={pdfResponsable}
                           onChange={(e) => setPdfResponsable(e.target.value)}
-                          className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#0F6E56] outline-none font-medium"
+                          className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#004741] outline-none font-medium"
                           placeholder="Responsable oficial del sector"
                         />
                       </div>
@@ -2701,7 +2701,7 @@ export default function App() {
                           type="text"
                           value={pdfReparticion}
                           onChange={(e) => setPdfReparticion(e.target.value)}
-                          className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#0F6E56] outline-none font-medium"
+                          className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#004741] outline-none font-medium"
                           placeholder="Nombre asignado de la repartición"
                         />
                       </div>
@@ -2716,7 +2716,7 @@ export default function App() {
                             type="text"
                             value={pdfFdoFijoNo}
                             onChange={(e) => setPdfFdoFijoNo(e.target.value)}
-                            className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#0F6E56] outline-none font-medium font-mono"
+                            className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-white text-slate-900 focus:border-[#004741] outline-none font-medium font-mono"
                             placeholder="Ej. FF-01"
                           />
                         </div>
@@ -2729,7 +2729,7 @@ export default function App() {
                         type="button"
                         id="generate-revisiva-btn"
                         onClick={handleDownloadPdf}
-                        className="w-full py-2.5 bg-[#0F6E56] text-white hover:bg-[#0c5945] text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none shadow-sm"
+                        className="w-full py-2.5 bg-[#004741] text-white hover:bg-[#003330] text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none shadow-sm"
                       >
                         <Download className="w-4 h-4" />
                         <span>Generar y descargar PDF</span>
@@ -2762,7 +2762,7 @@ export default function App() {
                     <div className="space-y-2 max-h-[220px] overflow-y-auto pr-2 divide-y divide-slate-150">
                       {Object.entries(SECTOR_MAPPING).map(([gcia, sectors]) => (
                         <div key={gcia} className="pt-2 first:pt-0">
-                          <span className="font-semibold text-[#0F6E56] text-[9.5px] uppercase tracking-wide block mb-1">
+                          <span className="font-semibold text-[#004741] text-[9.5px] uppercase tracking-wide block mb-1">
                             {gcia}
                           </span>
                           <div className="grid grid-cols-1 gap-1 pl-1">
@@ -2771,7 +2771,7 @@ export default function App() {
                                 <span className="text-slate-600 font-medium truncate max-w-[190px]" title={s.label}>
                                   {s.label}
                                 </span>
-                                <span className="text-[#0F6E56] font-mono text-[10.5px] font-bold shrink-0">
+                                <span className="text-[#004741] font-mono text-[10.5px] font-bold shrink-0">
                                   {s.responsible}
                                 </span>
                               </div>
@@ -2826,7 +2826,7 @@ export default function App() {
                           <div className="col-span-3">Gcia./Suc.</div>
                         </div>
                         <div className="grid grid-cols-12 uppercase divide-x divide-black text-center min-h-[22px] items-center py-1 font-mono text-[8px]">
-                          <div className="col-span-4 px-1 truncate font-bold text-[#0F6E56]">
+                          <div className="col-span-4 px-1 truncate font-bold text-[#004741]">
                             {pdfResponsable || <span className="text-slate-300 italic font-sans text-[7px]">No ingresado</span>}
                           </div>
                           <div className="col-span-2 px-1 font-semibold">
@@ -3145,10 +3145,10 @@ function SidebarItem({ icon: Icon, label, active = false, onClick }: { icon: any
       className={cn(
       "flex items-center gap-3 px-6 py-3 cursor-pointer transition-all duration-200 border-l-[3px] font-medium text-sm select-none",
       active 
-        ? "!border-l-[#0F6E56] !rounded-tl-none !rounded-bl-none rounded-tr-[6px] rounded-br-[6px] bg-[#F0FAF6] !text-[#0F6E56] !font-medium" 
+        ? "!border-l-[#004741] !rounded-tl-none !rounded-bl-none rounded-tr-[6px] rounded-br-[6px] bg-[#E8EFEE] !text-[#004741] !font-medium" 
         : "border-l-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"
     )}>
-      <Icon className={cn("w-5 h-5", active ? "text-[#0F6E56]" : "text-slate-400")} />
+      <Icon className={cn("w-5 h-5", active ? "text-[#004741]" : "text-slate-400")} />
       <span>{label}</span>
     </div>
   );
@@ -3261,8 +3261,8 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
     );
   } else {
     badgeEl = (
-      <div className="bg-[#E1F5EE] text-[#085041] px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0 border-none select-none">
-        <CheckCircle2 className="w-3.5 h-3.5 text-[#085041]" />
+      <div className="bg-[#D4E8E6] text-[#003330] px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0 border-none select-none">
+        <CheckCircle2 className="w-3.5 h-3.5 text-[#003330]" />
         <span>{validCnt}/{totalCnt} Validaciones</span>
       </div>
     );
@@ -3302,7 +3302,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                 e.stopPropagation();
                 onViewPdf?.(payment?.sourceFileIdx || 0, payment?.pageNumber);
               }}
-              className="p-1 px-2 text-[#9A9890] hover:text-[#0F6E56] hover:bg-[#F0FAF6] rounded-[6px] border-[0.5px] border-[#E2E0D8] transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
+              className="p-1 px-2 text-[#9A9890] hover:text-[#004741] hover:bg-[#E8EFEE] rounded-[6px] border-[0.5px] border-[#E2E0D8] transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
               title="Ver original"
             >
               <Eye className="w-3.5 h-3.5 mr-1" />
@@ -3321,7 +3321,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
             initial={{ height: 0 }}
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
-            className="border-t-[0.5px] border-[#E8E6DE] bg-[#F7F6F3]/40"
+            className="border-t-[0.5px] border-[#E8E6DE] bg-[#F0EDE4]/40"
           >
             <div className="p-6 sm:p-8">
               <h4 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-6">Detalle de Validaciones</h4>
@@ -3340,7 +3340,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                           <div className="flex items-center gap-3">
                             <span className={cn(
                               "text-[11px] font-medium font-mono px-2 py-0.5 rounded shadow-none border-[0.5px]",
-                              status === 'pass' ? "bg-[#E1F5EE] text-[#085041] border-[#9FE1CB]" :
+                              status === 'pass' ? "bg-[#D4E8E6] text-[#003330] border-[#9FE1CB]" :
                               status === 'fail' ? "bg-[#FCEBEB] text-[#A32D2D] border-[#F8CCCC]" :
                               "bg-amber-50 text-amber-800 border-amber-250"
                             )}>
@@ -3355,7 +3355,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                                 e.stopPropagation();
                                 onViewPdf?.(payment.sourceFileIdx || 0, payment.pageNumber);
                               }}
-                              className="self-start sm:self-auto p-1.5 text-slate-500 hover:text-[#0F6E56] hover:bg-[#F0FAF6] rounded-lg border-[0.5px] border-[#E2E0D8] transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
+                              className="self-start sm:self-auto p-1.5 text-slate-500 hover:text-[#004741] hover:bg-[#E8EFEE] rounded-lg border-[0.5px] border-[#E2E0D8] transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
                               title="ver pdf"
                             >
                               <Eye className="w-3.5 h-3.5" />
@@ -3380,8 +3380,8 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
               {payment.vales && payment.vales.length > 0 && (
                 <div className="mt-8 pt-6 border-t-[0.5px] border-[#E8E6DE]">
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="w-1.5 h-1.5 bg-[#0F6E56] rounded-full" />
-                    <h5 className="text-[10px] font-medium text-[#0F6E56] uppercase tracking-[0.06em]">
+                    <span className="w-1.5 h-1.5 bg-[#004741] rounded-full" />
+                    <h5 className="text-[10px] font-medium text-[#004741] uppercase tracking-[0.06em]">
                       Vales de Provisión de Combustible / Ruedas ({payment.vales.length})
                     </h5>
                   </div>
@@ -3401,12 +3401,12 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                           <span className={cn(
                             "px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider flex items-center gap-1",
                             vale.legible 
-                              ? "bg-[#E1F5EE] text-[#085041]" 
+                              ? "bg-[#D4E8E6] text-[#003330]" 
                               : "bg-amber-100 text-amber-805"
                           )}>
                             {vale.legible ? (
                               <>
-                                <CheckCircle2 className="w-3 h-3 text-[#0F6E56]" />
+                                <CheckCircle2 className="w-3 h-3 text-[#004741]" />
                                 Legible
                               </>
                             ) : (

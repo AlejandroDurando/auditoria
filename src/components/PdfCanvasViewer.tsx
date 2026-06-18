@@ -216,15 +216,15 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-100 select-none">
+    <div className="flex flex-col h-full bg-[#E8E4D9] select-none">
       {/* Viewer Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-b border-slate-200 bg-[#FAF8F4]">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-b border-slate-200 bg-[#F2EFE6]">
         {/* Navigation Contols */}
         <div className="flex items-center gap-1.5">
           <button
             onClick={handlePrevPage}
             disabled={currentPage <= 1 || loading}
-            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed outline-none"
+            className="p-1.5 hover:bg-[#E8E4D9] rounded-lg text-slate-600 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed outline-none"
             title="Página Anterior"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -239,7 +239,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
           <button
             onClick={handleNextPage}
             disabled={currentPage >= totalPages || loading}
-            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed outline-none"
+            className="p-1.5 hover:bg-[#E8E4D9] rounded-lg text-slate-600 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed outline-none"
             title="Página Siguiente"
           >
             <ChevronRight className="w-5 h-5" />
@@ -251,7 +251,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
           <button
             onClick={handleZoomOut}
             disabled={loading || !pdf}
-            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
+            className="p-1.5 hover:bg-[#E8E4D9] rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
             title="Reducir Zoom"
           >
             <ZoomIn className="w-4 h-4 rotate-180 scale-x-[-1]" />
@@ -264,7 +264,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
           <button
             onClick={handleZoomIn}
             disabled={loading || !pdf}
-            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
+            className="p-1.5 hover:bg-[#E8E4D9] rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
             title="Aumentar Zoom"
           >
             <ZoomIn className="w-4 h-4" />
@@ -273,7 +273,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
           <button
             onClick={handleZoomReset}
             disabled={loading || !pdf}
-            className="ml-1 p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
+            className="ml-1 p-1.5 hover:bg-[#E8E4D9] rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
             title="Restablecer vista"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -284,14 +284,14 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
       {/* Main Content Area */}
       <div className="flex-1 overflow-auto p-4 flex items-start justify-center relative">
         {loading && (
-          <div className="absolute inset-0 bg-slate-100/80 z-10 flex flex-col items-center justify-center gap-3">
+          <div className="absolute inset-0 bg-[#E8E4D9]/80 z-10 flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-8 h-8 text-[#1f4e79] animate-spin" />
             <p className="text-sm font-semibold text-slate-600">Cargando documento...</p>
           </div>
         )}
 
         {error && (
-          <div className="max-w-md mx-auto my-12 bg-[#FAF8F4] p-6 rounded-2xl border border-rose-200 shadow-sm flex flex-col items-center text-center gap-3">
+          <div className="max-w-md mx-auto my-12 bg-[#F2EFE6] p-6 rounded-2xl border border-rose-200 shadow-sm flex flex-col items-center text-center gap-3">
             <AlertTriangle className="w-12 h-12 text-rose-500" />
             <h4 className="text-base font-bold text-slate-900">No se pudo visualizar el PDF</h4>
             <p className="text-sm text-slate-500 leading-relaxed">{error}</p>
@@ -299,7 +299,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
         )}
 
         {!error && (
-          <div className="bg-[#FAF8F4] rounded-xl shadow-md border border-slate-200 overflow-hidden shrink-0">
+          <div className="bg-[#F2EFE6] rounded-xl shadow-md border border-slate-200 overflow-hidden shrink-0">
             <canvas ref={canvasRef} className="block bg-white" />
           </div>
         )}

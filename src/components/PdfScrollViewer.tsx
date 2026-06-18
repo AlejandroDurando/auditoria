@@ -55,7 +55,7 @@ function PageCanvas({ pdf, pageNum, scale }: { key?: number; pdf: any; pageNum: 
   }, [pdf, pageNum, scale]);
 
   return (
-    <div className="bg-[#FAF8F4] rounded-lg shadow-md border border-slate-200 overflow-hidden shrink-0">
+    <div className="bg-[#F2EFE6] rounded-lg shadow-md border border-slate-200 overflow-hidden shrink-0">
       <canvas ref={canvasRef} className="block" />
     </div>
   );
@@ -114,22 +114,22 @@ export function PdfScrollViewer({ base64, fileName }: Props) {
   }, [libLoaded, base64]);
 
   return (
-    <div className="flex flex-col h-full bg-slate-100">
+    <div className="flex flex-col h-full bg-[#DED9CC]">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-200 bg-[#FAF8F4] shrink-0">
+      <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-200 bg-[#F2EFE6] shrink-0">
         <span className="text-xs text-slate-500 font-medium truncate max-w-[200px]">{fileName}</span>
         <div className="flex items-center gap-1">
           <button onClick={() => setScale(s => Math.max(s - 0.2, 0.6))} disabled={!pdf}
-            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 disabled:opacity-30 outline-none" title="Reducir">
+            className="p-1.5 hover:bg-[#DED9CC] rounded-lg text-slate-600 disabled:opacity-30 outline-none" title="Reducir">
             <ZoomOut className="w-4 h-4" />
           </button>
           <span className="text-xs font-semibold text-slate-500 font-mono w-10 text-center">{Math.round(scale * 100)}%</span>
           <button onClick={() => setScale(s => Math.min(s + 0.2, 3.0))} disabled={!pdf}
-            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 disabled:opacity-30 outline-none" title="Ampliar">
+            className="p-1.5 hover:bg-[#DED9CC] rounded-lg text-slate-600 disabled:opacity-30 outline-none" title="Ampliar">
             <ZoomIn className="w-4 h-4" />
           </button>
           <button onClick={() => setScale(1.2)} disabled={!pdf}
-            className="ml-1 p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 disabled:opacity-30 outline-none" title="Restablecer">
+            className="ml-1 p-1.5 hover:bg-[#DED9CC] rounded-lg text-slate-600 disabled:opacity-30 outline-none" title="Restablecer">
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -147,7 +147,7 @@ export function PdfScrollViewer({ base64, fileName }: Props) {
           </div>
         )}
         {error && (
-          <div className="max-w-sm mx-auto mt-16 bg-[#FAF8F4] p-6 rounded-2xl border border-rose-200 flex flex-col items-center gap-3 text-center">
+          <div className="max-w-sm mx-auto mt-16 bg-[#F2EFE6] p-6 rounded-2xl border border-rose-200 flex flex-col items-center gap-3 text-center">
             <AlertTriangle className="w-10 h-10 text-rose-500" />
             <p className="text-sm text-slate-600">{error}</p>
           </div>

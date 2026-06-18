@@ -195,7 +195,7 @@ export function PlanillaControlFF({ initialData }: Props) {
       <div className="max-w-2xl">
         {/* Header sección */}
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
+          <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
             <Zap className="w-6 h-6 text-[#004741]" />
           </div>
           <div>
@@ -205,7 +205,7 @@ export function PlanillaControlFF({ initialData }: Props) {
         </div>
 
         {/* Card planilla */}
-        <div className="bg-[#FAF8F4] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-[28px_32px] max-w-[560px]">
+        <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-[28px_32px] max-w-[560px]">
           {/* Header — logo EPE igual que Planilla Revisiva */}
           <div className="border border-black grid items-stretch text-[9px] mb-5" style={{ gridTemplateColumns: '160px 1fr' }}>
             <div className="p-2 flex items-center justify-center border-r border-black">
@@ -239,10 +239,10 @@ export function PlanillaControlFF({ initialData }: Props) {
                 className={cn('grid items-stretch', i < arr.length - 1 && 'border-b-[0.5px] border-[#E8E6DE]')}
                 style={{ gridTemplateColumns: '160px 1fr' }}
               >
-                <div className="bg-[#F6F3EC] px-3 py-2.5 flex items-center">
+                <div className="bg-[#E8E4D8] px-3 py-2.5 flex items-center">
                   <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">{row.label}</span>
                 </div>
-                <div className="bg-[#FAF8F4] px-3 py-2.5 flex items-center border-l-[0.5px] border-[#E8E6DE]">
+                <div className="bg-[#F2EFE6] px-3 py-2.5 flex items-center border-l-[0.5px] border-[#E8E6DE]">
                   <span className="text-[13px] font-medium text-[#1A1A1A]">{row.value || '—'}</span>
                 </div>
               </div>
@@ -253,7 +253,7 @@ export function PlanillaControlFF({ initialData }: Props) {
           <p className="text-[13px] font-medium text-[#1A1A1A] mb-2">Observaciones</p>
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-[#F6F3EC] border-[0.5px] border-[#E8E6DE]">
+              <tr className="bg-[#E8E4D8] border-[0.5px] border-[#E8E6DE]">
                 <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890] px-3 py-2 w-[140px]">
                   N.º de orden
                 </th>
@@ -292,7 +292,7 @@ export function PlanillaControlFF({ initialData }: Props) {
           <button
             type="button"
             onClick={() => setVista('formulario')}
-            className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium text-[#004741] bg-[#FAF8F4] border-[0.5px] border-[#D3D1C7] rounded-[8px] cursor-pointer hover:bg-[#F6F3EC] transition-colors outline-none"
+            className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium text-[#004741] bg-[#F2EFE6] border-[0.5px] border-[#D3D1C7] rounded-[8px] cursor-pointer hover:bg-[#E8E4D8] transition-colors outline-none"
           >
             <Pencil className="w-3.5 h-3.5" />
             Editar
@@ -316,7 +316,7 @@ export function PlanillaControlFF({ initialData }: Props) {
       {/* Header sección */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-[#FAF8F4] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
+          <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
             <Zap className="w-6 h-6 text-[#004741]" />
           </div>
           <div>
@@ -334,7 +334,7 @@ export function PlanillaControlFF({ initialData }: Props) {
       </div>
 
       {/* Card formulario */}
-      <div className="bg-[#FAF8F4] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-[20px_24px]">
+      <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-[20px_24px]">
         {/* Metadata grid */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           {(
@@ -353,7 +353,7 @@ export function PlanillaControlFF({ initialData }: Props) {
                 type={type}
                 value={meta[campo]}
                 onChange={e => actualizarMeta(campo, e.target.value)}
-                className="border-[0.5px] border-[#E8E6DE] rounded-[6px] px-3 py-2 text-[13px] text-[#1A1A1A] outline-none focus:border-[#004741] transition-colors bg-[#F6F3EC] focus:bg-[#FAF8F4]"
+                className="border-[0.5px] border-[#E8E6DE] rounded-[6px] px-3 py-2 text-[13px] text-[#1A1A1A] outline-none focus:border-[#004741] transition-colors bg-[#E8E4D8] focus:bg-[#F2EFE6]"
               />
             </div>
           ))}
@@ -363,7 +363,7 @@ export function PlanillaControlFF({ initialData }: Props) {
         <p className="text-[13px] font-medium text-[#1A1A1A] mb-2">Observaciones</p>
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-[#F6F3EC]" style={{ border: '0.5px solid #E8E6DE' }}>
+            <tr className="bg-[#E8E4D8]" style={{ border: '0.5px solid #E8E6DE' }}>
               <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890] px-3 py-2 w-[140px]">
                 N.º de orden
               </th>

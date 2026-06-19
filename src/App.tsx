@@ -1292,7 +1292,7 @@ export default function App() {
                     "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
                     notification.type === 'error' && "bg-[#FCEBEB] text-[#A32D2D]",
                     notification.type === 'success' && "bg-[#D4E8E6] text-[#003330]",
-                    notification.type === 'info' && "bg-blue-50 text-[#1f4e79]"
+                    notification.type === 'info' && "bg-blue-50 text-[#004741]"
                   )}>
                     {notification.type === 'error' && <AlertCircle className="w-5 h-5" />}
                     {notification.type === 'success' && <CheckCircle2 className="w-5 h-5" />}
@@ -3016,12 +3016,12 @@ export default function App() {
                 <div
                   onMouseDown={startResize}
                   className={cn(
-                    "absolute left-0 top-0 bottom-0 w-2 cursor-col-resize flex items-center justify-center bg-[#E5E1D5]/50 border-r border-slate-200 hover:bg-[#1f4e79]/20 transition-all z-50 group",
-                    isDragging && "bg-[#1f4e79]/35 border-[#1f4e79]/50 w-2.5"
+                    "absolute left-0 top-0 bottom-0 w-2 cursor-col-resize flex items-center justify-center bg-[#E5E1D5]/50 border-r border-slate-200 hover:bg-[#004741]/20 transition-all z-50 group",
+                    isDragging && "bg-[#004741]/35 border-[#004741]/50 w-2.5"
                   )}
                   title="Arrastrar para redimensionar"
                 >
-                  <div className="w-[3px] h-14 bg-slate-300 group-hover:bg-[#1f4e79]/50 rounded-full transition-colors" />
+                  <div className="w-[3px] h-14 bg-slate-300 group-hover:bg-[#004741]/50 rounded-full transition-colors" />
                 </div>
               )}
 
@@ -3030,16 +3030,13 @@ export default function App() {
                 {/* Header of the PDF Viewer */}
                 <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-[#E5E1D5]">
                   <div className="flex items-center gap-2 overflow-hidden mr-4">
-                    <div className="p-2 bg-[#1f4e79]/10 rounded-lg text-[#1f4e79] shrink-0">
+                    <div className="p-2 bg-[#004741]/10 rounded-lg text-[#004741] shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div className="overflow-hidden">
                       <h3 className="text-sm font-bold text-slate-900 truncate" title={activePdfViewer.fileName}>
                         {activePdfViewer.fileName}
                       </h3>
-                      <p className="text-xs text-slate-500 font-medium font-mono">
-                        Página sugerida: {activePdfViewer.pageNumber || 1}
-                      </p>
                     </div>
                   </div>
                   
@@ -3065,7 +3062,7 @@ export default function App() {
                     {/* Expand / Open PDF in new tab using handleOpenPdfInNewTab */}
                     <button
                       onClick={() => handleOpenPdfInNewTab(activePdfViewer.fileUrl, activePdfViewer.fileName, activePdfViewer.pageNumber)}
-                      className="p-2 hover:bg-slate-200 text-slate-500 hover:text-[#1f4e79] rounded-lg transition-colors cursor-pointer outline-none border-none bg-transparent"
+                      className="p-2 hover:bg-slate-200 text-slate-500 hover:text-[#004741] rounded-lg transition-colors cursor-pointer outline-none border-none bg-transparent"
                       title="Abrir en pestaña nueva"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -3083,10 +3080,10 @@ export default function App() {
                 </div>
 
                 {/* Sandbox Tip Bar */}
-                <div className="px-4 py-2 bg-[#1f4e79]/5 border-b border-[#1f4e79]/10 text-xs text-slate-600 flex items-start gap-2 leading-relaxed">
-                  <Info className="w-4 h-4 text-[#1f4e79] shrink-0 mt-0.5" />
+                <div className="px-4 py-2 bg-[#004741]/5 border-b border-[#004741]/10 text-xs text-slate-600 flex items-start gap-2 leading-relaxed">
+                  <Info className="w-4 h-4 text-[#004741] shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-semibold text-[#1f4e79]">Consejo:</span> El documento se visualiza directamente en tiempo real. Si necesitas verlo externo, puedes abrir o descargar desde arriba.
+                    <span className="font-semibold text-[#004741]">Consejo:</span> El documento se visualiza directamente en tiempo real. Si necesitas verlo externo, puedes abrir o descargar desde arriba.
                   </div>
                 </div>
 
@@ -3111,7 +3108,7 @@ export default function App() {
                               className={cn(
                                 "px-2.5 py-1 rounded-md border text-xs font-semibold transition-all cursor-pointer truncate max-w-[120px] outline-none",
                                 isActive 
-                                  ? "bg-[#1f4e79] text-white border-[#1f4e79]" 
+                                  ? "bg-[#004741] text-white border-[#004741]" 
                                   : "bg-[#F2EFE6] text-slate-600 border-slate-200 hover:bg-[#DED9CC]"
                               )}
                               title={file.name}
@@ -3126,11 +3123,10 @@ export default function App() {
                   return null;
                 })()}
 
-                {/* PDFJS Canvas-based Viewer - 100% immune to sandbox block */}
-                <div className="flex-1 relative overflow-hidden h-full min-h-0 bg-[#E5E1D5]">
-                  <PdfCanvasViewer
+                {/* PDF Scroll Viewer - continuous scroll, all pages stacked */}
+                <div className="flex-1 relative overflow-hidden h-full min-h-0 bg-[#DED9CC]">
+                  <PdfScrollViewer
                     base64={activePdfViewer.fileBase64 || ''}
-                    initialPage={activePdfViewer.pageNumber || 1}
                     fileName={activePdfViewer.fileName}
                   />
                 </div>

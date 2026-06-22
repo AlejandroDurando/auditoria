@@ -103,6 +103,13 @@ function normalizeResult(raw: any, mode: 'Expedientes' | 'Viáticos' | 'Rapida')
       status: (v?.status === 'pass' || v?.status === 'fail' || v?.status === 'warning') ? v.status : 'warning',
       observations: toSafeString(v?.observations ?? v?.observation),
     }));
+    // Ensure all expected validation ids are present
+    const expectedIds = mode === 'Viáticos' ? ['v1','v2','v3','v4'] : ['v1','v2','v3','v4','v5','v6','v7','v8','v9','v10'];
+    for (const vid of expectedIds) {
+      if (!pay.validations.find((v: any) => v.id === vid)) {
+        pay.validations.push({ id: vid, status: 'warning', observations: 'No analizado por la IA para este comprobante.' });
+      }
+    }
     return pay;
   });
 
@@ -219,6 +226,8 @@ async function processDocumentWithKey(
     ¡REGLA DE ORO DE EXTRACCIÓN (CRÍTICA)!:
     Incluso si NO se adjunta el Balance de Inversión o la Carátula del expediente, de todas formas DEBES analizar y extraer todos los "payments" (pagos/comprobantes) de los archivos PDF proporcionados. El análisis de los pagos es independiente de la presencia de la Carátula o de la planilla del Balance. No dejes el array 'payments' vacío bajo ninguna circunstancia si hay comprobantes, facturas, recibos, vales o tickets en los PDFs.
     NUNCA devuelvas una lista 'payments' vacía si el expediente tiene movimientos registrados, importes consumidos o comprobantes adjuntos en los PDFs.
+
+    REGLA OBLIGATORIA DE VALIDACIONES: Para cada pago del array 'payments', el campo 'validations' DEBE contener SIEMPRE los 10 puntos de control (v1 a v10) sin excepción. Si un punto no aplica para ese tipo de comprobante (por ejemplo, v1 y v2 no aplican para una Nota de Débito Bancaria o una factura de servicio sin PIMyS), de todas formas inclúyelo con status 'warning' y una observación explicando por qué no aplica (ej: "No aplica: este comprobante no tiene PIMyS asociado."). Nunca omitas ningún punto del v1 al v10.
 
     Por cada pago, debes validar lo siguiente:
     - IMPORTANTE (OBLIGATORIO): Identifica y guarda en la propiedad 'pageNumber' la página física inicial del PDF (empezando en 1) en donde se halla la documentación de este pago en particular (su factura, PIMyS, comprobantes, o la página del Libro Diario si se extrae de allí). Además, guarda en la propiedad 'sourceFileIdx' el índice (0, 1, 2...) del archivo PDF subido que contiene este pago (si se subieron múltiples archivos). El índice debe coincidir exactamente con el índice indicado en la cabecera "=== ARCHIVO CON ÍNDICE DE ORIGEN X ===".

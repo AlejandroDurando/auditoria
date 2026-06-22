@@ -227,6 +227,13 @@ async function processDocumentWithKey(
     Debes generar un elemento en el array 'payments' por CADA pago o comprobante de gasto individual que encuentres en todo el lote de archivos PDFs. No omitas ninguno.
     Identifica de manera flexible los pagos de la siguiente manera:
     1. Si encuentras comprobantes individuales de compras y gastos (formularios PIMyS, facturas físicas o electrónicas, tickets de compra, tiques, tickets banco, o liquidaciones de servicios): extrae cada grupo como un pago individual.
+
+    FORMATO ESTÁNDAR DE FACTURA AFIP TIPO A/B/C (proveedores comerciales, repuestos, insumos, etc.):
+    Estas facturas tienen una estructura fija emitida bajo normas AFIP. Seguí estrictamente estas reglas de extracción:
+    - NOMBRE DEL PROVEEDOR (providerName): El nombre fiscal del emisor aparece debajo del logo o nombre comercial de la empresa, generalmente en la sección del encabezado izquierdo, precedido por el nombre en negrita/mayúsculas y seguido del CUIT, domicilio e ingresos brutos. Por ejemplo: encabezado dice "COSTAMAGNA REPUESTOS" (nombre comercial/logo) y debajo aparece "COSTAMAGNA EDUARDO MIGUEL" (nombre fiscal AFIP) junto con "CUIT: 24112069999". Debés usar el NOMBRE FISCAL (ej: "COSTAMAGNA EDUARDO MIGUEL"), NO el nombre comercial del logo. Si solo hay un nombre visible, usalo.
+    - NÚMERO DE COMPROBANTE (orderNumber): En facturas AFIP tipo A/B/C, el número de comprobante se compone de dos partes: "Punto de venta: XXXX" y "Comp. Nro: XXXXXXXX" (o "Comprobante Nro:", "N° Comprobante:", etc.). Combiná ambos para formar el número: "XXXX-XXXXXXXX". Ejemplo: "Punto de venta: 0010  Comp.Nro: 00006075" → orderNumber: "0010-00006075". NUNCA uses el número del PIMyS como orderNumber de la factura; son documentos distintos.
+    - FECHA DE LA FACTURA: Buscala en el campo "Fecha:" de la factura (ej. "Fecha: 03/06/2026").
+    - IMPORTE TOTAL (amount): Es el campo "TOTAL" o "Total" en el cuadro de totales de la factura (ej. "TOTAL 195000.00"). Incluye IVA. NO uses subtotales parciales (Importe Neto Gravado, IVA 21%, etc.), sino el TOTAL final.
     
     CRÍTICO - FORMATO DE FACTURAS DE SERVICIOS PÚBLICOS / COOPERATIVAS (ej. Cooperativa Agua Potable de Sunchales, Litoral Gas, Telecom, Coop. Serv. Públicos Sastre, Servicio de Cloacas municipal, etc.):
     Estas facturas tienen un diseño particular y no siguen la estructura de factura de AFIP tipo A/B/C típica. Sigue estrictamente estas reglas de extracción para este formato:

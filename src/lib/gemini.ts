@@ -113,6 +113,37 @@ function normalizeResult(raw: any, mode: 'Expedientes' | 'Viáticos' | 'Rapida')
     return pay;
   });
 
+  // Red de seguridad anti-duplicación: si Gemini extrajo el mismo pago dos veces
+  // (típicamente uno desde el comprobante físico y otro desde la fila del Libro Diario),
+  // conservamos el que tiene comprobante físico (más validaciones reales / sin la marca
+  // "sin comprobante físico") y descartamos el duplicado del Libro Diario.
+  if (parsed.payments.length > 1) {
+    const isLibroDiarioOnly = (p: any): boolean =>
+      Array.isArray(p.validations) &&
+      p.validations.some((v: any) =>
+        typeof v?.observations === 'string' &&
+        v.observations.toLowerCase().includes('sin comprobante físico'));
+    const seen = new Map<string, number>();
+    const deduped: any[] = [];
+    for (const pay of parsed.payments) {
+      const key = `${(pay.providerName || '').trim().toLowerCase()}|${Math.round(pay.amount || 0)}`;
+      if (!pay.providerName || !pay.amount) { deduped.push(pay); continue; }
+      if (seen.has(key)) {
+        const idx = seen.get(key)!;
+        const existing = deduped[idx];
+        // Preferimos el que SÍ tiene comprobante físico
+        if (isLibroDiarioOnly(existing) && !isLibroDiarioOnly(pay)) {
+          deduped[idx] = pay;
+        }
+        // si el nuevo es el del Libro Diario, lo descartamos (no hacemos push)
+      } else {
+        seen.set(key, deduped.length);
+        deduped.push(pay);
+      }
+    }
+    parsed.payments = deduped;
+  }
+
   parsed.expedienteNumero = toSafeString(parsed.expedienteNumero);
   parsed.expedienteFecha = toSafeString(parsed.expedienteFecha);
   parsed.fondoFijoNumero = toSafeString(parsed.fondoFijoNumero);
@@ -220,7 +251,7 @@ async function processDocumentWithKey(
       * Verificar que el monto indicado en la nota ($4.932,17) coincide con el "Reintegro Monetario" de la factura. Si coincide: pass. Si no: fail con detalle de la diferencia.
       * Las demás validaciones (v1 a v10) aplican normalmente.
 
-    3. Si el lote de documentos contiene una planilla de "Libro Diario" o listado de movimientos de caja: considera que cada renglón o fila de gasto de esa planilla representa un pago individual que DEBES extraer y auditar. Si un gasto del Libro Diario carece de comprobante de factura física individual en el lote de PDFs, de todas formas lo DEBES incluir en la lista de 'payments' y calificar sus correspondientes validaciones v1 a v10 como 'warning' detallando que se verificó según el Libro Diario pero sin comprobante físico adjunto ("Sin comprobante físico en PDF, verificado según registro en Libro Diario").
+    3. Si el lote de documentos contiene una planilla de "Libro Diario" o listado de movimientos de caja: el Libro Diario se usa PRINCIPALMENTE para CONTRASTAR y corroborar los pagos que ya extrajiste de los comprobantes físicos (PIMyS, facturas, tickets), NO para duplicarlos. REGLA ANTI-DUPLICACIÓN (CRÍTICA Y OBLIGATORIA): Cada transacción económica debe generar UN ÚNICO elemento en el array 'payments'. Antes de crear un pago a partir de una fila del Libro Diario, verificá si ya existe un pago extraído de un comprobante físico (PIMyS/factura) que corresponda a la misma transacción (mismo proveedor y/o mismo importe y/o misma fecha). Si ya existe, NO crees un segundo pago: simplemente usá esa fila del Libro Diario para completar el campo 'libroDiarioText' y corroborar las validaciones de ESE pago ya existente. SOLO debés crear un pago nuevo a partir del Libro Diario cuando esa fila NO tenga ningún comprobante físico asociado en el lote de PDFs; en ese caso (y solo en ese caso) lo incluís con sus validaciones v1 a v10 como 'warning' detallando que se verificó según el Libro Diario pero sin comprobante físico adjunto ("Sin comprobante físico en PDF, verificado según registro en Libro Diario"). Nunca devuelvas el mismo proveedor e importe dos veces (una desde el PIMyS y otra desde el Libro Diario): eso es un error grave de duplicación.
     3. Para Notas de Débito de Banco Santa Fe o "Débitos y Créditos Bancarios": extráelas siempre como un pago individual en la lista 'payments'. Utiliza como 'orderNumber' su número de documento (ej: '0321') o similar, 'Banco de Santa Fe' como 'providerName' y el total de la planilla como 'amount'. Realiza las correspondientes validaciones v1 a v10 para este documento.
     
     ¡REGLA DE ORO DE EXTRACCIÓN (CRÍTICA)!:

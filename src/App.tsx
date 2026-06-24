@@ -3186,6 +3186,16 @@ function toSentenceCase(str: string): string {
 // Convierte cualquier valor a string seguro para renderizar en JSX.
 // Protege contra datos viejos o respuestas del modelo donde un campo de texto
 // llegó como objeto (causa del error React #31 / pantalla en blanco).
+function renderBold(text: string): React.ReactNode {
+  if (!text.includes('**')) return text;
+  const parts = text.split('**');
+  return parts.map((part, i) =>
+    i % 2 === 1
+      ? <strong key={i} className="font-semibold text-slate-900">{part}</strong>
+      : part
+  );
+}
+
 function safeText(val: unknown): string {
   if (val == null) return '';
   if (typeof val === 'string') return val;
@@ -3382,12 +3392,17 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                           )}
                         </div>
                         <p className={cn(
-                          "text-[13px] leading-relaxed mt-1.5 p-3.5 rounded-[8px] bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] shadow-none whitespace-pre-wrap border-l-2",
+                          "text-[13px] leading-relaxed mt-1.5 p-3.5 rounded-[8px] bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] shadow-none border-l-2",
                           status === 'pass' ? "border-l-emerald-500 text-slate-650" :
                           status === 'fail' ? "border-l-[#E24B4A] text-slate-800" :
                           "border-l-amber-400 text-slate-600 italic"
                         )}>
-                          {res?.observations || 'Dato no analizado por la IA.'}
+                          {(res?.observations || 'Dato no analizado por la IA.').split('\n').map((line, li, arr) => (
+                            <React.Fragment key={li}>
+                              {renderBold(line)}
+                              {li < arr.length - 1 && <br />}
+                            </React.Fragment>
+                          ))}
                         </p>
                       </div>
                     </div>

@@ -1,11 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { 
-  FileCheck2, 
-  Upload, 
-  ChevronRight, 
-  AlertCircle, 
-  CheckCircle2, 
+import {
+  FileCheck2,
+  Upload,
+  ChevronRight,
+  AlertCircle,
+  CheckCircle2,
   XCircle,
   Clock,
   Search,
@@ -30,7 +30,9 @@ import {
   FileSpreadsheet,
   Hash,
   ChevronDown,
-  Zap
+  Zap,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { PlanillaControlFF } from './components/PlanillaControlFF';
 import { motion, AnimatePresence } from 'motion/react';
@@ -301,6 +303,16 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
 }
 
 export default function App() {
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('epe_dark_mode') === 'true'; } catch { return false; }
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (darkMode) { root.classList.add('dark'); } else { root.classList.remove('dark'); }
+    try { localStorage.setItem('epe_dark_mode', String(darkMode)); } catch {}
+  }, [darkMode]);
+
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [planillasOpen, setPlanillasOpen] = useState(false);
   const [dashboardMode, setDashboardMode] = useState<'Expedientes' | 'Viáticos'>('Expedientes');
@@ -1447,13 +1459,21 @@ export default function App() {
 
         <div className="p-4 border-t-[0.5px] border-[#E8E6DE] bg-[#F2EFE6]">
           <div className="flex items-center gap-3 px-2">
-            <div className="w-9 h-9 bg-[#E8EFEE] text-[#004741] rounded-full flex items-center justify-center text-xs font-medium">
+            <div className="w-9 h-9 bg-[#E8EFEE] text-[#004741] rounded-full flex items-center justify-center text-xs font-medium shrink-0">
               AL
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-700 leading-none">Alejandro D.</p>
               <p className="text-[10px] text-[#9A9890] uppercase tracking-[0.06em] font-medium mt-1">Rafaela, Sta Fe</p>
             </div>
+            {/* Dark mode toggle */}
+            <button
+              onClick={() => setDarkMode(d => !d)}
+              title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer outline-none border-none bg-transparent hover:bg-[#E8EFEE] text-[#9A9890] hover:text-[#004741]"
+            >
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
           </div>
         </div>
       </aside>

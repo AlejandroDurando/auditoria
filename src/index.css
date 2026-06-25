@@ -4,3 +4,165 @@
 @theme {
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
+
+/* ─── Dark mode ───────────────────────────────────────────────────────────── */
+/*
+  Strategy: .dark class on <html> overrides every hardcoded sand/cypress color
+  used throughout the app. We cover all hex values and common Tailwind shades.
+*/
+
+/* Palette (dark)
+   bg-base     #0D1117  (deepest – main canvas)
+   bg-surface  #161B22  (cards, sidebar, header)
+   bg-raised   #1C2128  (inputs, code blocks)
+   bg-overlay  #21262D  (hover states, elevated)
+   border      #30363D  (all borders)
+   text-1      #E6EDF3  (primary text)
+   text-2      #8B949E  (secondary)
+   text-3      #6E7681  (muted / placeholders)
+   primary     #10B981  (accent green – replaces Cyprus teal)
+   primary-dim #064E3B  (subtle primary bg)
+*/
+
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+/* === BACKGROUNDS === */
+/* Main canvas */
+.dark .bg-\[\#E8E4D8\]  { background-color: #0D1117 !important; }
+/* Cards / sidebar / surfaces */
+.dark .bg-\[\#F2EFE6\]  { background-color: #161B22 !important; }
+/* Slightly elevated */
+.dark .bg-\[\#DED9CC\]  { background-color: #1C2128 !important; }
+.dark .bg-\[\#E5E1D5\]  { background-color: #21262D !important; }
+/* Primary tint bg */
+.dark .bg-\[\#E8EFEE\]  { background-color: #0D2E26 !important; }
+/* White surfaces (inputs, tables) */
+.dark .bg-white         { background-color: #1C2128 !important; }
+/* Slate grays */
+.dark .bg-slate-50      { background-color: #161B22 !important; }
+.dark .bg-slate-100     { background-color: #1C2128 !important; }
+.dark .bg-slate-200     { background-color: #21262D !important; }
+/* Amber/warning bg */
+.dark .bg-amber-50      { background-color: #1F1A0E !important; }
+/* Rose/error bg */
+.dark .bg-\[\#FCEBEB\]  { background-color: #2D1515 !important; }
+.dark .bg-\[\#FFF8F8\]  { background-color: #2D1515 !important; }
+/* Pass bg */
+.dark .bg-\[\#D4E8E6\]  { background-color: #0D2E26 !important; }
+/* Info bg */
+.dark .bg-blue-50       { background-color: #0D1F2E !important; }
+/* Backdrop blur overlay */
+.dark .bg-slate-850\/40 { background-color: rgba(0,0,0,0.6) !important; }
+
+/* === PRIMARY COLOR === */
+.dark .bg-\[\#004741\]  { background-color: #10B981 !important; }
+.dark .bg-\[\#003330\]  { background-color: #059669 !important; }
+.dark .hover\:bg-\[\#003330\]:hover { background-color: #059669 !important; }
+.dark .hover\:bg-\[\#0a5c47\]:hover { background-color: #059669 !important; }
+
+/* === TEXT COLORS === */
+.dark .text-slate-900   { color: #E6EDF3 !important; }
+.dark .text-slate-850   { color: #E6EDF3 !important; }
+.dark .text-slate-800   { color: #CDD9E5 !important; }
+.dark .text-slate-700   { color: #ADBAC7 !important; }
+.dark .text-slate-650   { color: #ADBAC7 !important; }
+.dark .text-slate-600   { color: #8B949E !important; }
+.dark .text-slate-500   { color: #6E7681 !important; }
+.dark .text-slate-400   { color: #545D68 !important; }
+.dark .text-\[\#1A1A1A\] { color: #E6EDF3 !important; }
+.dark .text-\[\#6B6963\] { color: #8B949E !important; }
+.dark .text-\[\#9A9890\] { color: #6E7681 !important; }
+.dark .text-\[\#C8C6BE\] { color: #545D68 !important; }
+.dark .text-\[\#BDBBB2\] { color: #545D68 !important; }
+/* Primary text */
+.dark .text-\[\#004741\] { color: #10B981 !important; }
+.dark .text-\[\#003330\] { color: #6EE7B7 !important; }
+/* Pass text */
+.dark .text-\[\#003330\].bg-\[\#D4E8E6\] { color: #6EE7B7 !important; }
+/* Error text */
+.dark .text-\[\#A32D2D\] { color: #F87171 !important; }
+/* Amber text */
+.dark .text-amber-800   { color: #FCD34D !important; }
+.dark .text-amber-850   { color: #FCD34D !important; }
+/* Blue info text */
+.dark .text-blue-700    { color: #60A5FA !important; }
+/* White text stays white on dark primary buttons */
+.dark .bg-\[\#10B981\] .text-white,
+.dark .text-white       { color: #FFFFFF !important; }
+
+/* === BORDERS === */
+.dark .border-\[\#E8E6DE\]   { border-color: #30363D !important; }
+.dark .border-\[\#E8E4D8\]   { border-color: #30363D !important; }
+.dark .border-\[\#EEECE5\]   { border-color: #21262D !important; }
+.dark .border-\[\#D3D1C7\]   { border-color: #30363D !important; }
+.dark .border-\[\#E2E0D8\]   { border-color: #30363D !important; }
+.dark .border-slate-200      { border-color: #30363D !important; }
+.dark .border-slate-100      { border-color: #21262D !important; }
+.dark .divide-slate-100 > * + * { border-color: #21262D !important; }
+/* Primary border */
+.dark .border-\[\#004741\]   { border-color: #10B981 !important; }
+.dark .border-\[\#9FE1CB\]   { border-color: #065F46 !important; }
+/* Error border */
+.dark .border-rose-200       { border-color: #7F1D1D !important; }
+.dark .border-\[\#F8CCCC\]   { border-color: #7F1D1D !important; }
+/* Amber border */
+.dark .border-amber-250      { border-color: #78350F !important; }
+
+/* === LEFT BORDER ACCENTS (validation cards) === */
+.dark .border-l-\[\#004741\] { border-left-color: #10B981 !important; }
+.dark .border-l-\[\#E24B4A\] { border-left-color: #EF4444 !important; }
+.dark .border-l-\[\#9A9890\] { border-left-color: #545D68 !important; }
+.dark .border-l-emerald-500  { border-left-color: #10B981 !important; }
+.dark .border-l-amber-400    { border-left-color: #F59E0B !important; }
+
+/* === HOVER BACKGROUNDS === */
+.dark .hover\:bg-\[\#E8E4D8\]:hover  { background-color: #21262D !important; }
+.dark .hover\:bg-\[\#DED9CC\]:hover  { background-color: #21262D !important; }
+.dark .hover\:bg-\[\#E8EFEE\]:hover  { background-color: #0D2E26 !important; }
+.dark .hover\:bg-\[\#E5E1D5\]:hover  { background-color: #21262D !important; }
+.dark .hover\:bg-slate-200:hover     { background-color: #21262D !important; }
+.dark .hover\:bg-\[\#E8E4D8\]\/50:hover { background-color: rgba(33,38,45,0.5) !important; }
+.dark .hover\:text-slate-900:hover   { color: #E6EDF3 !important; }
+.dark .hover\:text-\[\#004741\]:hover { color: #10B981 !important; }
+
+/* === INPUTS === */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1C2128 !important;
+  color: #E6EDF3 !important;
+  border-color: #30363D !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder { color: #545D68 !important; }
+.dark input:focus,
+.dark textarea:focus { border-color: #10B981 !important; }
+
+/* === ACTIVE / SELECTED STATES === */
+.dark .bg-\[\#1f4e79\],
+.dark .bg-\[\#004741\].text-white { background-color: #10B981 !important; color: #fff !important; }
+
+/* === SCROLLBAR (subtle dark styling) === */
+.dark ::-webkit-scrollbar { width: 6px; height: 6px; }
+.dark ::-webkit-scrollbar-track { background: #0D1117; }
+.dark ::-webkit-scrollbar-thumb { background: #30363D; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #545D68; }
+
+/* === MISC UTILITY OVERRIDES === */
+/* Pass/fail badge bg already handled above; make sure text on primary button is always white */
+.dark button.bg-\[\#004741\] { background-color: #10B981 !important; color: #fff !important; }
+.dark button.bg-\[\#10B981\] { background-color: #10B981 !important; }
+
+/* Strong/bold text in observations */
+.dark strong.font-semibold.text-slate-900 { color: #E6EDF3 !important; }
+
+/* PDF scroll viewer dark bg */
+.dark .bg-\[\#DED9CC\] canvas { /* keep canvas white for PDF paper */ background: #fff; }
+
+/* Notification info card */
+.dark .bg-blue-50.text-\[\#004741\] { background-color: #0D1F2E !important; color: #60A5FA !important; }

@@ -56,6 +56,10 @@ function isQuotaError(err: unknown): boolean {
   return msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('quota') || msg.includes('high demand') || msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function getApiKeys(): string[] {
   const keys: string[] = [];
   if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
@@ -170,17 +174,32 @@ export async function processDocument(
   }
 
   let lastError: unknown;
+  // Backoff delays (ms) para reintentos por cuota: 8s, 16s, 30s
+  const backoffMs = [8000, 16000, 30000];
+
   for (let i = 0; i < apiKeys.length; i++) {
+    // Primer intento con esta key
     try {
       return await processDocumentWithKey(apiKeys[i], pdfFiles, mode, modelName, signal);
     } catch (err) {
       lastError = err;
-      // Solo rotamos a la siguiente key si fue un error de cuota/saturación.
-      if (isQuotaError(err) && i < apiKeys.length - 1) {
-        console.warn(`API key ${i + 1} agotada, intentando con key ${i + 2}...`);
-        continue;
+      if (!isQuotaError(err)) throw err; // error real, no de cuota → lanzar
+    }
+
+    // Es un error de cuota: esperar y reintentar la misma key una vez
+    const waitMs = backoffMs[i] ?? 30000;
+    console.warn(`Key ${i + 1} con rate limit. Esperando ${waitMs / 1000}s antes de reintentar...`);
+    await sleep(waitMs);
+
+    try {
+      return await processDocumentWithKey(apiKeys[i], pdfFiles, mode, modelName, signal);
+    } catch (err) {
+      lastError = err;
+      if (!isQuotaError(err)) throw err;
+      // Sigue con cuota → rotar a próxima key (sin espera extra)
+      if (i < apiKeys.length - 1) {
+        console.warn(`Key ${i + 1} agotada, rotando a key ${i + 2}...`);
       }
-      throw err;
     }
   }
 

@@ -822,11 +822,15 @@ export default function App() {
         return;
       }
       console.error('Error in processing:', err);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const isRateLimit = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('high demand') || errMsg.includes('UNAVAILABLE');
       showNotification(
         'Error de Auditoría',
-        selectedModel === 'gemini-3.1-pro-preview'
-          ? 'Hubo un error al procesar los archivos. Al utilizar el modelo Pro con muchos archivos, es común sufrir demoras extremos o cortes por límites de tiempo del navegador. Te recomendamos reintentar seleccionando el modelo "Gemini 3.5 Flash" (Rápido) en la sección de arriba.'
-          : 'Hubo un error al procesar los archivos de auditoría. Comprueba la conexión y vuelve a intentarlo o cámbiate al modelo rápido (Gemini 3.5 Flash).',
+        isRateLimit
+          ? 'Límite de solicitudes de Gemini alcanzado. La app ya reintentó automáticamente con todas las claves disponibles. Esperá 1-2 minutos y volvé a intentarlo — el límite se recupera solo.'
+          : selectedModel === 'gemini-3.1-pro-preview'
+            ? 'Hubo un error al procesar los archivos. Al utilizar el modelo Pro con muchos archivos, es común sufrir demoras extremas o cortes por límites de tiempo del navegador. Te recomendamos reintentar seleccionando el modelo "Gemini 3.5 Flash" (Rápido) en la sección de arriba.'
+            : 'Hubo un error al procesar los archivos de auditoría. Comprueba la conexión y vuelve a intentarlo.',
         'error'
       );
     } finally {

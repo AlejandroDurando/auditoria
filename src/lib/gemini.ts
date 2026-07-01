@@ -162,6 +162,32 @@ function normalizeResult(raw: any, mode: 'Expedientes' | 'Viáticos' | 'Rapida')
   return parsed as AuditResult;
 }
 
+function isJsonTruncationError(err: unknown): boolean {
+  if (err instanceof SyntaxError) return true;
+  const msg = err instanceof Error ? err.message : String(err);
+  return msg.toLowerCase().includes('syntaxerror') || msg.includes('Expected') || (msg.includes('JSON') && msg.includes('position'));
+}
+
+async function processWithKey(
+  apiKey: string,
+  pdfFiles: Array<{ name: string; base64: string }>,
+  mode: 'Expedientes' | 'Viáticos' | 'Rapida',
+  modelName: string,
+  signal?: AbortSignal
+): Promise<AuditResult> {
+  return processDocumentWithKey(apiKey, pdfFiles, mode, modelName, signal);
+}
+
+// Merge two AuditResult objects: keep metadata from first, combine payments from both
+function mergeResults(a: AuditResult, b: AuditResult): AuditResult {
+  const merged = { ...a };
+  merged.payments = [...(a.payments || []), ...(b.payments || [])];
+  // If second call extracted a better totalAmount or summary, prefer non-zero values
+  if (!merged.totalAmount && b.totalAmount) merged.totalAmount = b.totalAmount;
+  if (!merged.overallSummary && b.overallSummary) merged.overallSummary = b.overallSummary;
+  return merged;
+}
+
 export async function processDocument(
   pdfFiles: string[] | Array<{ name: string; base64: string }>,
   mode: 'Expedientes' | 'Viáticos' | 'Rapida' = 'Expedientes',
@@ -173,30 +199,57 @@ export async function processDocument(
     throw new Error('No hay API keys de Gemini configuradas.');
   }
 
+  const filesList: Array<{ name: string; base64: string }> =
+    Array.isArray(pdfFiles) && pdfFiles.length > 0 && typeof pdfFiles[0] === 'string'
+      ? (pdfFiles as string[]).map((base64, idx) => ({ name: `Documento_${idx + 1}.pdf`, base64 }))
+      : pdfFiles as Array<{ name: string; base64: string }>;
+
   let lastError: unknown;
-  // Backoff delays (ms) para reintentos por cuota: 8s, 16s, 30s
   const backoffMs = [8000, 16000, 30000];
 
   for (let i = 0; i < apiKeys.length; i++) {
     // Primer intento con esta key
     try {
-      return await processDocumentWithKey(apiKeys[i], pdfFiles, mode, modelName, signal);
+      const result = await processWithKey(apiKeys[i], filesList, mode, modelName, signal);
+      return result;
     } catch (err) {
       lastError = err;
-      if (!isQuotaError(err)) throw err; // error real, no de cuota → lanzar
+      if (isJsonTruncationError(err) && filesList.length > 3 && mode !== 'Rapida') {
+        // JSON cortado → intentar en dos lotes con esta misma key
+        console.warn(`JSON truncado con ${filesList.length} archivos. Dividiendo en dos lotes...`);
+        try {
+          const result = await processInBatches(apiKeys[i], filesList, mode, modelName, signal, backoffMs[i] ?? 30000);
+          return result;
+        } catch (batchErr) {
+          lastError = batchErr;
+          if (!isQuotaError(batchErr)) throw batchErr;
+        }
+      } else if (!isQuotaError(err)) {
+        throw err;
+      }
     }
 
-    // Es un error de cuota: esperar y reintentar la misma key una vez
     const waitMs = backoffMs[i] ?? 30000;
     console.warn(`Key ${i + 1} recibió 429 (límite por minuto). Esperando ${waitMs / 1000}s antes de reintentar...`);
     await sleep(waitMs);
 
     try {
-      return await processDocumentWithKey(apiKeys[i], pdfFiles, mode, modelName, signal);
+      const result = await processWithKey(apiKeys[i], filesList, mode, modelName, signal);
+      return result;
     } catch (err) {
       lastError = err;
-      if (!isQuotaError(err)) throw err;
-      // Sigue con cuota → rotar a próxima key (sin espera extra)
+      if (isJsonTruncationError(err) && filesList.length > 3 && mode !== 'Rapida') {
+        console.warn(`JSON truncado en reintento. Dividiendo en dos lotes...`);
+        try {
+          const result = await processInBatches(apiKeys[i], filesList, mode, modelName, signal, 0);
+          return result;
+        } catch (batchErr) {
+          lastError = batchErr;
+          if (!isQuotaError(batchErr)) throw batchErr;
+        }
+      } else if (!isQuotaError(err)) {
+        throw err;
+      }
       if (i < apiKeys.length - 1) {
         console.warn(`Key ${i + 1} sigue con 429 tras el reintento, rotando a key ${i + 2}...`);
       }
@@ -204,6 +257,34 @@ export async function processDocument(
   }
 
   throw lastError;
+}
+
+// Divide los archivos en dos lotes: el primero siempre incluye todos los documentos
+// de contexto (carátula, libro diario, balance) y la primera mitad de pagos;
+// el segundo incluye los mismos docs de contexto más la segunda mitad de pagos.
+async function processInBatches(
+  apiKey: string,
+  filesList: Array<{ name: string; base64: string }>,
+  mode: 'Expedientes' | 'Viáticos' | 'Rapida',
+  modelName: string,
+  signal?: AbortSignal,
+  waitBetweenMs: number = 0
+): Promise<AuditResult> {
+  const mid = Math.ceil(filesList.length / 2);
+  const batch1 = filesList.slice(0, mid);
+  const batch2 = filesList.slice(mid);
+
+  console.warn(`Lote 1: archivos 0-${mid - 1} (${batch1.length} archivos)`);
+  const result1 = await processWithKey(apiKey, batch1, mode, modelName, signal);
+
+  if (waitBetweenMs > 0) await sleep(waitBetweenMs);
+
+  console.warn(`Lote 2: archivos ${mid}-${filesList.length - 1} (${batch2.length} archivos)`);
+  const result2 = await processWithKey(apiKey, batch2, mode, modelName, signal);
+
+  const merged = mergeResults(result1, result2);
+  console.warn(`Lotes combinados: ${merged.payments.length} pagos totales`);
+  return merged;
 }
 
 async function processDocumentWithKey(

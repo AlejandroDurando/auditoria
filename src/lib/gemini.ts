@@ -464,6 +464,7 @@ async function processDocumentWithKey(
     ],
     config: {
       systemInstruction,
+      maxOutputTokens: 65536,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,

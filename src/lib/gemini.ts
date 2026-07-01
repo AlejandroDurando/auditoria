@@ -188,7 +188,7 @@ export async function processDocument(
 
     // Es un error de cuota: esperar y reintentar la misma key una vez
     const waitMs = backoffMs[i] ?? 30000;
-    console.warn(`Key ${i + 1} con rate limit. Esperando ${waitMs / 1000}s antes de reintentar...`);
+    console.warn(`Key ${i + 1} recibió 429 (límite por minuto). Esperando ${waitMs / 1000}s antes de reintentar...`);
     await sleep(waitMs);
 
     try {
@@ -198,7 +198,7 @@ export async function processDocument(
       if (!isQuotaError(err)) throw err;
       // Sigue con cuota → rotar a próxima key (sin espera extra)
       if (i < apiKeys.length - 1) {
-        console.warn(`Key ${i + 1} agotada, rotando a key ${i + 2}...`);
+        console.warn(`Key ${i + 1} sigue con 429 tras el reintento, rotando a key ${i + 2}...`);
       }
     }
   }

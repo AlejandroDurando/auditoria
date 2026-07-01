@@ -1992,6 +1992,33 @@ export default function App() {
 
                   {(() => {
                     const payments = result?.payments || [];
+                    if (payments.length === 0 && result?.totalAmount && result.totalAmount > 0) {
+                      return (
+                        <div className="bg-amber-50 border border-amber-250 rounded-2xl p-6 mb-8 flex gap-4 items-start">
+                          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                            <AlertTriangle className="w-5 h-5 text-amber-800" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-sm font-semibold text-amber-850 mb-1">La IA detectó el expediente pero no pudo analizar los pagos individuales</h4>
+                            <p className="text-xs text-amber-800 leading-relaxed mb-3">
+                              Se extrajo un importe total de <strong>{formatCurrency(result.totalAmount)}</strong>, pero el modelo no devolvió los pagos detallados.
+                              Esto suele ocurrir cuando hay demasiados documentos para procesar en una sola llamada, o cuando la respuesta del modelo fue cortada por límite de tokens.
+                            </p>
+                            <p className="text-xs text-amber-800 font-medium mb-1">¿Qué podés hacer?</p>
+                            <ul className="text-xs text-amber-800 list-disc list-inside space-y-0.5">
+                              <li>Probá con el modelo <strong>Pro</strong> (más capacidad de contexto)</li>
+                              <li>Dividí el expediente: auditá cada pago por separado con "Auditoría Rápida"</li>
+                              <li>Reducí la cantidad de archivos adjuntos e intentá de nuevo</li>
+                            </ul>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  {(() => {
+                    const payments = result?.payments || [];
                     const hasErrors = payments.some(p => p?.validations?.some(v => v?.status === 'fail')) || result?.balance_inversion?.validacion_v14?.resultado === 'error';
                     if (payments.length === 0 || hasErrors) return null;
                     return (

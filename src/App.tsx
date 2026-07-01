@@ -824,13 +824,16 @@ export default function App() {
       console.error('Error in processing:', err);
       const errMsg = err instanceof Error ? err.message : String(err);
       const isRateLimit = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('high demand') || errMsg.includes('UNAVAILABLE');
+      const isJsonTruncated = err instanceof SyntaxError || errMsg.toLowerCase().includes('syntaxerror') || errMsg.includes('Expected') || errMsg.includes('JSON');
       showNotification(
         'Error de Auditoría',
         isRateLimit
           ? 'Límite de solicitudes de Gemini alcanzado. La app ya reintentó automáticamente con todas las claves disponibles. Esperá 1-2 minutos y volvé a intentarlo — el límite se recupera solo.'
-          : selectedModel === 'gemini-3.1-pro-preview'
-            ? 'Hubo un error al procesar los archivos. Al utilizar el modelo Pro con muchos archivos, es común sufrir demoras extremas o cortes por límites de tiempo del navegador. Te recomendamos reintentar seleccionando el modelo "Gemini 3.5 Flash" (Rápido) en la sección de arriba.'
-            : 'Hubo un error al procesar los archivos de auditoría. Comprueba la conexión y vuelve a intentarlo.',
+          : isJsonTruncated
+            ? 'La respuesta de Gemini fue cortada a mitad porque el expediente tiene demasiados documentos. Soluciones: (1) Probá el modelo Pro. (2) Auditá los pagos de a uno con "Auditoría Rápida". (3) Reducí la cantidad de archivos adjuntos.'
+            : selectedModel === 'gemini-3.1-pro-preview'
+              ? 'Hubo un error al procesar los archivos. Al utilizar el modelo Pro con muchos archivos, es común sufrir demoras extremas o cortes por límites de tiempo del navegador. Te recomendamos reintentar seleccionando el modelo "Gemini 3.5 Flash" (Rápido) en la sección de arriba.'
+              : `Error: ${errMsg.length > 200 ? errMsg.slice(0, 200) + '…' : errMsg}`,
         'error'
       );
     } finally {

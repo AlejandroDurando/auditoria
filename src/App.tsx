@@ -1255,11 +1255,10 @@ export default function App() {
       lines.push(`Por favor, resuelva las observaciones señaladas antes de proceder con el reintegro de la rendición.`);
     }
 
-    // Alerta Patrimonio para Código 202
+    // Alerta Patrimonio para Código 202 — solo si V3 indica código 202
     const paymentsWith202 = (result.payments || []).filter(payment => {
-      const inLibroDiario = hasAccountingCode(payment?.libroDiarioText, '202');
-      const inAnyObs = payment?.validations?.some(val => hasAccountingCode(val?.observations, '202'));
-      return inLibroDiario || inAnyObs;
+      const v3 = payment?.validations?.find(val => val?.id === 'v3');
+      return v3 ? hasAccountingCode(v3.observations, '202') : false;
     });
 
     if (paymentsWith202.length > 0) {
@@ -2171,9 +2170,8 @@ export default function App() {
                   {/* Alerta Patrimonio para Código 202 */}
                   {(() => {
                     const paymentsWith202 = (result?.payments || []).filter(payment => {
-                      const inLibroDiario = hasAccountingCode(payment?.libroDiarioText, '202');
-                      const inAnyObs = payment?.validations?.some(val => hasAccountingCode(val?.observations, '202'));
-                      return inLibroDiario || inAnyObs;
+                      const v3 = payment?.validations?.find(val => val?.id === 'v3');
+                      return v3 ? hasAccountingCode(v3.observations, '202') : false;
                     });
 
                     if (paymentsWith202.length === 0) return null;
@@ -2218,9 +2216,8 @@ export default function App() {
                   {/* Alerta de Autorizaciones para Código 226 */}
                   {(() => {
                     const paymentsWith226 = (result?.payments || []).filter(payment => {
-                      const inLibroDiario = hasAccountingCode(payment?.libroDiarioText, '226');
-                      const inAnyObs = payment?.validations?.some(val => hasAccountingCode(val?.observations, '226'));
-                      return inLibroDiario || inAnyObs;
+                      const v3 = payment?.validations?.find(val => val?.id === 'v3');
+                      return v3 ? hasAccountingCode(v3.observations, '226') : false;
                     });
 
                     if (paymentsWith226.length === 0) return null;

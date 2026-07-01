@@ -166,3 +166,39 @@
 
 /* Notification info card */
 .dark .bg-blue-50.text-\[\#004741\] { background-color: #0D1F2E !important; color: #60A5FA !important; }
+
+/* === PAYMENT ROW (expanded detail panel) === */
+/* Panel expandido de cada pago — fondo con opacidad */
+.dark .bg-\[\#E8E4D8\]\/40 { background-color: rgba(13,17,23,0.6) !important; }
+/* Observation boxes inside expanded row */
+.dark .bg-\[\#F2EFE6\].border-\[\#E8E6DE\] { background-color: #161B22 !important; border-color: #30363D !important; }
+/* Status icon bubble */
+.dark .bg-\[\#F2EFE6\].rounded-full { background-color: #21262D !important; }
+/* Row card background */
+.dark .bg-\[\#F2EFE6\].border-\[\#E8E6DE\].mb-4 { background-color: #161B22 !important; }
+/* Pass validation badge */
+.dark .bg-\[\#D4E8E6\].text-\[\#003330\].border-\[\#9FE1CB\] { background-color: #064E3B !important; color: #6EE7B7 !important; border-color: #065F46 !important; }
+/* Text inside observation boxes */
+.dark .text-slate-650 { color: #ADBAC7 !important; }
+.dark .text-slate-850 { color: #E6EDF3 !important; }
+/* Amber (warning) badge in dark */
+.dark .bg-amber-50.text-amber-850 { background-color: #1F1A0E !important; color: #FCD34D !important; }
+.dark .border-amber-250 { border-color: #78350F !important; }
+/* Error (fail) badge in dark */
+.dark .bg-\[\#FCEBEB\].text-\[\#A32D2D\] { background-color: #2D1515 !important; color: #F87171 !important; }
+/* Page button in payment row */
+.dark .border-\[\#E2E0D8\] { border-color: #30363D !important; }
+/* Stats cards */
+.dark .shadow-\[0_8px_30px_rgb\(0\,0\,0\,0\.04\)\] { box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important; }
+/* Divider lines inside expanded */
+.dark .border-b-\[0\.5px\].border-\[\#E8E6DE\] { border-color: #21262D !important; }
+.dark .border-t-\[0\.5px\].border-\[\#E8E6DE\] { border-color: #21262D !important; }
+/* Row border */
+.dark .border-\[0\.5px\].border-\[\#E8E6DE\] { border-color: #30363D !important; }
+
+/* === BALANCE / SUMMARY CARDS === */
+/* Rounded info boxes (balance inversion summary) */
+.dark .bg-\[\#E8E4D8\].rounded-\[8px\] { background-color: #1C2128 !important; }
+.dark .bg-\[\#E8E4D8\].p-\[10px_14px\] { background-color: #1C2128 !important; }
+/* Progress bar track */
+.dark .bg-\[\#E8E4D8\].rounded-full { background-color: #21262D !important; }

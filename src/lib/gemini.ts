@@ -165,7 +165,14 @@ function normalizeResult(raw: any, mode: 'Expedientes' | 'Viáticos' | 'Rapida')
 function isJsonTruncationError(err: unknown): boolean {
   if (err instanceof SyntaxError) return true;
   const msg = err instanceof Error ? err.message : String(err);
-  return msg.toLowerCase().includes('syntaxerror') || msg.includes('Expected') || (msg.includes('JSON') && msg.includes('position'));
+  if (msg.toLowerCase().includes('syntaxerror')) return true;
+  if (msg.includes('Expected') && msg.includes('position')) return true;
+  if (msg.includes('JSON') && msg.includes('position')) return true;
+  // Connection closed / fetch failed mid-response (response too large)
+  if (msg.includes('Failed to fetch')) return true;
+  if (msg.includes('ERR_CONNECTION_CLOSED')) return true;
+  if (msg.includes('network') || msg.includes('Network')) return true;
+  return false;
 }
 
 async function processWithKey(
@@ -262,6 +269,29 @@ export async function processDocument(
 // Divide los archivos en dos lotes: el primero siempre incluye todos los documentos
 // de contexto (carátula, libro diario, balance) y la primera mitad de pagos;
 // el segundo incluye los mismos docs de contexto más la segunda mitad de pagos.
+async function processBatch(
+  apiKey: string,
+  files: Array<{ name: string; base64: string }>,
+  mode: 'Expedientes' | 'Viáticos' | 'Rapida',
+  modelName: string,
+  signal?: AbortSignal,
+  depth: number = 0
+): Promise<AuditResult> {
+  try {
+    return await processWithKey(apiKey, files, mode, modelName, signal);
+  } catch (err) {
+    if (isJsonTruncationError(err) && files.length > 2 && depth < 3) {
+      const mid = Math.ceil(files.length / 2);
+      console.warn(`Lote de ${files.length} archivos falló (depth=${depth}), dividiendo en ${mid} + ${files.length - mid}...`);
+      const r1 = await processBatch(apiKey, files.slice(0, mid), mode, modelName, signal, depth + 1);
+      await sleep(3000);
+      const r2 = await processBatch(apiKey, files.slice(mid), mode, modelName, signal, depth + 1);
+      return mergeResults(r1, r2);
+    }
+    throw err;
+  }
+}
+
 async function processInBatches(
   apiKey: string,
   filesList: Array<{ name: string; base64: string }>,
@@ -271,16 +301,14 @@ async function processInBatches(
   waitBetweenMs: number = 0
 ): Promise<AuditResult> {
   const mid = Math.ceil(filesList.length / 2);
-  const batch1 = filesList.slice(0, mid);
-  const batch2 = filesList.slice(mid);
+  console.warn(`Iniciando auditoría en lotes: ${mid} + ${filesList.length - mid} archivos`);
 
-  console.warn(`Lote 1: archivos 0-${mid - 1} (${batch1.length} archivos)`);
-  const result1 = await processWithKey(apiKey, batch1, mode, modelName, signal);
+  const result1 = await processBatch(apiKey, filesList.slice(0, mid), mode, modelName, signal);
 
   if (waitBetweenMs > 0) await sleep(waitBetweenMs);
+  else await sleep(2000);
 
-  console.warn(`Lote 2: archivos ${mid}-${filesList.length - 1} (${batch2.length} archivos)`);
-  const result2 = await processWithKey(apiKey, batch2, mode, modelName, signal);
+  const result2 = await processBatch(apiKey, filesList.slice(mid), mode, modelName, signal);
 
   const merged = mergeResults(result1, result2);
   console.warn(`Lotes combinados: ${merged.payments.length} pagos totales`);

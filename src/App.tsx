@@ -630,9 +630,9 @@ export default function App() {
 
   const filteredHistory = history.filter(entry => {
     if (!auditSearchQuery.trim()) return true;
-    
-    const normalize = (str: string) => {
-      if (!str) return '';
+
+    const normalize = (val: unknown) => {
+      const str = typeof val === 'string' ? val : val != null ? String(val) : '';
       return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     };
 

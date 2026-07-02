@@ -1503,9 +1503,10 @@ export default function App() {
                 placeholder="Buscar expediente..." 
                 value={auditSearchQuery}
                 onChange={(e) => {
-                  setAuditSearchQuery(e.target.value);
-                  if (e.target.value && activeTab !== 'Historial') {
-                    setActiveTab('Historial');
+                  const val = e.target.value;
+                  setAuditSearchQuery(val);
+                  if (val.trim() && activeTab !== 'Historial') {
+                    setTimeout(() => setActiveTab('Historial'), 0);
                   }
                 }}
                 className="bg-[#E8E4D8] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-64 focus:border-[#004741] focus:bg-[#F2EFE6] transition-all outline-none text-[#1A1A1A]"
@@ -2377,8 +2378,25 @@ export default function App() {
                   </div>
                   <div>
                     <h2 className="text-xl font-medium tracking-tight text-slate-900">Historial</h2>
-                    <p className="text-xs text-[#9A9890] mt-0.5">Auditorías previas completadas.</p>
+                    <p className="text-xs text-[#9A9890] mt-0.5">Auditorías previas completadas — {history.length} en total.</p>
                   </div>
+                  {history.length > 0 && (
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#9A9890] pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Buscar..."
+                        value={auditSearchQuery}
+                        onChange={(e) => setAuditSearchQuery(e.target.value)}
+                        className="bg-[#E8E4D8] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-52 focus:border-[#004741] focus:bg-[#F2EFE6] transition-all outline-none text-[#1A1A1A]"
+                      />
+                      {auditSearchQuery && (
+                        <button type="button" onClick={() => setAuditSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9A9890] hover:text-slate-700 cursor-pointer outline-none border-none p-0 bg-transparent flex items-center justify-center">
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">

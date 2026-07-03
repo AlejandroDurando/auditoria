@@ -26,7 +26,7 @@ export const PIMYS_CODES = {
     },
     {
       "code": 200,
-      "descripcion": "Compra de bienes muebles. Uso restrictivo, exclusivamente con autorización  previa del Gerente de Administraciôn"
+      "descripcion": "Compra de Bienes Muebles. Uso restrictivo, exclusivamente con autorización previa del Área Abastecimiento"
     },
     {
       "code": 201,
@@ -420,7 +420,7 @@ export const PIMYS_CODES = {
     },
     {
       "code": 200,
-      "descripcion": "Compra de bienes muebles. Uso restrictivo, exclusivamente con autorización  previa del Gerente de Administraciôn"
+      "descripcion": "Compra de Bienes Muebles. Uso restrictivo, exclusivamente con autorización previa del Área Abastecimiento"
     },
     {
       "code": 201,
@@ -698,7 +698,7 @@ export const PIMYS_CODES = {
     },
     {
       "code": 200,
-      "descripcion": "Compra de bienes muebles. Uso restrictivo, exclusivamente con autorización  previa del Gerente de Administraciôn"
+      "descripcion": "Compra de Bienes Muebles. Uso restrictivo, exclusivamente con autorización previa del Área Abastecimiento"
     },
     {
       "code": 201,
@@ -916,7 +916,7 @@ export const PIMYS_CODES = {
     },
     {
       "code": 200,
-      "descripcion": "Compra de bienes muebles. Uso restrictivo, exclusivamente con autorización  previa del Gerente de Administraciôn"
+      "descripcion": "Compra de Bienes Muebles. Uso restrictivo, exclusivamente con autorización previa del Área Abastecimiento"
     },
     {
       "code": 201,

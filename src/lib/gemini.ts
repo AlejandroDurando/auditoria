@@ -465,6 +465,13 @@ async function processDocumentWithKey(
     config: {
       systemInstruction,
       maxOutputTokens: 131072,
+      // Limita el razonamiento interno ("thinking") de Gemini 3.x, que se cobra
+      // como tokens de salida. Sin tope, una auditoría compleja puede gastar
+      // decenas de miles de tokens invisibles. 8192 alcanza para el análisis
+      // sin disparar el costo.
+      thinkingConfig: {
+        thinkingBudget: 8192,
+      },
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,

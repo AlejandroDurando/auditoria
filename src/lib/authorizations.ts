@@ -12,8 +12,8 @@ export interface AutorizacionCodigo {
   codigos: string[];
   concepto: string;
   tipo: 'fijo' | 'zona';
-  /** Firmante único cuando tipo === 'fijo' */
-  firmante?: string;
+  /** Firmantes habilitados cuando tipo === 'fijo'. Si hay más de uno, basta con cualquiera. */
+  firmantes?: string[];
   /** Firmantes por sucursal cuando tipo === 'zona' */
   zonas?: AutorizacionPorZona[];
   nota?: string;
@@ -41,7 +41,7 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
     codigos: ['302', '310', '313', '314', '400', '401', '412', '415', '418'],
     concepto: 'Movilidades (alquileres, mano de obra y repuestos de vehículos y equipos)',
     tipo: 'fijo',
-    firmante: 'pimysmovrafaela@epe.santafe.gov.ar',
+    firmantes: ['pimysmovrafaela@epe.santafe.gov.ar'],
     nota: 'La autorización llega por correo de Movilidades Rafaela y debe figurar adjunta al PIMyS.',
   },
   {
@@ -71,13 +71,14 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
     codigos: ['602'],
     concepto: 'Requiere autorización específica del responsable del área',
     tipo: 'fijo',
-    firmante: 'Sergio Cenci',
+    firmantes: ['Sergio Cenci'],
   },
   {
     codigos: ['609'],
     concepto: 'Requiere autorización específica del responsable del área',
     tipo: 'fijo',
-    firmante: 'Gustavo Fernández',
+    firmantes: ['Sergio Cenci', 'Gustavo Fernández'],
+    nota: 'Basta con la firma de cualquiera de los dos.',
   },
 ];
 
@@ -129,7 +130,8 @@ export function buildAuthorizationRulesForPrompt(): string {
   const porCodigo = AUTORIZACIONES_POR_CODIGO.map(a => {
     const cods = a.codigos.join(', ');
     if (a.tipo === 'fijo') {
-      return `- Código(s) ${cods} (${a.concepto}): requiere SIEMPRE la autorización de "${a.firmante}", sin importar la sucursal.${a.nota ? ` ${a.nota}` : ''}`;
+      const firmantes = (a.firmantes || []).map(f => `"${f}"`).join(' o ');
+      return `- Código(s) ${cods} (${a.concepto}): requiere SIEMPRE la autorización de ${firmantes}, sin importar la sucursal.${a.nota ? ` ${a.nota}` : ''}`;
     }
     const zonas = (a.zonas || [])
       .map(z => `${z.zona} (${z.alcance}) → "${z.firmante}"`)

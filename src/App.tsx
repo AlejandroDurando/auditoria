@@ -2702,7 +2702,7 @@ export default function App() {
                     {auth.tipo === 'fijo' ? (
                       <div className="mt-3 flex items-start gap-2 text-[13px]">
                         <span className="text-[#9A9890] shrink-0">Autoriza:</span>
-                        <strong className="font-semibold text-slate-900 break-all">{auth.firmante}</strong>
+                        <strong className="font-semibold text-slate-900 break-all">{(auth.firmantes || []).join(' o ')}</strong>
                       </div>
                     ) : (
                       <div className="mt-3 overflow-x-auto">

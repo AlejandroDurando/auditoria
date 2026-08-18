@@ -1,6 +1,9 @@
 // Autorizaciones requeridas en el PIMyS según código de gasto o sector solicitante.
 // Fuente única de verdad: se usa tanto para el panel "Autorizaciones PIMyS"
 // como para construir las reglas de V4 en el prompt de Gemini.
+//
+// Las reglas base viven acá; las que el usuario agrega desde la app se guardan
+// en localStorage y se combinan con las base mediante los getters.
 
 export interface AutorizacionPorZona {
   zona: string;
@@ -9,6 +12,7 @@ export interface AutorizacionPorZona {
 }
 
 export interface AutorizacionCodigo {
+  id?: string;
   codigos: string[];
   concepto: string;
   tipo: 'fijo' | 'zona';
@@ -17,25 +21,28 @@ export interface AutorizacionCodigo {
   /** Firmantes por sucursal cuando tipo === 'zona' */
   zonas?: AutorizacionPorZona[];
   nota?: string;
+  /** true si la agregó el usuario desde la app (se puede editar/eliminar) */
+  custom?: boolean;
 }
 
 export interface AutorizacionSector {
+  id?: string;
   sector: string;
   agentes: string[];
   jefes: string[];
+  custom?: boolean;
 }
 
 /** Zonas / sucursales usadas para resolver el firmante según el origen del expediente. */
 export const ZONAS_SUCURSAL: Record<string, string> = {
-  Rafaela:
-    'UT Adm Rafaela, Ag. Rafaela, Ag. Rafaela Norte, María Juana y toda la Sucursal Rafaela en general',
-  Noroeste:
-    'Suc. Noroeste, Ag. San Cristóbal, Ag. San Guillermo, Ag. Sunchales, Ag. Tostado y zona Noroeste en general',
-  Oeste:
-    'Suc. Oeste, Ag. El Trébol, Ag. Las Rosas, Ag. San Jorge y zona Oeste en general',
+  Rafaela: 'UT Adm Rafaela, Ag. Rafaela, Ag. Rafaela Norte, María Juana',
+  Noroeste: 'Suc. Noroeste, Ag. San Cristóbal, Ag. San Guillermo, Ag. Sunchales, Ag. Tostado',
+  Oeste: 'Suc. Oeste, Ag. El Trébol, Ag. Las Rosas, Ag. San Jorge',
 };
 
-/** Autorizaciones disparadas por el código de gasto imputado en el PIMyS. */
+export const ZONAS = ['Rafaela', 'Noroeste', 'Oeste'] as const;
+
+/** Autorizaciones base disparadas por el código de gasto imputado en el PIMyS. */
 export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
   {
     codigos: ['302', '310', '313', '314', '400', '401', '412', '415', '418'],
@@ -83,26 +90,14 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
 ];
 
 /**
- * Autorizaciones disparadas por el agente que figura como "Solicitante" del PIMyS.
+ * Autorizaciones base disparadas por el agente que figura como "Solicitante" del PIMyS.
  * Si el Solicitante es uno de los agentes listados, el PIMyS debe llevar la firma
  * del jefe autorizante correspondiente a ese sector.
  */
 export const AUTORIZACIONES_POR_SECTOR: AutorizacionSector[] = [
-  {
-    sector: 'Capacitación',
-    agentes: ['Julio Tascón'],
-    jefes: ['Francisco Catinot'],
-  },
-  {
-    sector: 'Ingeniería',
-    agentes: ['Mario Alberto'],
-    jefes: ['Carlos Curet'],
-  },
-  {
-    sector: 'Higiene y Seguridad',
-    agentes: ['Carlos Alvarez'],
-    jefes: ['Andrés Blancato'],
-  },
+  { sector: 'Capacitación', agentes: ['Julio Tascón'], jefes: ['Francisco Catinot'] },
+  { sector: 'Ingeniería', agentes: ['Mario Alberto'], jefes: ['Carlos Curet'] },
+  { sector: 'Higiene y Seguridad', agentes: ['Carlos Alvarez'], jefes: ['Andrés Blancato'] },
   {
     sector: 'Cómputos',
     agentes: ['Adrián Lapasin'],
@@ -125,25 +120,106 @@ export const AUTORIZACIONES_POR_SECTOR: AutorizacionSector[] = [
   },
 ];
 
-/** Texto compacto de las reglas, embebido en el prompt de Gemini (validación V4). */
-export function buildAuthorizationRulesForPrompt(): string {
-  const porCodigo = AUTORIZACIONES_POR_CODIGO.map(a => {
-    const cods = a.codigos.join(', ');
-    if (a.tipo === 'fijo') {
-      const firmantes = (a.firmantes || []).map(f => `"${f}"`).join(' o ');
-      return `- Código(s) ${cods} (${a.concepto}): requiere SIEMPRE la autorización de ${firmantes}, sin importar la sucursal.${a.nota ? ` ${a.nota}` : ''}`;
-    }
-    const zonas = (a.zonas || [])
-      .map(z => `${z.zona} (${z.alcance}) → "${z.firmante}"`)
-      .join('; ');
-    return `- Código(s) ${cods} (${a.concepto}): requiere la firma del jefe según la sucursal de origen del expediente: ${zonas}.${a.nota ? ` ${a.nota}` : ''}`;
-  }).join('\n');
+/* ─── Persistencia de reglas agregadas por el usuario ──────────────────────── */
 
-  const porSector = AUTORIZACIONES_POR_SECTOR.map(s => {
-    const agentes = s.agentes.map(x => `"${x}"`).join(' o ');
-    const jefes = s.jefes.map(x => `"${x}"`).join(' o ');
-    return `- Sector ${s.sector}: si el Solicitante del PIMyS es ${agentes}, el PIMyS DEBE llevar la firma/autorización de ${jefes}.`;
-  }).join('\n');
+const LS_CODIGOS = 'epe_auth_codigos_custom';
+const LS_SECTORES = 'epe_auth_sectores_custom';
+
+function readLS<T>(key: string): T[] {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLS<T>(key: string, value: T[]): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* almacenamiento lleno o no disponible: la regla igual queda en memoria */
+  }
+}
+
+function newId(): string {
+  return `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+}
+
+/** Reglas por código agregadas por el usuario. */
+export function getCustomCodigos(): AutorizacionCodigo[] {
+  return readLS<AutorizacionCodigo>(LS_CODIGOS).map(a => ({ ...a, custom: true }));
+}
+
+/** Reglas por sector agregadas por el usuario. */
+export function getCustomSectores(): AutorizacionSector[] {
+  return readLS<AutorizacionSector>(LS_SECTORES).map(a => ({ ...a, custom: true }));
+}
+
+/** Todas las reglas por código: las base más las agregadas por el usuario. */
+export function getAllCodigos(): AutorizacionCodigo[] {
+  return [...AUTORIZACIONES_POR_CODIGO, ...getCustomCodigos()];
+}
+
+/** Todas las reglas por sector: las base más las agregadas por el usuario. */
+export function getAllSectores(): AutorizacionSector[] {
+  return [...AUTORIZACIONES_POR_SECTOR, ...getCustomSectores()];
+}
+
+export function addCodigo(entry: Omit<AutorizacionCodigo, 'id' | 'custom'>): AutorizacionCodigo[] {
+  const list = readLS<AutorizacionCodigo>(LS_CODIGOS);
+  list.push({ ...entry, id: newId() });
+  writeLS(LS_CODIGOS, list);
+  return getCustomCodigos();
+}
+
+export function removeCodigo(id: string): AutorizacionCodigo[] {
+  writeLS(LS_CODIGOS, readLS<AutorizacionCodigo>(LS_CODIGOS).filter(a => a.id !== id));
+  return getCustomCodigos();
+}
+
+export function addSector(entry: Omit<AutorizacionSector, 'id' | 'custom'>): AutorizacionSector[] {
+  const list = readLS<AutorizacionSector>(LS_SECTORES);
+  list.push({ ...entry, id: newId() });
+  writeLS(LS_SECTORES, list);
+  return getCustomSectores();
+}
+
+export function removeSector(id: string): AutorizacionSector[] {
+  writeLS(LS_SECTORES, readLS<AutorizacionSector>(LS_SECTORES).filter(a => a.id !== id));
+  return getCustomSectores();
+}
+
+/* ─── Construcción del bloque de reglas para el prompt de Gemini ───────────── */
+
+/**
+ * Texto compacto de las reglas, embebido en el prompt de Gemini (validación V4).
+ * Incluye tanto las reglas base como las que el usuario haya agregado desde la app.
+ */
+export function buildAuthorizationRulesForPrompt(): string {
+  const porCodigo = getAllCodigos()
+    .map(a => {
+      const cods = a.codigos.join(', ');
+      if (a.tipo === 'fijo') {
+        const firmantes = (a.firmantes || []).map(f => `"${f}"`).join(' o ');
+        return `- Código(s) ${cods} (${a.concepto}): requiere SIEMPRE la autorización de ${firmantes}, sin importar la sucursal.${a.nota ? ` ${a.nota}` : ''}`;
+      }
+      const zonas = (a.zonas || [])
+        .map(z => `${z.zona} (${z.alcance}) → "${z.firmante}"`)
+        .join('; ');
+      return `- Código(s) ${cods} (${a.concepto}): requiere la firma del jefe según la sucursal de origen del expediente: ${zonas}.${a.nota ? ` ${a.nota}` : ''}`;
+    })
+    .join('\n');
+
+  const porSector = getAllSectores()
+    .map(s => {
+      const agentes = s.agentes.map(x => `"${x}"`).join(' o ');
+      const jefes = s.jefes.map(x => `"${x}"`).join(' o ');
+      return `- Sector ${s.sector}: si el Solicitante del PIMyS es ${agentes}, el PIMyS DEBE llevar la firma/autorización de ${jefes}.`;
+    })
+    .join('\n');
 
   return `AUTORIZACIONES OBLIGATORIAS SEGÚN CÓDIGO DE GASTO:
 ${porCodigo}

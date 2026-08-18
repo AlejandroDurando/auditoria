@@ -15,6 +15,7 @@ import {
   Building2,
   Landmark,
   Trash2,
+  Plus,
   Sparkles,
   Paperclip,
   X,
@@ -41,7 +42,20 @@ import { cn, formatCurrency } from './lib/utils';
 import { VALIDATIONS, VALIDATIONS_VIATICOS } from './constants';
 import { processDocument, type AuditResult, type PaymentData } from './lib/gemini';
 import { PIMYS_CODES } from './lib/codes';
-import { AUTORIZACIONES_POR_CODIGO, AUTORIZACIONES_POR_SECTOR } from './lib/authorizations';
+import {
+  AUTORIZACIONES_POR_CODIGO,
+  AUTORIZACIONES_POR_SECTOR,
+  ZONAS,
+  ZONAS_SUCURSAL,
+  getCustomCodigos,
+  getCustomSectores,
+  addCodigo,
+  removeCodigo,
+  addSector,
+  removeSector,
+  type AutorizacionCodigo,
+  type AutorizacionSector,
+} from './lib/authorizations';
 import { PdfCanvasViewer } from './components/PdfCanvasViewer';
 import { PdfScrollViewer } from './components/PdfScrollViewer';
 import { InteractiveNormativa } from './components/InteractiveNormativa';
@@ -316,6 +330,71 @@ export default function App() {
   }, [darkMode]);
 
   const [activeTab, setActiveTab] = useState('Dashboard');
+
+  // ── Autorizaciones PIMyS agregadas por el usuario ──────────────────────────
+  const [customCodigos, setCustomCodigos] = useState<AutorizacionCodigo[]>([]);
+  const [customSectores, setCustomSectores] = useState<AutorizacionSector[]>([]);
+  const [showFormCodigo, setShowFormCodigo] = useState(false);
+  const [showFormSector, setShowFormSector] = useState(false);
+  const [formCodigo, setFormCodigo] = useState({
+    codigos: '', concepto: '', tipo: 'fijo' as 'fijo' | 'zona',
+    firmantes: '', Rafaela: '', Noroeste: '', Oeste: '', nota: '',
+  });
+  const [formSector, setFormSector] = useState({ sector: '', agentes: '', jefes: '' });
+
+  useEffect(() => {
+    setCustomCodigos(getCustomCodigos());
+    setCustomSectores(getCustomSectores());
+  }, []);
+
+  const splitList = (s: string) => s.split(',').map(x => x.trim()).filter(Boolean);
+
+  const handleAddCodigo = () => {
+    const codigos = splitList(formCodigo.codigos);
+    if (!codigos.length || !formCodigo.concepto.trim()) {
+      showNotification('Faltan datos', 'Indicá al menos un código y el concepto.', 'error');
+      return;
+    }
+    if (formCodigo.tipo === 'fijo') {
+      const firmantes = splitList(formCodigo.firmantes);
+      if (!firmantes.length) {
+        showNotification('Faltan datos', 'Indicá al menos un autorizante.', 'error');
+        return;
+      }
+      setCustomCodigos(addCodigo({
+        codigos, concepto: formCodigo.concepto.trim(), tipo: 'fijo',
+        firmantes, nota: formCodigo.nota.trim() || undefined,
+      }));
+    } else {
+      const zonas = ZONAS
+        .filter(z => formCodigo[z].trim())
+        .map(z => ({ zona: z, alcance: ZONAS_SUCURSAL[z], firmante: formCodigo[z].trim() }));
+      if (!zonas.length) {
+        showNotification('Faltan datos', 'Indicá el autorizante de al menos una sucursal.', 'error');
+        return;
+      }
+      setCustomCodigos(addCodigo({
+        codigos, concepto: formCodigo.concepto.trim(), tipo: 'zona',
+        zonas, nota: formCodigo.nota.trim() || undefined,
+      }));
+    }
+    setFormCodigo({ codigos: '', concepto: '', tipo: 'fijo', firmantes: '', Rafaela: '', Noroeste: '', Oeste: '', nota: '' });
+    setShowFormCodigo(false);
+    showNotification('Autorización agregada', 'El auditor la tendrá en cuenta en las próximas auditorías.', 'success');
+  };
+
+  const handleAddSector = () => {
+    const agentes = splitList(formSector.agentes);
+    const jefes = splitList(formSector.jefes);
+    if (!formSector.sector.trim() || !agentes.length || !jefes.length) {
+      showNotification('Faltan datos', 'Completá sector, agente(s) y jefe(s) autorizante(s).', 'error');
+      return;
+    }
+    setCustomSectores(addSector({ sector: formSector.sector.trim(), agentes, jefes }));
+    setFormSector({ sector: '', agentes: '', jefes: '' });
+    setShowFormSector(false);
+    showNotification('Autorización agregada', 'El auditor la tendrá en cuenta en las próximas auditorías.', 'success');
+  };
   const [planillasOpen, setPlanillasOpen] = useState(false);
   const [dashboardMode, setDashboardMode] = useState<'Expedientes' | 'Viáticos'>('Expedientes');
   const [activeCodeCategory, setActiveCodeCategory] = useState<keyof typeof PIMYS_CODES>('Sucursales');
@@ -2674,19 +2753,102 @@ export default function App() {
               </div>
 
               {/* ── Por código de gasto ───────────────────────────────── */}
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-1.5 h-1.5 bg-[#004741] rounded-full" />
-                <h3 className="text-[10px] font-medium text-[#004741] uppercase tracking-[0.06em]">
-                  Según código de gasto
-                </h3>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-[#004741] rounded-full" />
+                  <h3 className="text-[10px] font-medium text-[#004741] uppercase tracking-[0.06em]">
+                    Según código de gasto
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFormCodigo(v => !v)}
+                  className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold rounded-[7px] transition-all cursor-pointer border-none outline-none shadow-none"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{showFormCodigo ? 'Cancelar' : 'Agregar código'}</span>
+                </button>
               </div>
 
+              {showFormCodigo && (
+                <div className="bg-[#F2EFE6] rounded-[12px] border border-[#004741]/30 p-5 mb-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Código(s) *</label>
+                      <input type="text" value={formCodigo.codigos} placeholder="Ej: 610 o 610, 611"
+                        onChange={e => setFormCodigo({ ...formCodigo, codigos: e.target.value })}
+                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Concepto *</label>
+                      <input type="text" value={formCodigo.concepto} placeholder="Descripción del gasto"
+                        onChange={e => setFormCodigo({ ...formCodigo, concepto: e.target.value })}
+                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1.5">Tipo de autorización</label>
+                    <div className="flex gap-2">
+                      {(['fijo', 'zona'] as const).map(t => (
+                        <button key={t} type="button" onClick={() => setFormCodigo({ ...formCodigo, tipo: t })}
+                          className={cn("text-[12px] py-1.5 px-3 rounded-[6px] border transition-all cursor-pointer outline-none",
+                            formCodigo.tipo === t
+                              ? "bg-[#004741] text-white border-[#004741] font-medium"
+                              : "bg-[#E8E4D8] text-slate-700 border-[#D3D1C7]")}>
+                          {t === 'fijo' ? 'Misma persona siempre' : 'Depende de la sucursal'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {formCodigo.tipo === 'fijo' ? (
+                    <div>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Autorizante(s) *</label>
+                      <input type="text" value={formCodigo.firmantes} placeholder="Ej: Sergio Cenci, Gustavo Fernández (separá con coma si vale cualquiera)"
+                        onChange={e => setFormCodigo({ ...formCodigo, firmantes: e.target.value })}
+                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {ZONAS.map(z => (
+                        <div key={z}>
+                          <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">{z}</label>
+                          <input type="text" value={formCodigo[z]} placeholder="Nombre del jefe"
+                            onChange={e => setFormCodigo({ ...formCodigo, [z]: e.target.value })}
+                            className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Nota aclaratoria (opcional)</label>
+                    <input type="text" value={formCodigo.nota} placeholder="Ej: la autorización llega por correo"
+                      onChange={e => setFormCodigo({ ...formCodigo, nota: e.target.value })}
+                      className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                  </div>
+
+                  <button type="button" onClick={handleAddCodigo}
+                    className="bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all cursor-pointer border-none outline-none">
+                    Guardar autorización
+                  </button>
+                </div>
+              )}
+
               <div className="space-y-3 mb-10">
-                {AUTORIZACIONES_POR_CODIGO.map((auth, idx) => (
+                {[...AUTORIZACIONES_POR_CODIGO, ...customCodigos].map((auth, idx) => (
                   <div
-                    key={idx}
-                    className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-5 shadow-none"
+                    key={auth.id || idx}
+                    className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-5 shadow-none relative"
                   >
+                    {auth.custom && auth.id && (
+                      <button type="button" onClick={() => setCustomCodigos(removeCodigo(auth.id!))}
+                        title="Eliminar esta autorización"
+                        className="absolute top-4 right-4 p-1.5 text-[#9A9890] hover:text-[#A32D2D] rounded-[6px] transition-all cursor-pointer border-none bg-transparent outline-none">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       {auth.codigos.map(c => (
                         <span
@@ -2739,12 +2901,52 @@ export default function App() {
               </div>
 
               {/* ── Por sector / agente solicitante ───────────────────── */}
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-1.5 h-1.5 bg-[#004741] rounded-full" />
-                <h3 className="text-[10px] font-medium text-[#004741] uppercase tracking-[0.06em]">
-                  Según el agente solicitante del PIMyS
-                </h3>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-[#004741] rounded-full" />
+                  <h3 className="text-[10px] font-medium text-[#004741] uppercase tracking-[0.06em]">
+                    Según el agente solicitante del PIMyS
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFormSector(v => !v)}
+                  className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold rounded-[7px] transition-all cursor-pointer border-none outline-none shadow-none"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{showFormSector ? 'Cancelar' : 'Agregar sector'}</span>
+                </button>
               </div>
+
+              {showFormSector && (
+                <div className="bg-[#F2EFE6] rounded-[12px] border border-[#004741]/30 p-5 mb-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Sector *</label>
+                      <input type="text" value={formSector.sector} placeholder="Ej: Laboratorio"
+                        onChange={e => setFormSector({ ...formSector, sector: e.target.value })}
+                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Agente(s) solicitante(s) *</label>
+                      <input type="text" value={formSector.agentes} placeholder="Ej: Juan Pérez, Ana Gómez"
+                        onChange={e => setFormSector({ ...formSector, agentes: e.target.value })}
+                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Jefe(s) autorizante(s) *</label>
+                      <input type="text" value={formSector.jefes} placeholder="Ej: Carlos Ruiz"
+                        onChange={e => setFormSector({ ...formSector, jefes: e.target.value })}
+                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[#9A9890]">Si hay más de un nombre, separalos con coma: alcanza con la firma de cualquiera de ellos.</p>
+                  <button type="button" onClick={handleAddSector}
+                    className="bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all cursor-pointer border-none outline-none">
+                    Guardar autorización
+                  </button>
+                </div>
+              )}
               <p className="text-[12px] text-[#9A9890] mb-4 leading-relaxed max-w-2xl">
                 Si el campo <strong className="font-medium text-slate-700">Solicitante</strong> del PIMyS corresponde a alguno de estos agentes, el formulario debe llevar la firma del jefe autorizante de su sector.
               </p>
@@ -2757,17 +2959,27 @@ export default function App() {
                         <th className="p-[12px_16px] font-medium whitespace-nowrap">Sector</th>
                         <th className="p-[12px_16px] font-medium">Agente solicitante</th>
                         <th className="p-[12px_16px] font-medium">Jefe autorizante</th>
+                        <th className="p-[12px_16px] font-medium w-10"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {AUTORIZACIONES_POR_SECTOR.map((s, idx) => (
-                        <tr key={idx} className="border-b border-[#E8E6DE] last:border-0 hover:bg-[#E5E1D5]/50 transition-colors">
+                      {[...AUTORIZACIONES_POR_SECTOR, ...customSectores].map((s, idx) => (
+                        <tr key={s.id || idx} className="border-b border-[#E8E6DE] last:border-0 hover:bg-[#E5E1D5]/50 transition-colors">
                           <td className="p-[12px_16px] font-medium text-slate-800 align-top leading-[1.4]">{s.sector}</td>
                           <td className="p-[12px_16px] text-[#1A1A1A] align-top leading-[1.6]">
                             {s.agentes.join(' o ')}
                           </td>
                           <td className="p-[12px_16px] align-top leading-[1.6]">
                             <strong className="font-semibold text-slate-900">{s.jefes.join(' o ')}</strong>
+                          </td>
+                          <td className="p-[12px_16px] align-top text-right">
+                            {s.custom && s.id && (
+                              <button type="button" onClick={() => setCustomSectores(removeSector(s.id!))}
+                                title="Eliminar esta autorización"
+                                className="p-1.5 text-[#9A9890] hover:text-[#A32D2D] rounded-[6px] transition-all cursor-pointer border-none bg-transparent outline-none">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}

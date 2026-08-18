@@ -29,6 +29,7 @@ import {
   AlertTriangle,
   FileSpreadsheet,
   Hash,
+  Stamp,
   ChevronDown,
   Zap,
   Moon,
@@ -40,6 +41,7 @@ import { cn, formatCurrency } from './lib/utils';
 import { VALIDATIONS, VALIDATIONS_VIATICOS } from './constants';
 import { processDocument, type AuditResult, type PaymentData } from './lib/gemini';
 import { PIMYS_CODES } from './lib/codes';
+import { AUTORIZACIONES_POR_CODIGO, AUTORIZACIONES_POR_SECTOR } from './lib/authorizations';
 import { PdfCanvasViewer } from './components/PdfCanvasViewer';
 import { PdfScrollViewer } from './components/PdfScrollViewer';
 import { InteractiveNormativa } from './components/InteractiveNormativa';
@@ -1459,6 +1461,7 @@ export default function App() {
 
             <SidebarItem icon={Zap} label="Auditoría Rápida" active={activeTab === 'Rapida'} onClick={() => setActiveTab('Rapida')} />
             <SidebarItem icon={Hash} label="Códigos" active={activeTab === 'Códigos'} onClick={() => setActiveTab('Códigos')} />
+            <SidebarItem icon={Stamp} label="Autorizaciones PIMyS" active={activeTab === 'Autorizaciones'} onClick={() => setActiveTab('Autorizaciones')} />
             <SidebarItem icon={ShieldCheck} label="Normativa" active={activeTab === 'Normativa'} onClick={() => setActiveTab('Normativa')} />
           </div>
         </nav>
@@ -2633,6 +2636,131 @@ export default function App() {
                   </table>
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'Autorizaciones' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="max-w-5xl"
+            >
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
+                  <Stamp className="w-6 h-6 text-[#004741]" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-medium tracking-tight text-slate-900">Autorizaciones PIMyS</h2>
+                  <p className="text-xs text-[#9A9890] mt-0.5">Firmas obligatorias según el código de gasto o el agente solicitante.</p>
+                </div>
+              </div>
+
+              {/* ── Por código de gasto ───────────────────────────────── */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-1.5 h-1.5 bg-[#004741] rounded-full" />
+                <h3 className="text-[10px] font-medium text-[#004741] uppercase tracking-[0.06em]">
+                  Según código de gasto
+                </h3>
+              </div>
+
+              <div className="space-y-3 mb-10">
+                {AUTORIZACIONES_POR_CODIGO.map((auth, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-5 shadow-none"
+                  >
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      {auth.codigos.map(c => (
+                        <span
+                          key={c}
+                          className="font-mono text-[13px] font-medium text-[#004741] bg-[#D4E8E6] border-[0.5px] border-[#9FE1CB] px-2 py-0.5 rounded-[6px]"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                      <span className="text-[13px] text-slate-800 font-medium">{auth.concepto}</span>
+                    </div>
+
+                    {auth.tipo === 'fijo' ? (
+                      <div className="mt-3 flex items-start gap-2 text-[13px]">
+                        <span className="text-[#9A9890] shrink-0">Autoriza:</span>
+                        <strong className="font-semibold text-slate-900 break-all">{auth.firmante}</strong>
+                      </div>
+                    ) : (
+                      <div className="mt-3 overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-[13px]">
+                          <thead>
+                            <tr className="bg-[#E8E4D8] border-b-[1.5px] border-[#D3D1C7] text-[10px] text-[#9A9890] uppercase tracking-[0.06em]">
+                              <th className="p-[8px_12px] font-medium whitespace-nowrap">Sucursal</th>
+                              <th className="p-[8px_12px] font-medium">Alcance</th>
+                              <th className="p-[8px_12px] font-medium whitespace-nowrap">Autoriza</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(auth.zonas || []).map(z => (
+                              <tr key={z.zona} className="border-b border-[#E8E6DE] last:border-0">
+                                <td className="p-[8px_12px] font-medium text-slate-800 align-top whitespace-nowrap">{z.zona}</td>
+                                <td className="p-[8px_12px] text-[#6B6963] align-top leading-[1.5] text-[12px]">{z.alcance}</td>
+                                <td className="p-[8px_12px] align-top whitespace-nowrap">
+                                  <strong className="font-semibold text-slate-900">{z.firmante}</strong>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {auth.nota && (
+                      <p className="mt-3 text-[12px] text-[#6B6963] leading-relaxed border-l-2 border-[#D3D1C7] pl-3">
+                        {auth.nota}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Por sector / agente solicitante ───────────────────── */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-1.5 h-1.5 bg-[#004741] rounded-full" />
+                <h3 className="text-[10px] font-medium text-[#004741] uppercase tracking-[0.06em]">
+                  Según el agente solicitante del PIMyS
+                </h3>
+              </div>
+              <p className="text-[12px] text-[#9A9890] mb-4 leading-relaxed max-w-2xl">
+                Si el campo <strong className="font-medium text-slate-700">Solicitante</strong> del PIMyS corresponde a alguno de estos agentes, el formulario debe llevar la firma del jefe autorizante de su sector.
+              </p>
+
+              <div className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] shadow-none overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-[13px]">
+                    <thead>
+                      <tr className="bg-[#E8E4D8] border-b-[1.5px] border-[#D3D1C7] text-[10px] text-[#9A9890] uppercase tracking-[0.06em]">
+                        <th className="p-[12px_16px] font-medium whitespace-nowrap">Sector</th>
+                        <th className="p-[12px_16px] font-medium">Agente solicitante</th>
+                        <th className="p-[12px_16px] font-medium">Jefe autorizante</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {AUTORIZACIONES_POR_SECTOR.map((s, idx) => (
+                        <tr key={idx} className="border-b border-[#E8E6DE] last:border-0 hover:bg-[#E5E1D5]/50 transition-colors">
+                          <td className="p-[12px_16px] font-medium text-slate-800 align-top leading-[1.4]">{s.sector}</td>
+                          <td className="p-[12px_16px] text-[#1A1A1A] align-top leading-[1.6]">
+                            {s.agentes.join(' o ')}
+                          </td>
+                          <td className="p-[12px_16px] align-top leading-[1.6]">
+                            <strong className="font-semibold text-slate-900">{s.jefes.join(' o ')}</strong>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <p className="mt-6 text-[12px] text-[#9A9890] leading-relaxed max-w-2xl">
+                Estas reglas se aplican automáticamente en la validación <strong className="font-medium text-slate-700">V4 (Aprobadores)</strong> de cada auditoría.
+              </p>
             </motion.div>
           )}
 

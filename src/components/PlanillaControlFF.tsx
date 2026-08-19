@@ -152,7 +152,9 @@ export function PlanillaControlFF({ initialData }: Props) {
     sector: initialData?.sector || '',
     expediente: initialData?.expediente || '',
     fondoFijo: initialData?.fondoFijo || '',
-    fecha: initialData?.fecha || hoy(),
+    // La planilla de control siempre se emite con la fecha del día en que se
+    // completa, no con la fecha del expediente auditado.
+    fecha: hoy(),
   }));
   const [filas, setFilas] = useState<Fila[]>(buildFilas(6));
   const prevInitialData = React.useRef(initialData);
@@ -165,7 +167,7 @@ export function PlanillaControlFF({ initialData }: Props) {
         sector: initialData.sector,
         expediente: initialData.expediente,
         fondoFijo: initialData.fondoFijo,
-        fecha: initialData.fecha || hoy(),
+        fecha: hoy(),
       });
       setFilas(buildFilas(6));
       setVista('formulario');

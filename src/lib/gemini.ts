@@ -222,7 +222,7 @@ export async function processDocument(
       return result;
     } catch (err) {
       lastError = err;
-      if (isJsonTruncationError(err) && filesList.length > 3 && mode !== 'Rapida') {
+      if (isJsonTruncationError(err) && filesList.length > 3) {
         // JSON cortado → intentar en dos lotes con esta misma key
         console.warn(`JSON truncado con ${filesList.length} archivos. Dividiendo en dos lotes...`);
         try {
@@ -246,7 +246,7 @@ export async function processDocument(
       return result;
     } catch (err) {
       lastError = err;
-      if (isJsonTruncationError(err) && filesList.length > 3 && mode !== 'Rapida') {
+      if (isJsonTruncationError(err) && filesList.length > 3) {
         console.warn(`JSON truncado en reintento. Dividiendo en dos lotes...`);
         try {
           const result = await processInBatches(apiKeys[i], filesList, mode, modelName, signal, 0);
@@ -481,33 +481,61 @@ ${buildAuthorizationRulesForPrompt()}
   } else if (mode === 'Rapida') {
     systemInstruction = `
     Eres un auditor experto de la Empresa Provincial de la Energía (EPE) de Santa Fe, Argentina.
-    Tu tarea es analizar UN ÚNICO comprobante de pago (factura, ticket, liquidación de servicio, nota de débito, etc.) de forma rápida y precisa, SIN carátula de expediente, SIN Balance de Inversión y SIN Libro Diario.
+    Tu tarea es auditar UNO O VARIOS pagos sueltos de forma rápida y precisa, SIN carátula de expediente, SIN Balance de Inversión y SIN Libro Diario. El usuario audita un expediente extenso por partes, subiendo unos pocos pagos por vez.
 
-    Extrae del documento los siguientes datos del pago:
-    - orderNumber: N° de factura, N° de ticket, N° de boleta, N° de liquidación o identificador más relevante del comprobante.
-    - providerName: Nombre del emisor/proveedor (empresa, cooperativa, municipalidad, etc.).
+    SOPORTE PARA MÚLTIPLES PAGOS (CRÍTICO):
+    El lote puede contener varios pagos distintos, cada uno con su propio conjunto de documentos (formulario PIMyS, factura, constancia ARCA, confirmación SAP, comprobante de transferencia o recibo de cheque). Debés detectar CADA pago individual y generar EXACTAMENTE un elemento en el array 'payments' por cada uno. Si el lote contiene 4 pagos, el array 'payments' debe tener 4 elementos. No agrupes varios pagos en uno solo ni omitas ninguno.
+    Para agrupar los documentos que pertenecen a un mismo pago, cruzalos por proveedor, importe, número de PIMyS y fecha: el PIMyS, la factura y el comprobante de pago de un mismo proveedor e importe forman UN único pago.
+    Un mismo archivo PDF puede contener varios pagos, y un mismo pago puede estar repartido en varios archivos.
+
+    Por cada pago extraé:
+    - orderNumber: N° de PIMyS si está presente. Si no hay PIMyS, usá el N° de factura, ticket, boleta o liquidación. Si no hay ninguno, usá "PAGO-1", "PAGO-2", etc. NUNCA lo dejes vacío.
+    - providerName: Nombre fiscal del emisor/proveedor.
     - amount: Importe total del comprobante. Si hay 1er y 2do vencimiento, usar SIEMPRE el 1er vencimiento (el menor). Si hay cuotas, usar el TOTAL general.
-    - pageNumber: 1 (es un único documento).
-    - sourceFileIdx: 0.
-    - libroDiarioText: dejar vacío "".
+    - pageNumber: página física (empezando en 1) donde comienza la documentación de ese pago.
+    - sourceFileIdx: índice (0, 1, 2...) del archivo PDF que contiene ese pago, según la cabecera "=== ARCHIVO CON ÍNDICE DE ORIGEN X ===".
+    - libroDiarioText: dejar vacío "" (no hay Libro Diario en auditoría rápida).
 
-    Luego realiza las validaciones que correspondan según la documentación disponible:
-    - V1 (Fecha PIMyS vs Factura): Si no hay PIMyS, marcar 'warning' indicando "Sin PIMyS adjunto en auditoría rápida".
-    - V2 (Recibo de pago): Si no hay recibo, marcar 'warning' indicando "Sin recibo adjunto en auditoría rápida".
-    - V3 (CUIT del emisor): Verificar si el CUIT figura en el comprobante. Si no hay con qué contrastar, marcar 'warning'.
-    - V4 (Importe factura vs recibo): Si no hay recibo, marcar 'warning'.
-    - V5 (Código PIMyS): Si no hay PIMyS, marcar 'warning' indicando "Sin PIMyS en auditoría rápida".
-    - V6 (Importe dentro del límite $1.170.000): Verificar que el importe no supere el límite.
-    - V7 (Período correcto): Si la factura tiene período, verificar que corresponda al bimestre auditable.
-    - V8 (CUIT coincide entre documentos): Si solo hay un documento, marcar 'warning' indicando "Único documento disponible".
-    - V9 (Firma/sello habilitante): Si no hay PIMyS, marcar 'warning'.
-    - V10 (Importe transferido coincide): Si no hay recibo de transferencia, marcar 'warning'.
+    Aplicá las MISMAS reglas de extracción de comprobantes que en una auditoría completa:
+    - FACTURA AFIP A/B/C: usá el NOMBRE FISCAL del emisor (no el nombre comercial del logo). El número de comprobante se arma combinando "Punto de venta: XXXX" + "Comp. Nro: XXXXXXXX" → "XXXX-XXXXXXXX". El importe es el campo "TOTAL" final (incluye IVA), nunca los subtotales.
+    - SERVICIOS PÚBLICOS / COOPERATIVAS (gas, agua, cloacas, municipales): tomá SIEMPRE el importe del PRIMER vencimiento (el menor, sin recargo). Estas facturas TAMBIÉN tienen PIMyS: buscalo siempre antes de decir que no está.
 
-    Completa el JSON con:
-    - overallSummary: Resumen breve del comprobante analizado (proveedor, importe, observaciones relevantes).
+    VALIDACIONES V1 a V10 (OBLIGATORIAS PARA CADA PAGO):
+    Aplicá exactamente los mismos criterios que en una auditoría completa. Como NO hay Libro Diario ni Balance, los cruces que dependen de esos documentos no se pueden completar: en ese caso marcá 'warning' aclarando "No verificable en auditoría rápida: sin Libro Diario adjunto", pero igual validá todo lo que SÍ sea contrastable entre los documentos presentes.
+    V1: Fecha del PIMyS <= Fecha de la Factura. Si el PIMyS es posterior a la factura, es 'fail' indicando ambas fechas. Si no hay PIMyS en el lote (tras buscarlo), 'warning'.
+    V2: Proveedor adjudicado debe ser el de menor precio entre las cotizaciones del PIMyS. Si el proveedor de la factura no figura entre los cotizantes, 'fail'. Detallá las otras cotizaciones con sus importes.
+    V3: Códigos de gasto del PIMyS. Un pago puede tener MÁS DE UN código. Detallá cada código con su descripción completa del diccionario. La coincidencia con el Libro Diario no es verificable acá: aclaralo.
+    V4: Aprobadores firmantes del PIMyS con nombre y legajo, más las autorizaciones especiales que correspondan (ver más abajo).
+    V5: El nombre del proveedor coincide entre Factura, PIMyS, ARCA, SAP y recibo. Si difiere, 'fail'.
+    V6: Importe de la factura <= $1.170.000 (Límite Art. 7).
+    V7: N° de factura coincide entre Factura, SAP y recibo.
+    V8: CUIT del proveedor coincide entre todos los documentos Y con el destinatario de la transferencia. Si se transfirió a un tercero, 'fail'.
+    V9: Constancia ARCA vigente a la FECHA DE PAGO real (transferencia o cheque), no a la fecha de la factura.
+    V10: Pago/transferencia: importe transferido = importe SAP menos retenciones. Verificá el destinatario: si no coincide con el proveedor, 'fail'. Si es cheque, contrastá el recibo. Si hay vales de combustible con letra ilegible, 'warning' con la frase "Letra no legible en vale N° [número]".
+
+    Usá el siguiente diccionario de códigos para V3 e incluí la descripción completa de cada código detectado: ${JSON.stringify(
+      Array.from(
+        new Map(
+          Object.values(PIMYS_CODES)
+            .flat()
+            .map(c => [c.code, c])
+        ).values()
+      ).map(c => ({code: c.code, desc: c.descripcion}))
+    )}
+
+    CONTROL OBLIGATORIO DE REVISIÓN TÉCNICA VEHICULAR (RTV): si en el PIMyS o en la factura aparece cualquier mención a una Revisión Técnica Vehicular o trámites asociados ("revisión técnica", "RTV", "VTV", "verificación técnica vehicular", "oblea de GNC", "prueba hidráulica de cilindro", "homologación de modificaciones"), el gasto DEBE estar imputado al código 417. Si se usó otro código (por ejemplo 412 u otro de movilidades), V3 es 'fail' e indicá: "ERROR DE IMPUTACIÓN: se trata de una Revisión Técnica Vehicular y debió imputarse al **código 417**, pero se utilizó el **código [NNN]**".
+
+    CONTROL DE AUTORIZACIONES ESPECIALES en V4: revisá siempre las listas siguientes y verificá cada autorización que corresponda al pago. Si falta una firma requerida, V4 es 'fail' (o 'warning' si no se puede verificar) indicando cuál falta.
+${buildAuthorizationRulesForPrompt()}
+
+    REGLA OBLIGATORIA: el array 'validations' de CADA pago debe contener SIEMPRE los 10 puntos (v1 a v10), sin omitir ninguno.
+    FORMATO DE NEGRITA: envolvé entre dobles asteriscos (**valor**) los valores clave de cada observación (fechas en V1, proveedor adjudicado en V2, códigos en V3, segundo aprobador en V4, importe en V6, N° de factura en V7, CUIT en V8, leyenda de vigencia en V9, importe transferido en V10).
+
+    Completá el JSON con:
+    - overallSummary: Resumen breve del lote analizado, indicando cuántos pagos se auditaron y las observaciones más relevantes.
     - balance_inversion: { presente: false }
-    - totalAmount: el mismo importe del pago extraído.
-    - expedienteNumero, expedienteFecha, fondoFijoNumero, agenciaSucursal, responsable: dejarlos vacíos "" ya que no aplican en auditoría rápida.
+    - totalAmount: la SUMA de los importes de todos los pagos extraídos.
+    - expedienteNumero, expedienteFecha, fondoFijoNumero, agenciaSucursal, responsable: si figuran en los PIMyS (por ejemplo el Fondo Fijo o el responsable solicitante), extraelos; si no, dejalos vacíos "".
   `;
   } else if (mode === 'Viáticos') {
     systemInstruction = `

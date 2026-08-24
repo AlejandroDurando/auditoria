@@ -100,7 +100,8 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
   setSelectedModel: (m: ModelId) => void;
   showNotification: (title: string, msg: string, type?: 'success' | 'error' | 'info') => void;
 }) {
-  const [file, setFile] = useState<{ name: string; base64: string } | null>(null);
+  const [files, setFiles] = useState<Array<{ name: string; base64: string }>>([]);
+  const [activeFileIdx, setActiveFileIdx] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<import('./lib/gemini').AuditResult | null>(null);
   const [expandedPayment, setExpandedPayment] = useState<number | null>(0);
@@ -139,36 +140,61 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
   }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const f = acceptedFiles[0];
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = (e.target?.result as string).split(',')[1];
-      setFile({ name: f.name, base64 });
+    if (!acceptedFiles.length) return;
+    Promise.all(
+      acceptedFiles.map(
+        f =>
+          new Promise<{ name: string; base64: string }>(resolve => {
+            const reader = new FileReader();
+            reader.onload = e => {
+              const base64 = (e.target?.result as string).split(',')[1];
+              resolve({ name: f.name, base64 });
+            };
+            reader.readAsDataURL(f);
+          })
+      )
+    ).then(nuevos => {
+      setFiles(prev => [...prev, ...nuevos]);
       setResult(null);
-    };
-    reader.readAsDataURL(f);
+    });
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
-    maxFiles: 1,
+    multiple: true,
   } as any);
 
+  const removeFile = (idx: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== idx));
+    setActiveFileIdx(i => (i >= idx && i > 0 ? i - 1 : i));
+    setResult(null);
+  };
+
   const handleAnalizar = async () => {
-    if (!file) return;
+    if (!files.length) return;
     setIsProcessing(true);
     setResult(null);
     try {
-      const res = await processDocument([{ name: file.name, base64: file.base64 }], 'Rapida', selectedModel as any);
+      const res = await processDocument(files, 'Rapida', selectedModel as any);
       setResult(res);
+      setExpandedPayment(0);
     } catch (err) {
-      showNotification('Error', 'No se pudo analizar el comprobante. Verificá la conexión e intentá de nuevo.', 'error');
+      const msg = err instanceof Error ? err.message : String(err);
+      const isRateLimit = /429|quota|RESOURCE_EXHAUSTED|high demand|UNAVAILABLE/.test(msg);
+      showNotification(
+        'Error',
+        isRateLimit
+          ? 'Límite de solicitudes de Gemini alcanzado. Esperá 1-2 minutos y volvé a intentarlo.'
+          : 'No se pudieron analizar los comprobantes. Si subiste muchos archivos, probá con menos por vez.',
+        'error'
+      );
     } finally {
       setIsProcessing(false);
     }
   };
+
+  const activeFile = files[activeFileIdx] || null;
 
   const statusIcon = (status: string) => {
     if (status === 'pass') return <CheckCircle2 className="w-4 h-4 text-[#004741]" />;
@@ -186,7 +212,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-[16px] font-semibold text-[#1A1A1A] tracking-tight leading-none">Auditoría Rápida</h1>
-            <p className="text-[11px] text-[#9A9890] mt-0.5">Comprobante único, sin expediente.</p>
+            <p className="text-[11px] text-[#9A9890] mt-0.5">Pagos sueltos, sin carátula ni Libro Diario.</p>
           </div>
         </div>
 
@@ -216,29 +242,59 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
           )}
         >
           <input {...getInputProps()} />
-          {file ? (
-            <div className="flex items-center justify-center gap-2">
-              <FileText className="w-4 h-4 text-[#004741]" />
-              <span className="text-sm font-medium text-[#1A1A1A] truncate max-w-[220px]">{file.name}</span>
-              <button onClick={(e) => { e.stopPropagation(); setFile(null); setResult(null); }} className="text-[#9A9890] hover:text-red-500 transition-colors shrink-0">
-                <X className="w-3.5 h-3.5" />
+          <div className="flex flex-col items-center gap-1.5">
+            <Upload className="w-6 h-6 text-[#BDBBB2]" />
+            <p className="text-xs text-[#9A9890]">
+              {files.length ? 'Agregá más comprobantes o hacé clic' : 'Arrastrá los comprobantes o hacé clic'}
+            </p>
+            <p className="text-[10px] text-[#BDBBB2]">Solo PDF · podés subir varios pagos juntos</p>
+          </div>
+        </div>
+
+        {/* Lista de archivos cargados */}
+        {files.length > 0 && (
+          <div className="mb-3 space-y-1">
+            <div className="flex items-center justify-between px-1 mb-1.5">
+              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890]">
+                {files.length} {files.length === 1 ? 'archivo' : 'archivos'}
+              </span>
+              <button
+                onClick={() => { setFiles([]); setResult(null); setActiveFileIdx(0); }}
+                className="text-[10px] font-medium text-[#9A9890] hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none outline-none p-0"
+              >
+                Limpiar todo
               </button>
             </div>
-          ) : (
-            <div className="flex flex-col items-center gap-1.5">
-              <Upload className="w-6 h-6 text-[#BDBBB2]" />
-              <p className="text-xs text-[#9A9890]">Arrastrá el comprobante o hacé clic</p>
-              <p className="text-[10px] text-[#BDBBB2]">Solo PDF</p>
-            </div>
-          )}
-        </div>
+            {files.map((f, idx) => (
+              <div
+                key={idx}
+                onClick={() => setActiveFileIdx(idx)}
+                className={cn(
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-[7px] cursor-pointer transition-colors border-[0.5px]",
+                  idx === activeFileIdx
+                    ? "bg-[#E8EFEE] border-[#004741]/30"
+                    : "bg-[#F2EFE6] border-[#E8E6DE] hover:bg-[#E8E4D8]"
+                )}
+              >
+                <FileText className={cn("w-3.5 h-3.5 shrink-0", idx === activeFileIdx ? "text-[#004741]" : "text-[#9A9890]")} />
+                <span className="text-[11px] text-[#1A1A1A] truncate flex-1 min-w-0" title={f.name}>{f.name}</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
+                  className="text-[#9A9890] hover:text-red-500 transition-colors shrink-0 bg-transparent border-none outline-none p-0 cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         <button
           onClick={handleAnalizar}
-          disabled={!file || isProcessing}
+          disabled={!files.length || isProcessing}
           className={cn(
             "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium transition-all mb-5",
-            file && !isProcessing
+            files.length && !isProcessing
               ? "bg-[#004741] text-white hover:bg-[#003330]"
               : "bg-[#E8E6DE] text-[#BDBBB2] cursor-not-allowed"
           )}
@@ -246,53 +302,105 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
           {isProcessing ? (
             <><Loader2 className="w-4 h-4 animate-spin" /><span>Analizando...</span></>
           ) : (
-            <><Zap className="w-4 h-4" /><span>Analizar comprobante</span></>
+            <><Zap className="w-4 h-4" /><span>{files.length > 1 ? `Analizar ${files.length} archivos` : 'Analizar comprobante'}</span></>
           )}
         </button>
 
         {/* Results */}
         {result && result.payments && result.payments.length > 0 && (
           <div className="space-y-3">
-            <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[10px] p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1 min-w-0 pr-3">
-                  <p className="text-[10px] text-[#9A9890] uppercase tracking-wide font-medium mb-0.5">Proveedor</p>
-                  <p className="text-sm font-semibold text-[#1A1A1A] leading-tight">{result.payments[0].providerName || '—'}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-[10px] text-[#9A9890] uppercase tracking-wide font-medium mb-0.5">Importe</p>
-                  <p className="text-sm font-semibold text-[#004741]">{formatCurrency(result.payments[0].amount)}</p>
-                </div>
+            {/* Resumen del lote */}
+            <div className="bg-[#E8EFEE] border-[0.5px] border-[#004741]/20 rounded-[10px] p-3.5">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-semibold text-[#004741]">
+                  {result.payments.length} {result.payments.length === 1 ? 'pago analizado' : 'pagos analizados'}
+                </span>
+                <span className="text-[11px] font-semibold text-[#004741] font-mono">
+                  {formatCurrency(result.payments.reduce((a, p) => a + (typeof p?.amount === 'number' && !isNaN(p.amount) ? p.amount : 0), 0))}
+                </span>
               </div>
-              <div className="text-[11px] text-[#9A9890]">N° {result.payments[0].orderNumber}</div>
               {result.overallSummary && (
-                <p className="text-[11px] text-[#6B6963] mt-2 pt-2 border-t border-[#F0EDE8] leading-relaxed">{safeText(result.overallSummary)}</p>
+                <p className="text-[11px] text-[#6B6963] leading-relaxed mt-1.5">{safeText(result.overallSummary)}</p>
               )}
             </div>
 
-            {/* Validations */}
-            <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[10px] overflow-hidden">
-              <button
-                onClick={() => setExpandedPayment(expandedPayment === 0 ? null : 0)}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAF8] transition-colors"
-              >
-                <span>Validaciones</span>
-                <ChevronDown className={cn("w-3.5 h-3.5 text-[#9A9890] transition-transform", expandedPayment === 0 ? "rotate-180" : "")} />
-              </button>
-              {expandedPayment === 0 && (
-                <div className="border-t border-[#F0EDE8] divide-y divide-[#F0EDE8]">
-                  {result.payments[0].validations?.map((v) => (
-                    <div key={v.id} className="flex items-start gap-2.5 px-4 py-2.5">
-                      {statusIcon(v.status)}
+            {/* Un bloque por pago */}
+            {result.payments.map((pago, idx) => {
+              const vals = pago?.validations || [];
+              const errores = vals.filter(v => v?.status === 'fail').length;
+              const obs = vals.filter(v => v?.status === 'warning').length;
+              const abierto = expandedPayment === idx;
+              return (
+                <div
+                  key={idx}
+                  className={cn(
+                    "bg-[#F2EFE6] border-[0.5px] rounded-[10px] overflow-hidden",
+                    errores > 0 ? "border-l-2 border-l-[#E24B4A] border-[#E8E6DE]" : "border-[#E8E6DE]"
+                  )}
+                >
+                  <button
+                    onClick={() => setExpandedPayment(abierto ? null : idx)}
+                    className="w-full text-left px-4 py-3 hover:bg-[#E8E4D8]/50 transition-colors cursor-pointer bg-transparent border-none outline-none"
+                  >
+                    <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <span className="text-[10px] font-bold text-[#1A1A1A] uppercase mr-1.5">{v.id}</span>
-                        <p className="text-[11px] text-[#6B6963] mt-0.5 whitespace-pre-line leading-relaxed">{v.observations}</p>
+                        <p className="text-[13px] font-semibold text-[#1A1A1A] leading-tight truncate" title={pago?.providerName}>
+                          {pago?.providerName || '—'}
+                        </p>
+                        <p className="text-[10px] text-[#9A9890] mt-0.5">N° {pago?.orderNumber || '—'}</p>
+                      </div>
+                      <div className="text-right shrink-0 flex items-center gap-2">
+                        <div>
+                          <p className="text-[13px] font-semibold text-[#004741] font-mono leading-tight">
+                            {formatCurrency(pago?.amount)}
+                          </p>
+                          <p className="text-[10px] mt-0.5">
+                            {errores > 0 ? (
+                              <span className="text-[#A32D2D] font-medium">{errores} {errores === 1 ? 'error' : 'errores'}</span>
+                            ) : obs > 0 ? (
+                              <span className="text-amber-700 font-medium">{obs} obs.</span>
+                            ) : (
+                              <span className="text-[#004741] font-medium">Sin observaciones</span>
+                            )}
+                          </p>
+                        </div>
+                        <ChevronDown className={cn("w-3.5 h-3.5 text-[#9A9890] transition-transform shrink-0", abierto ? "rotate-180" : "")} />
                       </div>
                     </div>
-                  ))}
+                  </button>
+
+                  {abierto && (
+                    <div className="border-t border-[#F0EDE8] divide-y divide-[#F0EDE8]">
+                      {vals.map((v, vi) => (
+                        <div key={v?.id || vi} className="flex items-start gap-2.5 px-4 py-2.5">
+                          {statusIcon(v?.status)}
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[10px] font-bold text-[#1A1A1A] uppercase mr-1.5">{v?.id}</span>
+                            <p className="text-[11px] text-[#6B6963] mt-0.5 leading-relaxed">
+                              {(safeText(v?.observations) || '—').split('\n').map((line, li, arr) => (
+                                <React.Fragment key={li}>
+                                  {renderBold(line)}
+                                  {li < arr.length - 1 && <br />}
+                                </React.Fragment>
+                              ))}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })}
+          </div>
+        )}
+
+        {result && (!result.payments || result.payments.length === 0) && (
+          <div className="bg-amber-50 border border-amber-250 rounded-[10px] p-4">
+            <p className="text-[12px] font-semibold text-amber-850 mb-1">No se detectaron pagos</p>
+            <p className="text-[11px] text-amber-800 leading-relaxed">
+              La IA no pudo extraer ningún pago de los archivos cargados. Probá subiendo menos archivos por vez, o verificá que los PDFs sean legibles.
+            </p>
           </div>
         )}
       </div>
@@ -305,12 +413,12 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
 
       {/* Right panel — PDF viewer */}
       <div className="flex-1 min-w-0 h-full bg-[#DED9CC] flex flex-col">
-        {file ? (
-          <PdfScrollViewer base64={file.base64} fileName={file.name} />
+        {activeFile ? (
+          <PdfScrollViewer base64={activeFile.base64} fileName={activeFile.name} />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 text-[#BDBBB2]">
             <FileText className="w-12 h-12" />
-            <p className="text-sm">El comprobante aparecerá aquí</p>
+            <p className="text-sm">Los comprobantes aparecerán aquí</p>
           </div>
         )}
       </div>

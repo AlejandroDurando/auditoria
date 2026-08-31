@@ -95,10 +95,11 @@ const MODELS = [
 ] as const;
 type ModelId = typeof MODELS[number]['id'];
 
-function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
+function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHistory }: {
   selectedModel: ModelId;
   setSelectedModel: (m: ModelId) => void;
   showNotification: (title: string, msg: string, type?: 'success' | 'error' | 'info') => void;
+  saveToHistory: (result: import('./lib/gemini').AuditResult, id: string) => void;
 }) {
   const [files, setFiles] = useState<Array<{ name: string; base64: string }>>([]);
   const [activeFileIdx, setActiveFileIdx] = useState(0);
@@ -179,6 +180,9 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification }: {
       const res = await processDocument(files, 'Rapida', selectedModel as any);
       setResult(res);
       setExpandedPayment(0);
+      if (res?.payments?.length) {
+        saveToHistory(res, `rapida-${Date.now()}`);
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       const isRateLimit = /429|quota|RESOURCE_EXHAUSTED|high demand|UNAVAILABLE/.test(msg);
@@ -2648,6 +2652,11 @@ export default function App() {
                             <span className="px-[10px] py-[3px] bg-purple-100/60 text-purple-700 rounded-[20px] text-[11px] font-medium leading-none">
                               Viáticos
                             </span>
+                          ) : entry.result?.mode === 'Rapida' ? (
+                            <span className="px-[10px] py-[3px] bg-amber-100/70 text-amber-800 rounded-[20px] text-[11px] font-medium leading-none inline-flex items-center gap-1">
+                              <Zap className="w-3 h-3" />
+                              Rápida
+                            </span>
                           ) : (
                             <span className="px-[10px] py-[3px] bg-[#D4E8E6] text-[#003330] rounded-[20px] text-[11px] font-medium leading-none">
                               Expediente
@@ -2675,6 +2684,11 @@ export default function App() {
                               {entry.result.agenciaSucursal && entry.result.fondoFijoNumero ? ' — ' : ''}
                               {entry.result.fondoFijoNumero ? formatHistoryTitle(entry.result.fondoFijoNumero) : ''}
                             </h3>
+                          ) : entry.result?.mode === 'Rapida' ? (
+                            <h3 className="text-sm font-medium text-slate-800">
+                              {(entry.result.payments || []).length}{' '}
+                              {(entry.result.payments || []).length === 1 ? 'pago suelto' : 'pagos sueltos'}
+                            </h3>
                           ) : (
                             <span className="text-xs font-medium bg-[#E8E4D8] text-slate-600 px-2.5 py-1 rounded-md">
                               FF-{entry.FF || 'Sin ID'}
@@ -2699,11 +2713,9 @@ export default function App() {
                           onClick={() => {
                             setResult(entry.result);
                             setActiveAuditId(entry.id);
-                            if (entry.result.mode) {
-                              setDashboardMode(entry.result.mode);
-                            } else {
-                              setDashboardMode('Expedientes');
-                            }
+                            // 'Rapida' no es un modo del selector del Dashboard:
+                            // su reporte se renderiza igual que el de Expedientes.
+                            setDashboardMode(entry.result.mode === 'Viáticos' ? 'Viáticos' : 'Expedientes');
                             setActiveTab('Dashboard');
                           }}
                           className="py-[6px] px-[14px] bg-[#F2EFE6] border border-[#D3D1C7] text-[#004741] text-[13px] font-medium rounded-[7px] hover:bg-[#E8EFEE] transition-all shadow-none cursor-pointer select-none outline-none"
@@ -2758,7 +2770,7 @@ export default function App() {
           )}
 
           {activeTab === 'Rapida' && (
-            <RapidaTab selectedModel={selectedModel} setSelectedModel={setSelectedModel} showNotification={showNotification} />
+            <RapidaTab selectedModel={selectedModel} setSelectedModel={setSelectedModel} showNotification={showNotification} saveToHistory={saveToHistory} />
           )}
 
           {activeTab === 'Códigos' && (
@@ -2996,6 +3008,17 @@ export default function App() {
                             ))}
                           </tbody>
                         </table>
+                      </div>
+                    )}
+
+                    {auth.excepcion && (
+                      <div className="mt-3 bg-amber-50 border border-amber-250 rounded-[8px] p-3">
+                        <p className="text-[11px] font-semibold text-amber-850 mb-1">
+                          Excepción — {auth.excepcion.motivo}
+                        </p>
+                        <p className="text-[12px] text-amber-800 leading-relaxed">
+                          Si el solicitante es <strong className="font-semibold">{auth.excepcion.agentes.join(', ')}</strong>, no se exige el autorizante habitual: en ese caso autoriza <strong className="font-semibold">{auth.excepcion.firmantes.join(' o ')}</strong>.
+                        </p>
                       </div>
                     )}
 

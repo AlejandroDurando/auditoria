@@ -20,6 +20,15 @@ export interface AutorizacionCodigo {
   firmantes?: string[];
   /** Firmantes por sucursal cuando tipo === 'zona' */
   zonas?: AutorizacionPorZona[];
+  /**
+   * Excepción: si el Solicitante del PIMyS es uno de estos agentes, el firmante
+   * habitual se reemplaza por los indicados acá.
+   */
+  excepcion?: {
+    motivo: string;
+    agentes: string[];
+    firmantes: string[];
+  };
   nota?: string;
   /** true si la agregó el usuario desde la app (se puede editar/eliminar) */
   custom?: boolean;
@@ -49,6 +58,11 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
     concepto: 'Movilidades (alquileres, mano de obra y repuestos de vehículos y equipos)',
     tipo: 'fijo',
     firmantes: ['pimysmovrafaela@epe.santafe.gov.ar'],
+    excepcion: {
+      motivo: 'La compra la realiza el propio sector Movilidades Rafaela',
+      agentes: ['Mariano Cipolatti', 'Alejandro Mansilla', 'Carlos Ternengo'],
+      firmantes: ['Fabio Ingaramo'],
+    },
     nota: 'La autorización llega por correo de Movilidades Rafaela y debe figurar adjunta al PIMyS.',
   },
   {
@@ -202,14 +216,21 @@ export function buildAuthorizationRulesForPrompt(): string {
   const porCodigo = getAllCodigos()
     .map(a => {
       const cods = a.codigos.join(', ');
+      const exc = a.excepcion
+        ? ` EXCEPCIÓN OBLIGATORIA: si el Solicitante del PIMyS es ${a.excepcion.agentes
+            .map(x => `"${x}"`)
+            .join(' o ')} (${a.excepcion.motivo}), NO se exige el firmante habitual: en ese caso la autorización válida es la de ${a.excepcion.firmantes
+            .map(x => `"${x}"`)
+            .join(' o ')}. No marques error por la ausencia del firmante habitual cuando aplica esta excepción.`
+        : '';
       if (a.tipo === 'fijo') {
         const firmantes = (a.firmantes || []).map(f => `"${f}"`).join(' o ');
-        return `- Código(s) ${cods} (${a.concepto}): requiere SIEMPRE la autorización de ${firmantes}, sin importar la sucursal.${a.nota ? ` ${a.nota}` : ''}`;
+        return `- Código(s) ${cods} (${a.concepto}): requiere SIEMPRE la autorización de ${firmantes}, sin importar la sucursal.${a.nota ? ` ${a.nota}` : ''}${exc}`;
       }
       const zonas = (a.zonas || [])
         .map(z => `${z.zona} (${z.alcance}) → "${z.firmante}"`)
         .join('; ');
-      return `- Código(s) ${cods} (${a.concepto}): requiere la firma del jefe según la sucursal de origen del expediente: ${zonas}.${a.nota ? ` ${a.nota}` : ''}`;
+      return `- Código(s) ${cods} (${a.concepto}): requiere la firma del jefe según la sucursal de origen del expediente: ${zonas}.${a.nota ? ` ${a.nota}` : ''}${exc}`;
     })
     .join('\n');
 

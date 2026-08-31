@@ -45,7 +45,7 @@ export interface AuditResult {
   overallSummary: string;
   totalAmount?: number;
   balance_inversion?: BalanceDecision;
-  mode?: 'Expedientes' | 'Viáticos';
+  mode?: 'Expedientes' | 'Viáticos' | 'Rapida';
   expedienteNumero?: string;
   expedienteFecha?: string;
   fondoFijoNumero?: string;

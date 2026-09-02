@@ -1403,6 +1403,26 @@ export default function App() {
         lines.push(``);
         issueCount++;
       }
+
+      const conc = result.balance_inversion.conciliacion_total;
+      if (conc && !conc.coinciden) {
+        lines.push(`${issueCount}. ❌ ERROR [Conciliación de totales]:`);
+        lines.push(`   Balance de Inversión: ${formatCurrency(conc.importe_balance || 0)}`);
+        lines.push(`   Total Banco a Reponer (Libro Diario): ${formatCurrency(conc.importe_libro_diario || 0)}`);
+        lines.push(`   Suma de pagos bancarios: ${formatCurrency(conc.suma_pagos_bancarios || 0)}`);
+        if (conc.detalle) lines.push(`   Detalle: ${safeText(conc.detalle)}`);
+        lines.push(``);
+        issueCount++;
+      }
+    }
+
+    if (result.duplicados && result.duplicados.length > 0) {
+      lines.push(`${issueCount}. ❌ ERROR [Documentación duplicada]:`);
+      result.duplicados.forEach(d => {
+        lines.push(`   • ${safeText(d.identificador)}: ${safeText(d.motivo)}${d.paginas ? ` (${safeText(d.paginas)})` : ''}`);
+      });
+      lines.push(``);
+      issueCount++;
     }
 
     // 2. Payments list
@@ -2115,7 +2135,7 @@ export default function App() {
                     const computedTotal = payments.reduce((acc, p) => acc + (p && typeof p.amount === 'number' && !isNaN(p.amount) ? p.amount : 0), 0);
                     const finalTotalImporte = typeof result?.totalAmount === 'number' && !isNaN(result?.totalAmount) && result?.totalAmount > 0 ? result?.totalAmount : computedTotal;
                     
-                    const hasErrors = payments.some(p => p?.validations?.some(v => v?.status === 'fail')) || result?.balance_inversion?.validacion_v14?.resultado === 'error';
+                    const hasErrors = payments.some(p => p?.validations?.some(v => v?.status === 'fail')) || result?.balance_inversion?.validacion_v14?.resultado === 'error' || result?.balance_inversion?.conciliacion_total?.coinciden === false || (result?.duplicados?.length || 0) > 0;
                     const hasWarnings = payments.some(p => p?.validations?.some(v => v?.status === 'warning'));
                     
                     return (
@@ -2216,7 +2236,7 @@ export default function App() {
 
                   {(() => {
                     const payments = result?.payments || [];
-                    const hasErrors = payments.some(p => p?.validations?.some(v => v?.status === 'fail')) || result?.balance_inversion?.validacion_v14?.resultado === 'error';
+                    const hasErrors = payments.some(p => p?.validations?.some(v => v?.status === 'fail')) || result?.balance_inversion?.validacion_v14?.resultado === 'error' || result?.balance_inversion?.conciliacion_total?.coinciden === false || (result?.duplicados?.length || 0) > 0;
                     if (payments.length === 0 || hasErrors) return null;
                     return (
                       <div className="bg-[#E8EFEE] border border-[#004741]/15 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 transition-all hover:bg-[#ebf8f3] shadow-sm">
@@ -2330,6 +2350,58 @@ export default function App() {
                                 </p>
                               </div>
                             )}
+
+                            {result.balance_inversion.conciliacion_total && (() => {
+                              const c = result.balance_inversion.conciliacion_total!;
+                              const fuentes = [
+                                { label: 'Balance de Inversión', valor: c.importe_balance },
+                                { label: 'Total Banco a Reponer (Libro Diario)', valor: c.importe_libro_diario },
+                                { label: 'Suma de pagos bancarios', valor: c.suma_pagos_bancarios },
+                              ];
+                              return (
+                                <div className="mt-4">
+                                  <div className="flex items-center gap-2 mb-2.5">
+                                    <h4 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em]">
+                                      Conciliación del importe a reponer
+                                    </h4>
+                                    <span className={cn(
+                                      "text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none",
+                                      c.coinciden
+                                        ? "bg-[#D4E8E6] text-[#003330]"
+                                        : "bg-[#FCEBEB] text-[#A32D2D]"
+                                    )}>
+                                      {c.coinciden ? 'Coinciden' : 'No coinciden'}
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    {fuentes.map((f, i) => (
+                                      <div key={i} className={cn(
+                                        "p-3 rounded-[8px] border-[0.5px]",
+                                        c.coinciden
+                                          ? "bg-[#F2EFE6] border-[#E8E6DE]"
+                                          : "bg-[#FFF8F8] border-[#F8CCCC]"
+                                      )}>
+                                        <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1 leading-tight">{f.label}</p>
+                                        <p className={cn(
+                                          "text-[13px] font-mono font-medium",
+                                          c.coinciden ? "text-slate-800" : "text-[#A32D2D]"
+                                        )}>
+                                          {f.valor ? formatCurrency(f.valor) : '—'}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  {c.detalle && (
+                                    <p className={cn(
+                                      "text-[11px] leading-relaxed mt-2",
+                                      c.coinciden ? "text-[#6B6963]" : "text-[#A32D2D] font-medium"
+                                    )}>
+                                      {safeText(c.detalle)}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
                           
                           <div>
@@ -2359,6 +2431,32 @@ export default function App() {
                           </div>
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* Alerta de documentación duplicada en el expediente */}
+                  {result?.duplicados && result.duplicados.length > 0 && (
+                    <div className="bg-[#FFF8F8] border border-[#F8CCCC] rounded-[12px] p-5 shadow-none flex flex-col gap-4 mb-4">
+                      <div className="flex gap-3 items-start">
+                        <div className="w-9 h-9 rounded-[10px] bg-[#FCEBEB] flex items-center justify-center shrink-0">
+                          <Copy className="w-4 h-4 text-[#A32D2D]" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-[#A32D2D] leading-tight">Documentación duplicada en el expediente</h4>
+                          <p className="text-xs text-[#A32D2D]/90 mt-1 leading-relaxed">
+                            Se detectó documentación adjuntada más de una vez. Verificá que no se haya contabilizado dos veces la misma transacción, ni omitido un pago distinto del mismo proveedor.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {result.duplicados.map((d, idx) => (
+                          <div key={idx} className="bg-[#F2EFE6] border-[0.5px] border-[#F8CCCC] rounded-[8px] p-3">
+                            <p className="text-[13px] font-semibold text-slate-900 font-mono">{safeText(d.identificador) || '—'}</p>
+                            {d.motivo && <p className="text-[11px] text-[#6B6963] mt-1 leading-relaxed">{safeText(d.motivo)}</p>}
+                            {d.paginas && <p className="text-[10px] text-[#9A9890] mt-1">Ubicación: {safeText(d.paginas)}</p>}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 

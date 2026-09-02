@@ -21,6 +21,21 @@ export interface BalanceDecision {
     resultado: 'ok' | 'error' | 'info';
     detalle: string;
   };
+  /** Cruce del importe a reponer entre sus tres fuentes independientes. */
+  conciliacion_total?: {
+    importe_balance?: number;
+    importe_libro_diario?: number;
+    suma_pagos_bancarios?: number;
+    coinciden: boolean;
+    detalle: string;
+  };
+}
+
+/** Documentación duplicada detectada en el lote de PDFs. */
+export interface DuplicadoDetectado {
+  identificador: string;
+  motivo: string;
+  paginas?: string;
 }
 
 export interface PaymentData {
@@ -51,6 +66,8 @@ export interface AuditResult {
   fondoFijoNumero?: string;
   agenciaSucursal?: string;
   responsable?: string;
+  /** Documentación repetida detectada en el lote (mismo PIMyS o misma factura dos veces). */
+  duplicados?: DuplicadoDetectado[];
 }
 function isQuotaError(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);
@@ -158,6 +175,24 @@ function normalizeResult(raw: any, mode: 'Expedientes' | 'Viáticos' | 'Rapida')
   if (parsed.balance_inversion?.validacion_v14) {
     parsed.balance_inversion.validacion_v14.detalle = toSafeString(parsed.balance_inversion.validacion_v14.detalle);
   }
+  if (parsed.balance_inversion?.conciliacion_total) {
+    const c = parsed.balance_inversion.conciliacion_total;
+    c.detalle = toSafeString(c.detalle);
+    c.coinciden = c.coinciden === true;
+  }
+
+  // Documentación repetida detectada por el modelo
+  parsed.duplicados = Array.isArray(parsed.duplicados)
+    ? parsed.duplicados
+        .filter((d: any) => d && typeof d === 'object')
+        .map((d: any) => ({
+          identificador: toSafeString(d.identificador),
+          motivo: toSafeString(d.motivo),
+          paginas: toSafeString(d.paginas),
+        }))
+        .filter((d: any) => d.identificador || d.motivo)
+    : [];
+
   if (parsed.fondoFijoNumero) parsed.fondoFijoId = parsed.fondoFijoNumero;
 
   return parsed as AuditResult;
@@ -346,9 +381,16 @@ async function processDocumentWithKey(
     
     Parte 1: Balance de Inversión
     Verifica si existe el documento "Balance de Inversión". Si está presente: extrae el monto asignado vigente, la lista de rendiciones pendientes con número e importe, y el saldo en banco declarado.
-    V14: Balance de Inversión cuadra. Verificá que se cumplan las siguientes dos condiciones:
+    V14: Balance de Inversión cuadra. Verificá que se cumplan las siguientes TRES condiciones:
     1) Monto asignado vigente menos la suma de todas las rendiciones pendientes de reintegro es igual al saldo en banco declarado. Si no cuadra, marca 'error'.
     2) CONTROL EXHAUSTIVO DE RENDICIÓN (CRÍTICO): Identifica cuál de las rendiciones pendientes detalladas en el Balance de Inversión corresponde a este lote de pagos (por ejemplo, si el expediente contiene la rendición "0346", busca la fila de la rendición "0346" y su importe correspondiente en la tabla del Balance de Inversión, ej: $441.125,15). Compara este importe declarado de la rendición ÚNICAMENTE contra el "TOTAL BANCO A REPONER" que figura al final del Libro Diario (el importe resaltado que representa la suma de los pagos reales realizados en banco — transferencias y cheques — sin contar el IVA Crédito Fiscal ni las retenciones impositivas). NO compares contra la suma total de las facturas individuales ni contra los comprobantes de gastos, ya que esos importes incluyen retenciones y créditos fiscales que no son pagos bancarios. Si hay una diferencia entre el importe declarado en el Balance y el "TOTAL BANCO A REPONER" del Libro Diario, debes cambiar el 'resultado' de validacion_v14 a 'error' y explicar de forma explícita y pormenorizada de cuánto es la diferencia, indicando ambos valores y el faltante exacto para alertar al auditor. Si los valores coinciden, la condición 2 se cumple.
+    3) CONCILIACIÓN DEL IMPORTE A REPONER ENTRE SUS TRES FUENTES (CRÍTICO): el importe que se repone en esta rendición debe poder verificarse de forma independiente en TRES lugares distintos, y los tres deben dar EXACTAMENTE el mismo número:
+       a) "importe_balance": el importe de esta rendición según la tabla de rendiciones pendientes del Balance de Inversión.
+       b) "importe_libro_diario": el "TOTAL BANCO A REPONER" que figura al final del Libro Diario.
+       c) "suma_pagos_bancarios": la suma de los importes REALMENTE PAGADOS POR BANCO de cada pago del expediente, es decir la suma de las transferencias bancarias y los cheques emitidos (importes NETOS, ya descontadas las retenciones impositivas). NO sumes los importes totales de las facturas: esos incluyen IVA y no descuentan retenciones, por lo que no corresponden a lo efectivamente pagado por banco. Tomá el importe neto de cada comprobante de transferencia o de cada cheque.
+       Calculá los tres valores y compará. Si los tres coinciden, poné "coinciden": true. Si alguno difiere, poné "coinciden": false, marcá el 'resultado' de validacion_v14 como 'error' y detallá en "detalle" los tres importes con su diferencia exacta, indicando cuál de las tres fuentes no cuadra.
+       Volcá siempre estos valores en el objeto "conciliacion_total" de "balance_inversion", aunque coincidan.
+       Si no podés obtener alguna de las tres fuentes (por ejemplo, faltan comprobantes de transferencia), poné ese campo en 0 y aclaralo en "detalle" sin marcar error por ese motivo.
     Si no está presente el Balance de Inversión, marca 'info' indicando que no fue adjuntado.
     
     Parte 2: Pagos y Comprobantes de Gastos / Facturas de Servicios Públicos y Cooperativas
@@ -390,6 +432,19 @@ async function processDocumentWithKey(
     3. Si el lote de documentos contiene una planilla de "Libro Diario" o listado de movimientos de caja: el Libro Diario se usa PRINCIPALMENTE para CONTRASTAR y corroborar los pagos que ya extrajiste de los comprobantes físicos (PIMyS, facturas, tickets), NO para duplicarlos. REGLA ANTI-DUPLICACIÓN (CRÍTICA Y OBLIGATORIA): Cada transacción económica debe generar UN ÚNICO elemento en el array 'payments'. Antes de crear un pago a partir de una fila del Libro Diario, verificá si ya existe un pago extraído de un comprobante físico (PIMyS/factura) que corresponda a la misma transacción (mismo proveedor y/o mismo importe y/o misma fecha). Si ya existe, NO crees un segundo pago: simplemente usá esa fila del Libro Diario para completar el campo 'libroDiarioText' y corroborar las validaciones de ESE pago ya existente. SOLO debés crear un pago nuevo a partir del Libro Diario cuando esa fila NO tenga ningún comprobante físico asociado en el lote de PDFs; en ese caso (y solo en ese caso) lo incluís con sus validaciones v1 a v10 como 'warning' detallando que se verificó según el Libro Diario pero sin comprobante físico adjunto ("Sin comprobante físico en PDF, verificado según registro en Libro Diario"). Nunca devuelvas el mismo proveedor e importe dos veces (una desde el PIMyS y otra desde el Libro Diario): eso es un error grave de duplicación.
     3. Para Notas de Débito de Banco Santa Fe o "Débitos y Créditos Bancarios": extráelas siempre como un pago individual en la lista 'payments'. Utiliza como 'orderNumber' su número de documento (ej: '0321') o similar, 'Banco de Santa Fe' como 'providerName' y el total de la planilla como 'amount'. Realiza las correspondientes validaciones v1 a v10 para este documento.
     
+    DETECCIÓN DE DOCUMENTACIÓN REPETIDA (CRÍTICO):
+    Es habitual que por error se adjunte DOS VECES la documentación del mismo pago (el mismo PIMyS y la misma factura escaneados dos veces). Debés detectarlo activamente:
+    - Si encontrás DOS O MÁS formularios PIMyS con el MISMO número de formulario, o dos facturas con el mismo número de comprobante y el mismo importe, se trata de documentación repetida, NO de dos pagos distintos.
+    - En ese caso generá UN SOLO elemento en 'payments' para esa transacción y registrá el hallazgo en el array 'duplicados' de la raíz del JSON, indicando el identificador repetido (N° de PIMyS o de factura), el motivo y las páginas donde aparece.
+    - ATENCIÓN: que dos pagos sean del MISMO PROVEEDOR no significa que estén repetidos. Un proveedor puede tener varios pagos legítimos en el mismo expediente, con distinto PIMyS, distinta factura y distinto importe. Solo considerá repetición cuando coinciden el número de comprobante Y el importe.
+    - Si detectás documentación repetida, la validación V7 del pago afectado debe calificarse como 'warning' aclarando: "Documentación duplicada: el comprobante **[N°]** aparece adjunto más de una vez en el expediente".
+
+    PROHIBIDO COMPLETAR DATOS DE UN COMPROBANTE CON DATOS DEL LIBRO DIARIO (CRÍTICO):
+    Los campos de un pago (providerName, orderNumber, amount, fecha de factura, N° de factura) deben extraerse SIEMPRE del comprobante físico correspondiente (PIMyS, factura, ticket). NUNCA rellenes esos campos con valores tomados del Libro Diario para "completar" un pago cuyo comprobante no pudiste leer.
+    - Si no lográs leer el número de PIMyS de un pago, NO lo reemplaces por el número de factura ni por un dato del Libro Diario: dejá el 'orderNumber' con el número de factura solo si efectivamente ese pago no tiene PIMyS, y aclaralo explícitamente en V1 y V4.
+    - Si un pago aparece SOLO en el Libro Diario, sin comprobante físico en los PDFs, marcá TODAS sus validaciones que dependen del comprobante como 'warning' con la leyenda "Sin comprobante físico en PDF, verificado según registro en Libro Diario", y NUNCA presentes los importes o fechas del Libro Diario como si provinieran de una factura.
+    - Si el importe de la factura NO coincide con el importe registrado en el Libro Diario para ese pago, es un hallazgo grave: V6 debe calificarse como 'fail' indicando ambos valores y la diferencia exacta: "DISCREPANCIA: la factura indica **$[X]** pero el Libro Diario registra **$[Y]** (diferencia de $[Z])".
+
     ¡REGLA DE ORO DE EXTRACCIÓN (CRÍTICA)!:
     Incluso si NO se adjunta el Balance de Inversión o la Carátula del expediente, de todas formas DEBES analizar y extraer todos los "payments" (pagos/comprobantes) de los archivos PDF proporcionados. El análisis de los pagos es independiente de la presencia de la Carátula o de la planilla del Balance. No dejes el array 'payments' vacío bajo ninguna circunstancia si hay comprobantes, facturas, recibos, vales o tickets en los PDFs.
     NUNCA devuelvas una lista 'payments' vacía si el expediente tiene movimientos registrados, importes consumidos o comprobantes adjuntos en los PDFs.
@@ -637,6 +692,29 @@ ${buildAuthorizationRulesForPrompt()}
                   resultado: { type: Type.STRING, enum: ["ok", "error", "info"] },
                   detalle: { type: Type.STRING }
                 }
+              },
+              conciliacion_total: {
+                type: Type.OBJECT,
+                description: "Cruce del importe a reponer entre sus tres fuentes independientes.",
+                properties: {
+                  importe_balance: { type: Type.NUMBER, description: "Importe de esta rendición según el Balance de Inversión." },
+                  importe_libro_diario: { type: Type.NUMBER, description: "TOTAL BANCO A REPONER del final del Libro Diario." },
+                  suma_pagos_bancarios: { type: Type.NUMBER, description: "Suma de los importes netos efectivamente transferidos o pagados con cheque." },
+                  coinciden: { type: Type.BOOLEAN },
+                  detalle: { type: Type.STRING }
+                }
+              }
+            }
+          },
+          duplicados: {
+            type: Type.ARRAY,
+            description: "Documentación adjuntada más de una vez en el expediente (mismo N° de PIMyS o de factura con el mismo importe). Vacío si no hay repeticiones.",
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                identificador: { type: Type.STRING, description: "N° de PIMyS o de factura repetido." },
+                motivo: { type: Type.STRING, description: "Por qué se considera repetido." },
+                paginas: { type: Type.STRING, description: "Páginas o archivos donde aparece repetido." }
               }
             }
           },

@@ -29,6 +29,11 @@ export interface AutorizacionCodigo {
     agentes: string[];
     firmantes: string[];
   };
+  /**
+   * Firmas que reemplazan al firmante habitual cuando aparecen como Aprobador
+   * del PIMyS (no como Responsable de FF).
+   */
+  equivalentes?: string[];
   nota?: string;
   /** true si la agregó el usuario desde la app (se puede editar/eliminar) */
   custom?: boolean;
@@ -63,7 +68,9 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
       agentes: ['Mariano Cipolatti', 'Alejandro Mansilla', 'Carlos Ternengo'],
       firmantes: ['Fabio Ingaramo'],
     },
-    nota: 'La autorización llega por correo de Movilidades Rafaela y debe figurar adjunta al PIMyS.',
+    equivalentes: ['Fabio Ingaramo', 'Mariano Cipolatti', 'Alejandro Mansilla', 'Carlos Ternengo'],
+    nota:
+      'La autorización llega por correo de Movilidades Rafaela y debe figurar adjunta al PIMyS. También vale la firma de Fabio Ingaramo o de un agente de Movilidades como Aprobador. Si el PIMyS lo inicia otro sector, además hace falta la firma del jefe de ese sector.',
   },
   {
     codigos: ['202'],
@@ -223,9 +230,14 @@ export function buildAuthorizationRulesForPrompt(): string {
             .map(x => `"${x}"`)
             .join(' o ')}. No marques error por la ausencia del firmante habitual cuando aplica esta excepción.`
         : '';
+      const eq = a.equivalentes?.length
+        ? ` También es válida, en lugar de ${(a.firmantes || []).map(f => `"${f}"`).join(' o ')}, la firma de ${a.equivalentes
+            .map(x => `"${x}"`)
+            .join(' o ')} como Aprobador 1 o Aprobador 2 (NO cuenta si solo figura como Responsable de FF). Esta autorización se exige ADEMÁS de la del jefe del sector del Solicitante, si ese sector tiene una regla propia: son dos controles distintos y los dos deben cumplirse.`
+        : '';
       if (a.tipo === 'fijo') {
         const firmantes = (a.firmantes || []).map(f => `"${f}"`).join(' o ');
-        return `- Código(s) ${cods} (${a.concepto}): requiere SIEMPRE la autorización de ${firmantes}, sin importar la sucursal.${a.nota ? ` ${a.nota}` : ''}${exc}`;
+        return `- Código(s) ${cods} (${a.concepto}): requiere SIEMPRE la autorización de ${firmantes}, sin importar la sucursal.${a.nota ? ` ${a.nota}` : ''}${eq}${exc}`;
       }
       const zonas = (a.zonas || [])
         .map(z => `${z.zona} (${z.alcance}) → "${z.firmante}"`)

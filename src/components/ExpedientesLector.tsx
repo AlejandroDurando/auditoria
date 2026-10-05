@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { AlertCircle, ArrowLeft, CheckCircle2, ChevronRight, ExternalLink, FileText, KeyRound, Loader2, RefreshCw, Download, Search, Table2, X, XCircle } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
@@ -66,8 +66,10 @@ function VisorPdf({ archivo, clave, onCerrar }: { archivo: ArchivoPdf; clave: st
   }, [archivo.clave, clave]);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/30" onClick={onCerrar}>
-      <div className="h-full w-full max-w-[920px] bg-[#F2EFE6] shadow-xl flex flex-col" onClick={e => e.stopPropagation()}>
+    // Panel fijo a la derecha, sin fondo que bloquee: la auditoria sigue
+    // visible y con scroll a la izquierda.
+    <div className="fixed top-0 right-0 bottom-0 z-50 w-full lg:w-[48vw] border-l-[0.5px] border-[#E2E0D8]">
+      <div className="h-full w-full bg-[#F2EFE6] shadow-xl flex flex-col">
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b-[0.5px] border-[#E8E6DE]">
           <span className="text-sm font-medium text-slate-800 truncate">{archivo.nombre}</span>
           <div className="flex items-center gap-1 shrink-0">
@@ -124,6 +126,21 @@ export function ExpedientesLector() {
   const [seleccionado, setSeleccionado] = useState<string | null>(null);
   const [expandedPayment, setExpandedPayment] = useState<number | null>(null);
   const [pdfAbierto, setPdfAbierto] = useState<ArchivoPdf | null>(null);
+  // Con el PDF abierto, la auditoria se angosta hasta el borde del panel
+  // (48% derecho de la pantalla) para seguir viendose y scrolleando.
+  const columnaRef = useRef<HTMLDivElement>(null);
+  const [anchoColumna, setAnchoColumna] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const medir = () => {
+      const el = columnaRef.current;
+      if (!pdfAbierto || !el || window.innerWidth < 1024) { setAnchoColumna(null); return; }
+      const izquierda = el.getBoundingClientRect().left;
+      setAnchoColumna(Math.max(320, window.innerWidth * 0.52 - izquierda - 24));
+    };
+    medir();
+    window.addEventListener('resize', medir);
+    return () => window.removeEventListener('resize', medir);
+  }, [pdfAbierto]);
   const [region, setRegion] = useState<Region>('Rafaela');
   const [abiertas, setAbiertas] = useState<Set<string>>(new Set());
 
@@ -216,7 +233,7 @@ export function ExpedientesLector() {
 
   if (actual) {
     return (
-      <div>
+      <div ref={columnaRef} style={anchoColumna ? { maxWidth: anchoColumna } : undefined}>
         <button
           type="button"
           onClick={() => { setSeleccionado(null); setExpandedPayment(null); }}

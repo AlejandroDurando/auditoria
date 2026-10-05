@@ -8,6 +8,8 @@ export interface ValidationResult {
   id: string;
   status: 'pass' | 'fail' | 'warning';
   observations: string;
+  /** Titulo de la validacion (lo trae el lector de expedientes: V11, D1..D4). */
+  title?: string;
 }
 
 export interface BalanceDecision {
@@ -46,6 +48,8 @@ export interface PaymentData {
   pageNumber?: number;
   sourceFileIdx?: number;
   libroDiarioText?: string;
+  /** Documentos del pago leidos por OCR (lector de expedientes). */
+  leidoPorOcr?: string;
   vales?: Array<{
     numero: string;
     precioTotal?: string;
@@ -68,6 +72,8 @@ export interface AuditResult {
   responsable?: string;
   /** Documentación repetida detectada en el lote (mismo PIMyS o misma factura dos veces). */
   duplicados?: DuplicadoDetectado[];
+  /** Validaciones de expediente sin lugar propio en la pantalla (lector: V15, V17...). */
+  validacionesExpediente?: ValidationResult[];
 }
 function isQuotaError(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);

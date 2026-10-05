@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { AlertCircle, ArrowLeft, CheckCircle2, ChevronRight, ExternalLink, FileText, KeyRound, Loader2, RefreshCw, Search, Table2, X, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, ChevronRight, ExternalLink, FileText, KeyRound, Loader2, RefreshCw, Download, Search, Table2, X, XCircle } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 import type { ArchivoPdf, ExpedienteLector } from '../../api/expedientes';
 import { ResultadosExpediente } from './ResultadosExpediente';
 import { PdfScrollViewer } from './PdfScrollViewer';
+import { datosRevisivaLector, descargarRevisiva } from '../lib/revisiva';
 
 // Expedientes auditados por el lector de expedientes, leidos del Google Sheet
 // a traves de /api/expedientes. La clave de acceso la escribe el usuario una
@@ -252,6 +253,17 @@ export function ExpedientesLector() {
           etiqueta={`Lector de expedientes${actual.auditado ? ` · ${actual.auditado}` : ''}`}
           onViewPdf={actual.archivos.length ? (idx) => setPdfAbierto(actual.archivos[idx] || null) : undefined}
         />
+        <div className="flex justify-end pt-2">
+          <button
+            type="button"
+            onClick={() => descargarRevisiva(datosRevisivaLector(actual),
+              `Planilla revisiva ${actual.carpeta || `FF N° ${actual.rendicion} ${actual.hoja}`}.pdf`)}
+            className="inline-flex items-center gap-2 py-[7px] px-[13px] bg-[#004741] text-white text-[13px] font-medium rounded-[7px] hover:bg-[#003330] transition-all cursor-pointer outline-none"
+          >
+            <Download className="w-4 h-4" />
+            Descargar planilla revisiva
+          </button>
+        </div>
         {pdfAbierto && <VisorPdf archivo={pdfAbierto} clave={clave} onCerrar={() => setPdfAbierto(null)} />}
       </div>
     );

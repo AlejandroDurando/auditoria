@@ -38,7 +38,9 @@ function aBase64(buffer: ArrayBuffer): string {
 
 // Visor del PDF guardado en R2: la API devuelve una URL firmada que vence en
 // minutos y el PDF se descarga directo del bucket.
-function VisorPdf({ archivo, clave, onCerrar }: { archivo: ArchivoPdf; clave: string; onCerrar: () => void }) {
+function VisorPdf({ archivo, clave, onCerrar, ancho, onAncho }: {
+  archivo: ArchivoPdf; clave: string; onCerrar: () => void; ancho: number; onAncho: (px: number) => void;
+}) {
   const [base64, setBase64] = useState<string | null>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +70,27 @@ function VisorPdf({ archivo, clave, onCerrar }: { archivo: ArchivoPdf; clave: st
   return (
     // Panel fijo a la derecha, sin fondo que bloquee: la auditoria sigue
     // visible y con scroll a la izquierda.
-    <div className="fixed top-0 right-0 bottom-0 z-50 w-full lg:w-[48vw] border-l-[0.5px] border-[#E2E0D8]">
+    <div className="fixed top-0 right-0 bottom-0 z-50 w-full lg:w-[var(--ancho-pdf)] border-l-[0.5px] border-[#E2E0D8]"
+      style={{ '--ancho-pdf': `${ancho}px` } as React.CSSProperties}>
+      {/* Borde izquierdo arrastrable para cambiar el ancho del PDF. */}
+      <div
+        onMouseDown={(e) => {
+          e.preventDefault();
+          const mover = (ev: MouseEvent) => onAncho(window.innerWidth - ev.clientX);
+          const soltar = () => {
+            window.removeEventListener('mousemove', mover);
+            window.removeEventListener('mouseup', soltar);
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+          };
+          document.body.style.cursor = 'col-resize';
+          document.body.style.userSelect = 'none';
+          window.addEventListener('mousemove', mover);
+          window.addEventListener('mouseup', soltar);
+        }}
+        className="hidden lg:block absolute left-0 top-0 h-full w-[6px] -ml-[3px] cursor-col-resize z-10 hover:bg-[#004741]/40 transition-colors"
+        title="Arrastrar para cambiar el ancho"
+      />
       <div className="h-full w-full bg-[#F2EFE6] shadow-xl flex flex-col">
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b-[0.5px] border-[#E8E6DE]">
           <span className="text-sm font-medium text-slate-800 truncate">{archivo.nombre}</span>
@@ -130,17 +152,26 @@ export function ExpedientesLector() {
   // (48% derecho de la pantalla) para seguir viendose y scrolleando.
   const columnaRef = useRef<HTMLDivElement>(null);
   const [anchoColumna, setAnchoColumna] = useState<number | null>(null);
+  const [anchoPdf, setAnchoPdfCrudo] = useState(() => {
+    try { const v = Number(localStorage.getItem('anchoPdfLector')); if (v) return v; } catch { /* sin storage */ }
+    return Math.round(window.innerWidth * 0.48);
+  });
+  const setAnchoPdf = (px: number) => {
+    const v = Math.round(Math.min(Math.max(px, 360), window.innerWidth - 400));
+    setAnchoPdfCrudo(v);
+    try { localStorage.setItem('anchoPdfLector', String(v)); } catch { /* sin storage */ }
+  };
   useLayoutEffect(() => {
     const medir = () => {
       const el = columnaRef.current;
       if (!pdfAbierto || !el || window.innerWidth < 1024) { setAnchoColumna(null); return; }
       const izquierda = el.getBoundingClientRect().left;
-      setAnchoColumna(Math.max(320, window.innerWidth * 0.52 - izquierda - 24));
+      setAnchoColumna(Math.max(320, window.innerWidth - anchoPdf - izquierda - 24));
     };
     medir();
     window.addEventListener('resize', medir);
     return () => window.removeEventListener('resize', medir);
-  }, [pdfAbierto]);
+  }, [pdfAbierto, anchoPdf]);
   const [region, setRegion] = useState<Region>('Rafaela');
   const [abiertas, setAbiertas] = useState<Set<string>>(new Set());
 
@@ -281,7 +312,7 @@ export function ExpedientesLector() {
             Descargar planilla revisiva
           </button>
         </div>
-        {pdfAbierto && <VisorPdf archivo={pdfAbierto} clave={clave} onCerrar={() => setPdfAbierto(null)} />}
+        {pdfAbierto && <VisorPdf archivo={pdfAbierto} clave={clave} onCerrar={() => setPdfAbierto(null)} ancho={anchoPdf} onAncho={setAnchoPdf} />}
       </div>
     );
   }

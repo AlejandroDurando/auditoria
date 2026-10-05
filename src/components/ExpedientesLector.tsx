@@ -257,7 +257,7 @@ export function ExpedientesLector() {
           <button
             type="button"
             onClick={() => descargarRevisiva(datosRevisivaLector(actual),
-              `Planilla revisiva ${actual.carpeta || `FF N° ${actual.rendicion} ${actual.hoja}`}.pdf`)}
+              `Planilla revisiva ${actual.carpeta || `FF N ${actual.rendicion} ${actual.hoja}`}.pdf`.replace(/°/g, ''))}
             className="inline-flex items-center gap-2 py-[7px] px-[13px] bg-[#004741] text-white text-[13px] font-medium rounded-[7px] hover:bg-[#003330] transition-all cursor-pointer outline-none"
           >
             <Download className="w-4 h-4" />

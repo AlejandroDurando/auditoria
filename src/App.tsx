@@ -26,6 +26,7 @@ import {
   Info,
   Loader2,
   Copy,
+  PanelLeft,
   Check,
   AlertTriangle,
   FileSpreadsheet,
@@ -537,6 +538,17 @@ export default function App() {
   const [pdfWidth, setPdfWidth] = useState(600);
   const [isDragging, setIsDragging] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(256);
+  const [sidebarOculta, setSidebarOculta] = useState(() => {
+    try { return localStorage.getItem('sidebarOculta') === '1'; } catch { return false; }
+  });
+  const alternarSidebar = () => {
+    setSidebarOculta(v => {
+      try { localStorage.setItem('sidebarOculta', v ? '0' : '1'); } catch { /* sin storage */ }
+      return !v;
+    });
+    // Las vistas que miden su ancho (panel del PDF) se vuelven a acomodar.
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
+  };
   const [isSidebarDragging, setIsSidebarDragging] = useState(false);
   const sidebarDragRef = useRef<{ startX: number; startW: number } | null>(null);
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
@@ -1329,7 +1341,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <aside style={{ width: sidebarWidth }} className="shrink-0 border-r-[0.5px] border-[#E8E6DE] flex flex-col bg-[#F2EFE6] shadow-none z-20 relative">
+      {!sidebarOculta && <aside style={{ width: sidebarWidth }} className="shrink-0 border-r-[0.5px] border-[#E8E6DE] flex flex-col bg-[#F2EFE6] shadow-none z-20 relative">
         {/* Sidebar resize handle */}
         <div
           onMouseDown={(e) => {
@@ -1346,6 +1358,10 @@ export default function App() {
                 <ShieldCheck className="w-3.5 h-3.5 text-white" />
               </div>
               <h1 className="text-[13px] font-medium text-[#1A1A1A] tracking-tight leading-none">Auditor EPE</h1>
+              <button type="button" onClick={alternarSidebar} title="Ocultar barra lateral" aria-label="Ocultar barra lateral"
+                className="ml-auto p-1 text-[#9A9890] hover:text-[#1A1A1A] hover:bg-[#E5E1D5] rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
+                <PanelLeft className="w-4 h-4" />
+              </button>
             </div>
             <p className="text-[11px] text-[#9A9890] pl-[36px] mt-1.5 leading-none">
               Rendición de Cuentas
@@ -1424,13 +1440,19 @@ export default function App() {
             </button>
           </div>
         </div>
-      </aside>
+      </aside>}
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto flex flex-col bg-[#E8E4D8]">
         {/* Header */}
         <header className="h-[42px] border-b-[0.5px] border-[#E8E6DE] flex items-center justify-between px-8 bg-[#F2EFE6] sticky top-0 z-10 shadow-none">
           <div className="flex items-center gap-4">
+            {sidebarOculta && (
+              <button type="button" onClick={alternarSidebar} title="Mostrar barra lateral" aria-label="Mostrar barra lateral"
+                className="-ml-4 p-1 text-[#9A9890] hover:text-[#1A1A1A] hover:bg-[#E5E1D5] rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
+                <PanelLeft className="w-4 h-4" />
+              </button>
+            )}
             <div className="flex items-center gap-1.5 text-[12px] text-[#9A9890] font-normal">
               <span>Home</span>
               <ChevronRight className="w-3 h-3 text-[#BDBBB2]" />

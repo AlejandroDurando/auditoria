@@ -186,6 +186,16 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
     else if (pagos.length) pagos[pagos.length - 1].validations.push(v);
   }
 
+  // Sin importe en el resumen (factura leida por OCR): el que cita V6
+  // ('Importe: $70.500,01 ...').
+  for (const p of pagos) {
+    if (Number.isFinite(p.amount)) continue;
+    const v6 = p.validations.find(v => v.id === 'v6');
+    const m = v6?.observations.match(/Importe:?\s*(\$\s?[\d.,]+)/);
+    const n = m ? pesos(m[1]) : undefined;
+    if (n !== undefined) p.amount = n;
+  }
+
   // V14 y V16 van a su lugar en el Balance si dieron OK o ERROR; un REVISAR,
   // y V15 y V17, a la lista de validaciones del expediente.
   const otras: ValidationResult[] = [];

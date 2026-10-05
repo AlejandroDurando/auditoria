@@ -151,7 +151,7 @@ export function ExpedientesLector() {
   // Con el PDF abierto, la auditoria se angosta hasta el borde del panel
   // (48% derecho de la pantalla) para seguir viendose y scrolleando.
   const columnaRef = useRef<HTMLDivElement>(null);
-  const [anchoColumna, setAnchoColumna] = useState<number | null>(null);
+  const [anchoColumna, setAnchoColumna] = useState<{ ancho: number; corrimiento: number } | null>(null);
   const [anchoPdf, setAnchoPdfCrudo] = useState(() => {
     try { const v = Number(localStorage.getItem('anchoPdfLector')); if (v) return v; } catch { /* sin storage */ }
     return Math.round(window.innerWidth * 0.48);
@@ -165,8 +165,16 @@ export function ExpedientesLector() {
     const medir = () => {
       const el = columnaRef.current;
       if (!pdfAbierto || !el || window.innerWidth < 1024) { setAnchoColumna(null); return; }
-      const izquierda = el.getBoundingClientRect().left;
-      setAnchoColumna(Math.max(320, window.innerWidth - anchoPdf - izquierda - 24));
+      // La columna ocupa todo el espacio libre: desde el borde del area
+      // principal (o de la barra lateral) hasta el panel del PDF, sin el
+      // margen del centrado.
+      const contenedor = el.parentElement!.getBoundingClientRect().left;
+      const area = (el.closest('main') as HTMLElement | null)?.getBoundingClientRect().left ?? contenedor;
+      const izquierda = area + 32;
+      setAnchoColumna({
+        ancho: Math.max(320, window.innerWidth - anchoPdf - izquierda - 32),
+        corrimiento: Math.min(0, area - contenedor),
+      });
     };
     medir();
     window.addEventListener('resize', medir);
@@ -264,7 +272,7 @@ export function ExpedientesLector() {
 
   if (actual) {
     return (
-      <div ref={columnaRef} style={anchoColumna ? { maxWidth: anchoColumna } : undefined}>
+      <div ref={columnaRef} style={anchoColumna ? { width: anchoColumna.ancho, maxWidth: 'none', marginLeft: anchoColumna.corrimiento } : undefined}>
         <button
           type="button"
           onClick={() => { setSeleccionado(null); setExpandedPayment(null); }}

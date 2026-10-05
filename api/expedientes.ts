@@ -199,8 +199,8 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
     totalAmount: totales.libro ?? totales.balance ?? totales.suma,
     expedienteNumero: expediente,
     expedienteFecha: fecha,
-    fondoFijoNumero: hoja,
-    agenciaSucursal: region,
+    fondoFijoNumero: rendicion ? `FF N° ${rendicion}` : undefined,
+    agenciaSucursal: hoja,
     responsable,
   };
   if (v14 || montoAsignado !== undefined) {

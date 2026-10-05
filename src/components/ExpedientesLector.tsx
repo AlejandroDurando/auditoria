@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { AlertCircle, ArrowLeft, CheckCircle2, ExternalLink, FileText, KeyRound, Loader2, RefreshCw, Search, Table2, X, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, ChevronRight, ExternalLink, FileText, KeyRound, Loader2, RefreshCw, Search, Table2, X, XCircle } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 import type { ArchivoPdf, ExpedienteLector } from '../../api/expedientes';
 import { ResultadosExpediente } from './ResultadosExpediente';
@@ -10,6 +10,10 @@ import { PdfScrollViewer } from './PdfScrollViewer';
 // a traves de /api/expedientes. La clave de acceso la escribe el usuario una
 // vez y queda en este navegador; nunca esta en el codigo.
 const CLAVE_STORAGE = 'lector-access-key';
+const REGIONES = ['Rafaela', 'Sucursal Noroeste', 'Sucursal Oeste'] as const;
+type Region = typeof REGIONES[number];
+
+const nroRendicion = (e: ExpedienteLector) => Number((e.rendicion || '').replace(/\D/g, '')) || 0;
 
 function leerClave(): string {
   try { return localStorage.getItem(CLAVE_STORAGE) || ''; } catch { return ''; }
@@ -119,6 +123,8 @@ export function ExpedientesLector() {
   const [seleccionado, setSeleccionado] = useState<string | null>(null);
   const [expandedPayment, setExpandedPayment] = useState<number | null>(null);
   const [pdfAbierto, setPdfAbierto] = useState<ArchivoPdf | null>(null);
+  const [region, setRegion] = useState<Region>('Rafaela');
+  const [abiertas, setAbiertas] = useState<Set<string>>(new Set());
 
   const cargar = useCallback(async (conClave: string) => {
     if (!conClave) return;
@@ -152,16 +158,23 @@ export function ExpedientesLector() {
       .some(x => (x || '').toLowerCase().includes(q)));
   }, [expedientes, busqueda]);
 
-  // Agrupados por region y fondo, en el orden del Sheet.
+  // La region elegida, agrupada por agencia (pestaña del Sheet) y, dentro de
+  // cada una, de la rendicion mas nueva a la mas vieja.
   const grupos = useMemo(() => {
     const salida: Array<{ titulo: string; items: ExpedienteLector[] }> = [];
-    for (const e of filtrados) {
-      const titulo = `${e.region} — ${e.hoja}`;
-      const grupo = salida.find(g => g.titulo === titulo);
-      if (grupo) grupo.items.push(e); else salida.push({ titulo, items: [e] });
+    for (const e of filtrados.filter(x => x.region === region)) {
+      const grupo = salida.find(g => g.titulo === e.hoja);
+      if (grupo) grupo.items.push(e); else salida.push({ titulo: e.hoja, items: [e] });
     }
+    salida.forEach(g => g.items.sort((a, b) => nroRendicion(b) - nroRendicion(a)));
     return salida;
-  }, [filtrados]);
+  }, [filtrados, region]);
+
+  const alternar = (titulo: string) => setAbiertas(prev => {
+    const nuevo = new Set(prev);
+    if (nuevo.has(titulo)) nuevo.delete(titulo); else nuevo.add(titulo);
+    return nuevo;
+  });
 
   const actual = (expedientes || []).find(e => e.id === seleccionado) || null;
 
@@ -279,6 +292,27 @@ export function ExpedientesLector() {
         </div>
       </div>
 
+      <div className="flex w-fit p-[3px] bg-[#EEECE5] rounded-[8px] mb-6 gap-[2px] items-center select-none">
+        {REGIONES.map(r => {
+          const cantidad = filtrados.filter(e => e.region === r).length;
+          return (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setRegion(r)}
+              className={cn(
+                "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] border-none",
+                region === r
+                  ? "bg-[#F2EFE6] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
+                  : "bg-transparent text-[#6B6A65] font-normal"
+              )}
+            >
+              {r}{expedientes ? ` (${cantidad})` : ''}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="relative mb-6">
         <Search className="w-4 h-4 text-[#9A9890] absolute left-3 top-1/2 -translate-y-1/2" />
         <input
@@ -301,15 +335,36 @@ export function ExpedientesLector() {
       ) : grupos.length === 0 ? (
         <div className="p-16 text-center border-[0.5px] border-dashed border-[#E8E6DE] rounded-[12px] bg-[#F2EFE6]/50">
           <p className="text-[#9A9890] font-medium text-sm">
-            {busqueda ? `No se encontraron expedientes para "${busqueda}".` : 'No hay expedientes en el Google Sheet.'}
+            {busqueda ? `No se encontraron expedientes de ${region} para "${busqueda}".` : `No hay expedientes de ${region} en el Google Sheet.`}
           </p>
         </div>
       ) : (
-        <div className="space-y-8">
-          {grupos.map(g => (
-            <div key={g.titulo}>
-              <h3 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-3 px-1">{g.titulo}</h3>
-              <div className="space-y-3">
+        <div className="space-y-3">
+          {grupos.map(g => {
+            const abierta = abiertas.has(g.titulo) || !!busqueda.trim();
+            const cuenta = (estado: string) => g.items.filter(e => e.estado.toUpperCase() === estado).length;
+            const errores = cuenta('ERROR');
+            const revisar = g.items.length - errores - cuenta('OK');
+            return (
+            <div key={g.titulo} className="bg-[#EEECE5]/60 border-[0.5px] border-[#E8E6DE] rounded-[12px] overflow-hidden">
+              <button
+                type="button"
+                onClick={() => alternar(g.titulo)}
+                className="w-full flex flex-wrap items-center justify-between gap-2 px-5 py-4 bg-transparent border-none cursor-pointer outline-none text-left hover:bg-[#E5E1D5]/60 transition-all"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <ChevronRight className={cn("w-4 h-4 text-[#9A9890] transition-transform duration-200", abierta && "rotate-90")} />
+                  <span className="text-sm font-medium text-slate-800">{g.titulo}</span>
+                  <span className="text-xs text-[#9A9890]">{g.items.length} {g.items.length === 1 ? 'expediente' : 'expedientes'}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {errores > 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#FCEBEB] text-[#A32D2D]">{errores} con errores</span>}
+                  {revisar > 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800">{revisar} a revisar</span>}
+                  {errores === 0 && revisar === 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#D4E8E6] text-[#003330]">Todo OK</span>}
+                </div>
+              </button>
+              {abierta && (
+              <div className="space-y-3 px-4 pb-4">
                 {g.items.map(e => (
                   <button
                     key={e.id}
@@ -331,8 +386,10 @@ export function ExpedientesLector() {
                   </button>
                 ))}
               </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </motion.div>

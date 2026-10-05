@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { AlertCircle, ArrowLeft, CheckCircle2, KeyRound, Loader2, RefreshCw, Search, Table2, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, ExternalLink, FileText, KeyRound, Loader2, RefreshCw, Search, Table2, X, XCircle } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
-import type { ExpedienteLector } from '../../api/expedientes';
+import type { ArchivoPdf, ExpedienteLector } from '../../api/expedientes';
 import { ResultadosExpediente } from './ResultadosExpediente';
+import { PdfScrollViewer } from './PdfScrollViewer';
 
 // Expedientes auditados por el lector de expedientes, leidos del Google Sheet
 // a traves de /api/expedientes. La clave de acceso la escribe el usuario una
@@ -19,6 +20,78 @@ function guardarClave(clave: string) {
     if (clave) localStorage.setItem(CLAVE_STORAGE, clave);
     else localStorage.removeItem(CLAVE_STORAGE);
   } catch { /* sin almacenamiento: se pide en cada visita */ }
+}
+
+function aBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binario = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binario += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(binario);
+}
+
+// Visor del PDF guardado en R2: la API devuelve una URL firmada que vence en
+// minutos y el PDF se descarga directo del bucket.
+function VisorPdf({ archivo, clave, onCerrar }: { archivo: ArchivoPdf; clave: string; onCerrar: () => void }) {
+  const [base64, setBase64] = useState<string | null>(null);
+  const [url, setUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let activo = true;
+    setBase64(null);
+    setError(null);
+    (async () => {
+      try {
+        const r = await fetch(`/api/expedientes?pdf=${encodeURIComponent(archivo.clave)}`, {
+          headers: { 'x-lector-key': clave },
+        });
+        const datos = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(datos.error || `Error ${r.status}`);
+        const pdf = await fetch(datos.url);
+        if (!pdf.ok) throw new Error(`No se pudo descargar el PDF (${pdf.status}).`);
+        const b64 = aBase64(await pdf.arrayBuffer());
+        if (activo) { setUrl(datos.url); setBase64(b64); }
+      } catch (e) {
+        if (activo) setError(e instanceof Error ? e.message : 'No se pudo abrir el PDF.');
+      }
+    })();
+    return () => { activo = false; };
+  }, [archivo.clave, clave]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/30" onClick={onCerrar}>
+      <div className="h-full w-full max-w-[920px] bg-[#F2EFE6] shadow-xl flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b-[0.5px] border-[#E8E6DE]">
+          <span className="text-sm font-medium text-slate-800 truncate">{archivo.nombre}</span>
+          <div className="flex items-center gap-1 shrink-0">
+            {url && (
+              <a href={url} target="_blank" rel="noopener noreferrer" title="Abrir en una pestaña nueva"
+                className="p-1.5 text-slate-500 hover:text-[#004741] hover:bg-[#E8EFEE] rounded-[6px]">
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            )}
+            <button type="button" onClick={onCerrar} title="Cerrar"
+              className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-[#E5E1D5] rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 min-h-0">
+          {error ? (
+            <div className="p-6 text-sm text-[#A32D2D]">{error}</div>
+          ) : base64 ? (
+            <PdfScrollViewer base64={base64} fileName={archivo.nombre} />
+          ) : (
+            <div className="p-6 text-sm text-[#9A9890] flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" /> Abriendo el PDF…
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function EstadoChip({ estado }: { estado: string }) {
@@ -45,6 +118,7 @@ export function ExpedientesLector() {
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState<string | null>(null);
   const [expandedPayment, setExpandedPayment] = useState<number | null>(null);
+  const [pdfAbierto, setPdfAbierto] = useState<ArchivoPdf | null>(null);
 
   const cargar = useCallback(async (conClave: string) => {
     if (!conClave) return;
@@ -137,12 +211,35 @@ export function ExpedientesLector() {
           <ArrowLeft className="w-4 h-4" />
           Volver a los expedientes del lector
         </button>
+        {actual.archivos.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-2 px-1">
+              Documentos del expediente ({actual.archivos.length})
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {actual.archivos.map(a => (
+                <button
+                  key={a.clave}
+                  type="button"
+                  onClick={() => setPdfAbierto(a)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F2EFE6] border-[0.5px] border-[#E2E0D8] rounded-[7px] text-xs text-slate-700 hover:text-[#004741] hover:bg-[#E8EFEE] transition-all cursor-pointer outline-none"
+                  title={a.nombre}
+                >
+                  <FileText className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate max-w-[260px]">{a.nombre.replace(/\.pdf$/i, '')}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <ResultadosExpediente
           result={actual.result}
           expandedPayment={expandedPayment}
           setExpandedPayment={setExpandedPayment}
           etiqueta={`Lector de expedientes${actual.auditado ? ` · ${actual.auditado}` : ''}`}
+          onViewPdf={actual.archivos.length ? (idx) => setPdfAbierto(actual.archivos[idx] || null) : undefined}
         />
+        {pdfAbierto && <VisorPdf archivo={pdfAbierto} clave={clave} onCerrar={() => setPdfAbierto(null)} />}
       </div>
     );
   }

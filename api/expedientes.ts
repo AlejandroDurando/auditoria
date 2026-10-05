@@ -7,13 +7,27 @@
 //   GOOGLE_SA_EMAIL, GOOGLE_SA_PRIVATE_KEY      cuenta de servicio del lector
 //   SHEET_ID_RAFAELA, SHEET_ID_NOROESTE, SHEET_ID_OESTE
 //   LECTOR_ACCESS_KEY                           clave que pide la vista
+//   R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY
+//                                               PDF en Cloudflare R2 (token de solo lectura)
+//
+// GET /api/expedientes            -> { expedientes }
+// GET /api/expedientes?pdf=<clave> -> { url } firmada, vence en PDF_VENCE segundos
 
 import { createHash, timingSafeEqual } from 'node:crypto';
+import { AwsClient } from 'aws4fetch';
 import { JWT } from 'google-auth-library';
 import type { AuditResult, PaymentData, ValidationResult } from '../src/lib/gemini';
 
+export interface ArchivoPdf {
+  nombre: string;
+  clave: string;
+  tamano: number;
+}
+
 export interface ExpedienteLector {
   id: string;
+  carpeta?: string;
+  archivos: ArchivoPdf[];
   region: string;
   hoja: string;
   expediente: string;
@@ -143,7 +157,9 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
   const { fecha, responsable, auditado } = datosCabecera(texto(cabecera[5]));
   const { montoAsignado, saldoBanco, totales, importes } = leerResumen(resumen || []);
 
+  const carpeta = texto(cabecera[6]) || undefined;
   const pagos: PaymentData[] = [];
+  const archivoDePago: Array<string | undefined> = [];
   const deExpediente: Record<string, ValidationResult> = {};
   for (const fila of detalle.slice(1)) {
     const id = texto(fila[2]);
@@ -156,6 +172,7 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
         validations: [],
         leidoPorOcr: leido ? leido[1].trim() : undefined,
       });
+      archivoDePago.push(texto(fila[6]) || undefined);
       continue;
     }
     if (!/^[VD]\d+$/.test(id)) continue;
@@ -224,9 +241,10 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
 
   return {
     id: `${region}|${hoja}|${clave}`,
+    carpeta, archivos: [], archivoDePago,
     region, hoja, expediente, rendicion, fecha, responsable, auditado,
     estado, nPagos: pagos.length, result,
-  };
+  } as ExpedienteLector;
 }
 
 // ─── Google Sheets ────────────────────────────────────────────────────────────
@@ -255,7 +273,7 @@ async function leerPlanilla(region: string, id: string, t: string): Promise<Expe
   if (!detalles.length) return [];
   const rangos = detalles.flatMap(d => {
     const hoja = d.slice(0, -SUFIJO_DETALLE.length);
-    return titulos.includes(hoja) ? [`'${d}'!A:F`, `'${hoja}'!A:N`] : [`'${d}'!A:F`];
+    return titulos.includes(hoja) ? [`'${d}'!A:G`, `'${hoja}'!A:N`] : [`'${d}'!A:G`];
   });
   const params = new URLSearchParams({ valueRenderOption: 'UNFORMATTED_VALUE' });
   rangos.forEach(r => params.append('ranges', r));
@@ -275,6 +293,100 @@ async function leerPlanilla(region: string, id: string, t: string): Promise<Expe
     }
   }
   return salida;
+}
+
+// ─── PDF en Cloudflare R2 ─────────────────────────────────────────────────────
+
+const PDF_VENCE = 300;
+
+function r2() {
+  const { R2_ACCOUNT_ID: cuenta, R2_BUCKET: bucket, R2_ACCESS_KEY_ID: id, R2_SECRET_ACCESS_KEY: secreto } = process.env;
+  if (!cuenta || !bucket || !id || !secreto) return null;
+  return {
+    base: `https://${cuenta}.r2.cloudflarestorage.com/${bucket}`,
+    cliente: new AwsClient({ accessKeyId: id, secretAccessKey: secreto, service: 's3', region: 'auto' }),
+  };
+}
+
+const rutaR2 = (clave: string) => clave.split('/').map(encodeURIComponent).join('/');
+
+/** Todos los PDF del bucket, agrupados por carpeta ('FF N° 219 Las Rosas'). */
+async function listarPdfs(): Promise<Map<string, ArchivoPdf[]>> {
+  const salida = new Map<string, ArchivoPdf[]>();
+  const cfg = r2();
+  if (!cfg) return salida;
+  let continuacion: string | undefined;
+  do {
+    const url = new URL(cfg.base);
+    url.searchParams.set('list-type', '2');
+    if (continuacion) url.searchParams.set('continuation-token', continuacion);
+    const r = await cfg.cliente.fetch(url.toString());
+    if (!r.ok) throw new Error(`R2 respondio ${r.status}`);
+    const xml = await r.text();
+    const sinEntidades = (t: string) => t.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+    for (const m of xml.matchAll(/<Contents>([\s\S]*?)<\/Contents>/g)) {
+      const clave = sinEntidades((m[1].match(/<Key>([\s\S]*?)<\/Key>/) || [])[1] || '');
+      const tamano = Number((m[1].match(/<Size>(\d+)<\/Size>/) || [])[1] || 0);
+      const corte = clave.indexOf('/');
+      if (corte < 0 || !/\.pdf$/i.test(clave)) continue;
+      const carpeta = clave.slice(0, corte);
+      if (!salida.has(carpeta)) salida.set(carpeta, []);
+      salida.get(carpeta)!.push({ nombre: clave.slice(corte + 1), clave, tamano });
+    }
+    continuacion = /<IsTruncated>true<\/IsTruncated>/.test(xml)
+      ? sinEntidades((xml.match(/<NextContinuationToken>([\s\S]*?)<\/NextContinuationToken>/) || [])[1] || '')
+      : undefined;
+  } while (continuacion);
+  return salida;
+}
+
+const sinAcentos = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+/** Carpeta del expediente: la que anoto el lector o, en los bloques
+ *  exportados antes de la columna PDF, la del numero de rendicion cuyo nombre
+ *  comparte una palabra con la pestaña ('FF N° 84 Ag Rafaela' / 'Ag. Rafaela'). */
+function carpetaDe(e: ExpedienteLector, carpetas: string[]): string | undefined {
+  if (e.carpeta && carpetas.includes(e.carpeta)) return e.carpeta;
+  const nro = e.rendicion.replace(/\D/g, '').replace(/^0+/, '');
+  const candidatas = carpetas.filter(c => {
+    const m = c.match(/^FF\s+N°\s*0*(\d+)\s/);
+    return m && m[1] === nro;
+  });
+  if (candidatas.length <= 1) return candidatas[0];
+  const palabras = sinAcentos(e.hoja).split(/[^a-z]+/).filter(p => p.length > 3);
+  return candidatas.find(c => palabras.some(p => sinAcentos(c).includes(p)));
+}
+
+function asociarPdfs(expedientes: ExpedienteLector[], pdfs: Map<string, ArchivoPdf[]>) {
+  const carpetas = [...pdfs.keys()];
+  for (const e of expedientes as Array<ExpedienteLector & { archivoDePago?: Array<string | undefined> }>) {
+    const carpeta = carpetaDe(e, carpetas);
+    e.archivos = carpeta ? pdfs.get(carpeta) || [] : [];
+    e.result.payments.forEach((p, i) => {
+      let idx = e.archivos.findIndex(a => a.nombre === e.archivoDePago?.[i]);
+      if (idx < 0 && !e.archivoDePago?.[i] && p.providerName) {
+        // Bloques exportados antes de la columna PDF: el proveedor sale del
+        // nombre del archivo, asi que se busca el unico archivo que empieza
+        // con el. Dos archivos del mismo proveedor: no se elige ninguno.
+        const prov = sinAcentos(p.providerName);
+        const posibles = e.archivos.map((a, j) => [sinAcentos(a.nombre), j] as const)
+          .filter(([n]) => n.startsWith(prov));
+        if (posibles.length === 1) idx = posibles[0][1];
+      }
+      if (idx >= 0) { p.sourceFileIdx = idx; p.pageNumber = 1; }
+    });
+    delete e.archivoDePago;
+  }
+}
+
+async function urlFirmada(clave: string): Promise<string | null> {
+  const cfg = r2();
+  if (!cfg) return null;
+  const url = new URL(`${cfg.base}/${rutaR2(clave)}`);
+  url.searchParams.set('X-Amz-Expires', String(PDF_VENCE));
+  const firmado = await cfg.cliente.sign(url.toString(), { method: 'GET', aws: { signQuery: true } });
+  return firmado.url;
 }
 
 // ─── Clave de acceso ──────────────────────────────────────────────────────────
@@ -300,11 +412,31 @@ export default async function handler(req: any, res: any) {
     res.status(401).json({ error: 'Clave de acceso incorrecta.' });
     return;
   }
+  const pdf = req.query?.pdf;
+  if (pdf !== undefined) {
+    // Solo PDF dentro de una carpeta: 'FF N° 219 Las Rosas/archivo.pdf'.
+    if (typeof pdf !== 'string' || !/^[^/]+\/[^/]+\.pdf$/i.test(pdf) || pdf.includes('..')) {
+      res.status(400).json({ error: 'Archivo no valido.' });
+      return;
+    }
+    const url = await urlFirmada(pdf);
+    if (!url) {
+      res.status(500).json({ error: 'Falta configurar R2.' });
+      return;
+    }
+    res.status(200).json({ url, vence: PDF_VENCE });
+    return;
+  }
   try {
     const t = await token();
     const planillas = REGIONES.filter(r => process.env[r.env]);
-    const listas = await Promise.all(planillas.map(r => leerPlanilla(r.region, process.env[r.env] as string, t)));
-    res.status(200).json({ expedientes: listas.flat() });
+    const [listas, pdfs] = await Promise.all([
+      Promise.all(planillas.map(r => leerPlanilla(r.region, process.env[r.env] as string, t))),
+      listarPdfs().catch(e => { console.error(e); return new Map<string, ArchivoPdf[]>(); }),
+    ]);
+    const expedientes = listas.flat();
+    asociarPdfs(expedientes, pdfs);
+    res.status(200).json({ expedientes });
   } catch (e) {
     console.error(e);
     res.status(502).json({ error: 'No se pudo leer el Google Sheet.' });

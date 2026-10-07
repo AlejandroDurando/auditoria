@@ -3,15 +3,17 @@
 import { jsPDF } from 'jspdf';
 import { EPE_LOGO_BASE64 } from './epe-logo';
 
-export const SECTOR_MAPPING: Record<string, { label: string; responsible: string }[]> = {
+// 'alias': otros nombres con que el expediente nombra al sector (la agencia
+// que lee Gemini: 'Rafaela Norte', 'Cañada de Gómez', 'Ceres').
+export const SECTOR_MAPPING: Record<string, { label: string; responsible: string; alias?: string[] }[]> = {
   RAFAELA: [
-    { label: "Compras", responsible: "D. Cordero" },
+    { label: "Compras", responsible: "D. Cordero", alias: ["Oficina de Compras"] },
     { label: "Movilidades", responsible: "C. Ternengo" },
     { label: "U.T. Adm Rafaela", responsible: "J. Chianalino" },
     { label: "Ag. Rafaela", responsible: "G. Cabrera" },
     { label: "Ag. Maria Juana", responsible: "C. Cernotti" },
-    { label: "Ag. Norte", responsible: "M. Re" },
-    { label: "Viáticos Rafaela", responsible: "A. Giorgetti" }
+    { label: "Ag. Norte", responsible: "M. Re", alias: ["Rafaela Norte"] },
+    { label: "Viáticos Rafaela", responsible: "A. Giorgetti", alias: ["Tesorería Rafaela", "Viáticos"] }
   ],
   NOROESTE: [
     { label: "Suc Noroeste (Ceres)", responsible: "E. Argañaraz" },
@@ -25,6 +27,12 @@ export const SECTOR_MAPPING: Record<string, { label: string; responsible: string
     { label: "Ag. El Trebol", responsible: "M. Pietrani" },
     { label: "Ag. Las Rosas", responsible: "D. Malier" },
     { label: "Ag. San Jorge", responsible: "M. Bravin" }
+  ],
+  RECONQUISTA: [
+    { label: "Suc Reconquista", responsible: "R. Corgniali" },
+    { label: "Ag. Villa Ocampo", responsible: "G. Verón" },
+    { label: "Ag. Vera", responsible: "M. Capello" },
+    { label: "Ag. Calchaquí", responsible: "J. I. Santiago" }
   ]
 };
 
@@ -298,6 +306,7 @@ const GCIA_DE_REGION: Record<string, string> = {
   'Rafaela': 'RAFAELA',
   'Sucursal Noroeste': 'NOROESTE',
   'Sucursal Oeste': 'OESTE',
+  'Sucursal Reconquista': 'RECONQUISTA',
 };
 
 /** Datos de la planilla para un expediente del lector: la gerencia sale de la
@@ -315,5 +324,53 @@ export function datosRevisivaLector(e: { region: string; hoja: string; rendicion
     fondoFijo: e.rendicion,
     reparticion: (sector?.label || e.hoja).toUpperCase(),
     gciaSuc,
+  };
+}
+
+const palabras = (s: string) => ` ${sinAcentos(s).replace(/[^a-z0-9]+/g, ' ').trim()} `;
+
+/** Nombres con que se puede nombrar al sector: el rotulo sin 'Ag.'/'Suc', lo
+ *  que va entre parentesis ('Ceres') y sus alias. */
+function nombresDe(s: { label: string; alias?: string[] }): string[] {
+  const parentesis = s.label.match(/\(([^)]*)\)/)?.[1];
+  const base = s.label.replace(/\(.*\)/, '').replace(/^(ag\.|suc|u\.t\. adm)\s*/i, '');
+  return [base, parentesis, ...(s.alias || [])].filter((x): x is string => !!x && !!x.trim());
+}
+
+/** Datos de la planilla para una auditoria del dashboard (Gemini): el sector
+ *  sale de la agencia o sucursal que leyo el modelo ('El Trebol', 'Agencia
+ *  Rafaela Norte') y el N° de fondo, de la rendicion ('FF N° 241' -> '241').
+ *  Gana el nombre mas largo que aparezca entero ('Agencia'/'Sucursal'
+ *  desempata); si dos sectores siguen empatados, no se elige y la planilla
+ *  queda para completar a mano. */
+export function datosRevisivaAuditoria(r: { agenciaSucursal?: string; fondoFijoNumero?: string; responsable?: string }): DatosRevisiva & { sector: string } {
+  const texto = palabras(r.agenciaSucursal || '');
+  let mejor: { gcia: string; label: string; responsible: string; largo: number } | null = null;
+  let empate = false;
+  for (const [gcia, sectores] of Object.entries(SECTOR_MAPPING)) {
+    for (const s of sectores) {
+      let largo = Math.max(0, ...nombresDe(s)
+        .map(n => palabras(n))
+        .filter(n => n.trim() && texto.includes(n))
+        .map(n => n.trim().length));
+      if (!largo) continue;
+      // 'Agencia Rafaela' es la agencia, no la U.T. Adm Rafaela: el tipo de
+      // dependencia que nombra el texto desempata.
+      const tipo = /^ag\./i.test(s.label) ? ' agencia ' : /^(suc|u\.t\.)/i.test(s.label) ? ' sucursal ' : '';
+      largo += tipo && texto.includes(tipo) ? 0.5 : 0;
+      if (!mejor || largo > mejor.largo) { mejor = { gcia, label: s.label, responsible: s.responsible, largo }; empate = false; }
+      else if (largo === mejor.largo && s.label !== mejor.label) empate = true;
+    }
+  }
+  const fondoFijo = (r.fondoFijoNumero || '').replace(/^\s*FF\s*N\W*\s*/i, '').trim();
+  if (!mejor || empate) {
+    return { responsable: '', fondoFijo, reparticion: '', gciaSuc: '', sector: '' };
+  }
+  return {
+    responsable: mejor.responsible,
+    fondoFijo,
+    reparticion: mejor.label.toUpperCase(),
+    gciaSuc: mejor.gcia,
+    sector: mejor.label,
   };
 }

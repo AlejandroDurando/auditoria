@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Copy,
+  Download,
   Eye,
   FileCheck2,
   FileSpreadsheet,
@@ -15,6 +16,7 @@ import {
   ScanText,
   XCircle,
 } from 'lucide-react';
+import { AUTORIZACIONES_POR_CODIGO } from '../lib/authorizations';
 import { cn, formatCurrency } from '../lib/utils';
 import { VALIDATIONS, VALIDATIONS_VIATICOS } from '../constants';
 import type { AuditResult, PaymentData, ValidationResult } from '../lib/gemini';
@@ -39,6 +41,8 @@ export interface ResultadosExpedienteProps {
   onNuevaAuditoria?: () => void;
   onViewPdf?: (fileIdx: number, pageNum?: number) => void;
   onIrRevisiva?: () => void;
+  /** Descarga la planilla revisiva ya completa con los datos de la auditoria. */
+  onDescargarRevisiva?: () => void;
   onIrPlanilla?: () => void;
   informeTexto?: string;
 }
@@ -51,6 +55,7 @@ export function ResultadosExpediente({
   onNuevaAuditoria,
   onViewPdf,
   onIrRevisiva,
+  onDescargarRevisiva,
   onIrPlanilla,
   informeTexto,
 }: ResultadosExpedienteProps) {
@@ -281,15 +286,31 @@ export function ResultadosExpediente({
               <div>
                 <h4 className="text-[15px] font-semibold text-slate-900">Informe de Auditoría Revisiva Listo</h4>
                 <p className="text-xs text-slate-500 mt-1 max-w-xl leading-relaxed">
-                  El expediente cumple con los requisitos normativos de la EPE. Podés completar los campos y descargar el informe oficial de revisión de cuentas en la pestaña Revisiva.
+                  El expediente cumple con los requisitos normativos de la EPE. {onDescargarRevisiva
+                    ? 'La planilla revisiva se completa con los datos de la auditoría: descargala directo o revisala en la pestaña Revisiva.'
+                    : 'Podés completar los campos y descargar el informe oficial de revisión de cuentas en la pestaña Revisiva.'}
                 </p>
               </div>
             </div>
             <div className="flex flex-col @2xl:flex-row gap-2 @3xl:self-center">
+              {onDescargarRevisiva && (
+              <button
+                onClick={onDescargarRevisiva}
+                className="bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer border-none outline-none shadow-none"
+              >
+                <Download className="w-4 h-4" />
+                <span>Descargar planilla revisiva</span>
+              </button>
+              )}
               {onIrRevisiva && (
               <button
                 onClick={onIrRevisiva}
-                className="bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer border-none outline-none shadow-none"
+                className={cn(
+                  "text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer outline-none shadow-none",
+                  onDescargarRevisiva
+                    ? "bg-[#F2EFE6] hover:bg-[#E5E1D5] text-[#004741] border border-[#004741]/20"
+                    : "bg-[#004741] hover:bg-[#003330] text-white border-none"
+                )}
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Ir a Planilla Revisiva</span>
@@ -570,9 +591,9 @@ export function ResultadosExpediente({
                   Se ha detectado imputación con el código <strong className="font-semibold text-yellow-910">226 (Mantenimiento de maquinarias menores)</strong>. Estas compras deben estar debidamente autorizadas por el Jefe Administrativo de la Sucursal correspondiente:
                 </p>
                 <ul className="text-xs text-yellow-900 mt-2 space-y-1 list-disc pl-4 font-medium">
-                  <li><strong className="text-yellow-950">Rafaela</strong> (UT Adm Rafaela, Ag. Rafaela, Ag Norte o Maria Juana) requiere firma de <strong className="text-emerald-900 font-semibold">Juan Chianalino</strong></li>
-                  <li><strong className="text-yellow-950">Noroeste</strong> (Suc Noroeste, Ag San Cristobal, Ag San Guillermo, Ag Sunchales o Ag Tostado) requiere firma de <strong className="text-emerald-900 font-semibold">Eduardo Argañaraz</strong></li>
-                  <li><strong className="text-yellow-950">Oeste</strong> (Suc Oeste, Ag El trébol, Ag Las Rosas o Ag San Jorge) requiere firma de <strong className="text-emerald-900 font-semibold">Leonardo Rostagno</strong></li>
+                  {ZONAS_226.map(z => (
+                    <li key={z.zona}><strong className="text-yellow-950">{z.zona}</strong> ({z.alcance}) requiere firma de <strong className="text-emerald-900 font-semibold">{z.firmante}</strong></li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -581,33 +602,13 @@ export function ResultadosExpediente({
               <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2.5">
                 {paymentsWith226.map((p, idx) => {
                   // Identify expected signer
-                  let expectedSigner = "Jefe Administracion";
-                  let zone = "No identificada";
-                  const generalBranchText = (result?.agenciaSucursal || "").toUpperCase();
-                  const paymentBranchText = ((p?.libroDiarioText || "") + " " + (p?.providerName || "")).toUpperCase();
-                  const fullTextToCheck = generalBranchText + " " + paymentBranchText;
-                  
-                  if (fullTextToCheck.includes("RAFAELA") || fullTextToCheck.includes("CHIANALINO") || fullTextToCheck.includes("MARIA JUANA") || fullTextToCheck.includes("NORTE")) {
-                    expectedSigner = "Juan Chianalino";
-                    zone = "Rafaela";
-                  } else if (fullTextToCheck.includes("NOROESTE") || fullTextToCheck.includes("ARGAÑARAZ") || fullTextToCheck.includes("ARGANARAZ") || fullTextToCheck.includes("CERES") || fullTextToCheck.includes("SUNCHALES") || fullTextToCheck.includes("CRISTOBAL") || fullTextToCheck.includes("GUILLERMO") || fullTextToCheck.includes("TOSTADO")) {
-                    expectedSigner = "Eduardo Argañaraz";
-                    zone = "Noroeste";
-                  } else if (fullTextToCheck.includes("OESTE") || fullTextToCheck.includes("ROSTAGNO") || fullTextToCheck.includes("TREBOL") || fullTextToCheck.includes("ROSAS") || fullTextToCheck.includes("JORGE")) {
-                    expectedSigner = "Leonardo Rostagno";
-                    zone = "Oeste";
-                  } else {
-                    if (generalBranchText.includes("RAFAELA")) {
-                      expectedSigner = "Juan Chianalino";
-                      zone = "Rafaela";
-                    } else if (generalBranchText.includes("NOROESTE")) {
-                      expectedSigner = "Eduardo Argañaraz";
-                      zone = "Noroeste";
-                    } else if (generalBranchText.includes("OESTE")) {
-                      expectedSigner = "Leonardo Rostagno";
-                      zone = "Oeste";
-                    }
-                  }
+                  // La zona sale primero de la agencia del expediente y, si no
+                  // la nombra, del texto del pago.
+                  const generalBranchText = result?.agenciaSucursal || "";
+                  const paymentBranchText = (p?.libroDiarioText || "") + " " + (p?.providerName || "");
+                  const zona226 = zonaDe(generalBranchText) || zonaDe(generalBranchText + " " + paymentBranchText);
+                  const expectedSigner = zona226?.firmante || "Jefe Administracion";
+                  const zone = zona226?.zona || "No identificada";
 
                   // Check if approved in observations
                   const v4Val = p?.validations?.find(val => (val as any)?.code?.toLowerCase() === 'v4' || val?.id?.toLowerCase() === 'v4' || (val as any)?.code?.toLowerCase() === 'validation_v4');
@@ -775,6 +776,21 @@ interface PaymentRowProps {
   mode: 'Expedientes' | 'Viáticos' | 'Rapida';
   onViewPdf?: (fileIdx: number, pageNum?: number) => void;
   key?: React.Key | number | string;
+}
+
+// Código 226: firma del Jefe Administrativo de la sucursal de origen
+// (lib/authorizations). La zona se reconoce por palabras enteras: 'VERA' no
+// es parte de 'PRIMAVERA'.
+const ZONAS_226 = AUTORIZACIONES_POR_CODIGO.find(a => a.codigos.includes('226'))?.zonas || [];
+const CLAVES_ZONA: Record<string, RegExp> = {
+  Rafaela: /\b(RAFAELA|CHIANALINO|MARIA JUANA|NORTE)\b/,
+  Noroeste: /\b(NOROESTE|ARGANARAZ|CERES|SUNCHALES|CRISTOBAL|GUILLERMO|TOSTADO)\b/,
+  Oeste: /\b(OESTE|ROSTAGNO|TREBOL|ROSAS|JORGE|CANADA DE GOMEZ)\b/,
+  Reconquista: /\b(RECONQUISTA|CORGNIALI|VILLA OCAMPO|VERA|CALCHAQUI)\b/,
+};
+function zonaDe(texto: string) {
+  const t = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  return ZONAS_226.find(z => CLAVES_ZONA[z.zona]?.test(t));
 }
 
 function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentRowProps) {

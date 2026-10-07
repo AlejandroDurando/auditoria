@@ -52,9 +52,10 @@ export const ZONAS_SUCURSAL: Record<string, string> = {
   Rafaela: 'UT Adm Rafaela, Ag. Rafaela, Ag. Rafaela Norte, María Juana',
   Noroeste: 'Suc. Noroeste, Ag. San Cristóbal, Ag. San Guillermo, Ag. Sunchales, Ag. Tostado',
   Oeste: 'Suc. Oeste, Ag. El Trébol, Ag. Las Rosas, Ag. San Jorge',
+  Reconquista: 'Suc. Reconquista, Ag. Villa Ocampo, Ag. Vera, Ag. Calchaquí',
 };
 
-export const ZONAS = ['Rafaela', 'Noroeste', 'Oeste'] as const;
+export const ZONAS = ['Rafaela', 'Noroeste', 'Oeste', 'Reconquista'] as const;
 
 /** Autorizaciones base disparadas por el código de gasto imputado en el PIMyS. */
 export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
@@ -80,6 +81,7 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
       { zona: 'Rafaela', alcance: ZONAS_SUCURSAL.Rafaela, firmante: 'Cristian Berrino' },
       { zona: 'Noroeste', alcance: ZONAS_SUCURSAL.Noroeste, firmante: 'Franco Blonksi' },
       { zona: 'Oeste', alcance: ZONAS_SUCURSAL.Oeste, firmante: 'Juan Pascualetto' },
+      { zona: 'Reconquista', alcance: ZONAS_SUCURSAL.Reconquista, firmante: 'Diego Alonso' },
     ],
     nota: 'Además de la firma del Jefe de Sucursal, el expediente debe remitirse al área de Patrimonio para el alta del bien de uso.',
   },
@@ -92,8 +94,16 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
       { zona: 'Rafaela', alcance: ZONAS_SUCURSAL.Rafaela, firmante: 'Juan Chianalino' },
       { zona: 'Noroeste', alcance: ZONAS_SUCURSAL.Noroeste, firmante: 'Eduardo Argañaraz' },
       { zona: 'Oeste', alcance: ZONAS_SUCURSAL.Oeste, firmante: 'Leonardo Rostagno' },
+      { zona: 'Reconquista', alcance: ZONAS_SUCURSAL.Reconquista, firmante: 'Rosana Corgniali' },
     ],
     nota: 'Firma del Jefe Administrativo de la Sucursal de origen del expediente.',
+  },
+  {
+    codigos: ['218'],
+    concepto: 'Materiales para conexionistas y fraude',
+    tipo: 'fijo',
+    firmantes: ['Germán Elias'],
+    nota: 'Previa autorización del Área Control de Pérdidas, lo inicie quien lo inicie.',
   },
   {
     codigos: ['602'],
@@ -125,9 +135,10 @@ export const AUTORIZACIONES_POR_SECTOR: AutorizacionSector[] = [
     jefes: ['Hernán Cossu', 'Matías Fantin', 'Gustavo Fernández'],
   },
   {
+    // Fraude depende de Comercial. Germán Elias se exige solo en el código 218.
     sector: 'Fraude (Fiscalización de Suministros)',
     agentes: ['Federico Perotti'],
-    jefes: ['Germán Elias'],
+    jefes: ['Cristian Berrino', 'Mauricio Hartmann'],
   },
   {
     sector: 'Estación Transformadora (ET Rafaela Oeste y ET Rafaela Sur)',

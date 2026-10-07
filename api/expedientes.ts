@@ -5,7 +5,7 @@
 //
 // Variables de entorno (Vercel):
 //   GOOGLE_SA_EMAIL, GOOGLE_SA_PRIVATE_KEY      cuenta de servicio del lector
-//   SHEET_ID_RAFAELA, SHEET_ID_NOROESTE, SHEET_ID_OESTE
+//   SHEET_ID_RAFAELA, SHEET_ID_NOROESTE, SHEET_ID_OESTE, SHEET_ID_RECONQUISTA (opcional)
 //   LECTOR_ACCESS_KEY                           clave que pide la vista
 //   R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY
 //                                               PDF en Cloudflare R2 (token de solo lectura)
@@ -50,6 +50,7 @@ const REGIONES: Array<{ region: string; env: string }> = [
   { region: 'Rafaela', env: 'SHEET_ID_RAFAELA' },
   { region: 'Sucursal Noroeste', env: 'SHEET_ID_NOROESTE' },
   { region: 'Sucursal Oeste', env: 'SHEET_ID_OESTE' },
+  { region: 'Sucursal Reconquista', env: 'SHEET_ID_RECONQUISTA' },
 ];
 
 // ─── Conversion de las filas del Sheet ────────────────────────────────────────

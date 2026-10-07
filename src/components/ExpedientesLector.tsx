@@ -11,7 +11,7 @@ import { datosRevisivaLector, descargarRevisiva } from '../lib/revisiva';
 // a traves de /api/expedientes. La clave de acceso la escribe el usuario una
 // vez y queda en este navegador; nunca esta en el codigo.
 const CLAVE_STORAGE = 'lector-access-key';
-const REGIONES = ['Rafaela', 'Sucursal Noroeste', 'Sucursal Oeste'] as const;
+const REGIONES = ['Rafaela', 'Sucursal Noroeste', 'Sucursal Oeste', 'Sucursal Reconquista'] as const;
 type Region = typeof REGIONES[number];
 
 const nroRendicion = (e: ExpedienteLector) => Number((e.rendicion || '').replace(/\D/g, '')) || 0;
@@ -360,7 +360,7 @@ export function ExpedientesLector() {
         </div>
       </div>
 
-      <div className="flex w-fit p-[3px] bg-[#EEECE5] rounded-[8px] mb-6 gap-[2px] items-center select-none">
+      <div className="flex w-fit max-w-full overflow-x-auto p-[3px] bg-[#EEECE5] rounded-[8px] mb-6 gap-[2px] items-center select-none">
         {REGIONES.map(r => {
           const cantidad = filtrados.filter(e => e.region === r).length;
           return (

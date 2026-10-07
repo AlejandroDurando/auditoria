@@ -65,7 +65,7 @@ import { PdfCanvasViewer } from './components/PdfCanvasViewer';
 import { PdfScrollViewer } from './components/PdfScrollViewer';
 import { InteractiveNormativa } from './components/InteractiveNormativa';
 import { useRef } from 'react';
-import { SECTOR_MAPPING, descargarRevisiva } from './lib/revisiva';
+import { SECTOR_MAPPING, datosRevisivaAuditoria, descargarRevisiva } from './lib/revisiva';
 export { SECTOR_MAPPING };
 
 const EPE_LOGO_BASE64 = 'data:image/png;base64,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';
@@ -432,7 +432,7 @@ export default function App() {
   const [showFormSector, setShowFormSector] = useState(false);
   const [formCodigo, setFormCodigo] = useState({
     codigos: '', concepto: '', tipo: 'fijo' as 'fijo' | 'zona',
-    firmantes: '', Rafaela: '', Noroeste: '', Oeste: '', nota: '',
+    firmantes: '', Rafaela: '', Noroeste: '', Oeste: '', Reconquista: '', nota: '',
   });
   const [formSector, setFormSector] = useState({ sector: '', agentes: '', jefes: '' });
 
@@ -472,7 +472,7 @@ export default function App() {
         zonas, nota: formCodigo.nota.trim() || undefined,
       }));
     }
-    setFormCodigo({ codigos: '', concepto: '', tipo: 'fijo', firmantes: '', Rafaela: '', Noroeste: '', Oeste: '', nota: '' });
+    setFormCodigo({ codigos: '', concepto: '', tipo: 'fijo', firmantes: '', Rafaela: '', Noroeste: '', Oeste: '', Reconquista: '', nota: '' });
     setShowFormCodigo(false);
     showNotification('Autorización agregada', 'El auditor la tendrá en cuenta en las próximas auditorías.', 'success');
   };
@@ -678,52 +678,27 @@ export default function App() {
     return "";
   };
 
-  const determineGciaSuc = (reparticion: string): string => {
-    if (!reparticion) return '';
-    const r = reparticion.toLowerCase();
-    if (
-      r.includes('oeste') ||
-      r.includes('cañada de gomez') ||
-      r.includes('cañada de gómez') ||
-      r.includes('trebol') ||
-      r.includes('trébol') ||
-      r.includes('rosas') ||
-      r.includes('jorge')
-    ) {
-      return 'OESTE';
-    }
-    if (
-      r.includes('noroeste') ||
-      r.includes('ceres') ||
-      r.includes('guillermo') ||
-      r.includes('cristobal') ||
-      r.includes('cristóbal') ||
-      r.includes('tostado') ||
-      r.includes('sunchales')
-    ) {
-      return 'NOROESTE';
-    }
-    if (
-      r.includes('rafaela') ||
-      r.includes('compras') ||
-      r.includes('abastecimiento') ||
-      r.includes('movilidades') ||
-      r.includes('maria juana') ||
-      r.includes('maría juana')
-    ) {
-      return 'RAFAELA';
-    }
-    return '';
+  /** Planilla revisiva de una auditoria: sector y responsable por la agencia
+   *  que leyo la auditoria (lib/revisiva). Si no se identifica el sector,
+   *  quedan el responsable y la reparticion que trae el expediente. */
+  const revisivaDe = (res: AuditResult) => {
+    const datos = datosRevisivaAuditoria(res);
+    if (datos.sector) return datos;
+    return {
+      ...datos,
+      responsable: getInitialResponsible(res),
+      reparticion: res.agenciaSucursal ? formatHistoryTitle(res.agenciaSucursal) : '',
+    };
   };
 
   useEffect(() => {
     if (result) {
-      const responsableVal = getInitialResponsible(result);
-      setPdfResponsable(responsableVal);
-      setPdfFdoFijoNo(result.fondoFijoNumero || '');
-      const reparticionVal = result.agenciaSucursal ? formatHistoryTitle(result.agenciaSucursal) : '';
-      setPdfReparticion(reparticionVal);
-      setPdfGciaSuc(determineGciaSuc(result.agenciaSucursal || ''));
+      const datos = revisivaDe(result);
+      setPdfResponsable(datos.responsable);
+      setPdfFdoFijoNo(datos.fondoFijo);
+      setPdfReparticion(datos.reparticion);
+      setPdfGciaSuc(datos.gciaSuc);
+      setSelectedSector(datos.sector);
     } else {
       setPdfResponsable('');
       setPdfFdoFijoNo('');
@@ -1792,6 +1767,10 @@ export default function App() {
                   onNuevaAuditoria={() => { setResult(null); setSelectedFiles([]); setActiveAuditId(null); setActivePdfViewer(null); }}
                   onViewPdf={handleViewPdf}
                   onIrRevisiva={() => setActiveTab('Revisiva')}
+                  onDescargarRevisiva={() => {
+                    const datos = revisivaDe(result);
+                    descargarRevisiva(datos, `Planilla revisiva FF ${datos.fondoFijo} ${datos.reparticion}`.trim().replace(/\s+/g, ' ') + '.pdf');
+                  }}
                   onIrPlanilla={() => { setPlanillasOpen(true); setActiveTab('Planilla'); }}
                   informeTexto={generateReportText()}
                 />
@@ -2414,9 +2393,9 @@ export default function App() {
                         className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#F2EFE6] text-slate-900 focus:border-[#004741] outline-none font-medium"
                       >
                         <option value="">Seleccionar...</option>
-                        <option value="RAFAELA">RAFAELA</option>
-                        <option value="NOROESTE">NOROESTE</option>
-                        <option value="OESTE">OESTE</option>
+                        {Object.keys(SECTOR_MAPPING).map(g => (
+                          <option key={g} value={g}>{g}</option>
+                        ))}
                       </select>
                     </div>
 

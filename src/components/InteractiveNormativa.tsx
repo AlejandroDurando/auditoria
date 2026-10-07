@@ -403,7 +403,7 @@ export function InteractiveNormativa() {
                           Nº {fondo.id}
                         </span>
                         <span className="text-xs font-bold text-[#004741]">
-                          {formatCurrency(fondo.monto)}
+                          {(fondo.monto != null ? formatCurrency(fondo.monto) : 'A definir')}
                         </span>
                       </div>
                       <h4 className="text-xs font-semibold text-slate-800 mt-2 line-clamp-1">{fondo.nombre}</h4>
@@ -429,7 +429,7 @@ export function InteractiveNormativa() {
                       </div>
                       <div className="text-right">
                         <span className="text-[10px] text-slate-400 block font-medium uppercase font-mono">Presupuesto Inicial</span>
-                        <span className="text-xl font-bold text-[#004741]">{formatCurrency(selectedFondo.monto)}</span>
+                        <span className="text-xl font-bold text-[#004741]">{(selectedFondo.monto != null ? formatCurrency(selectedFondo.monto) : 'A definir')}</span>
                         <span className="text-[10px] bg-[#D4E8E6] text-[#003330] font-semibold px-2 py-0.5 rounded-full mt-1.5 inline-block">
                           {selectedFondo.anexo}
                         </span>

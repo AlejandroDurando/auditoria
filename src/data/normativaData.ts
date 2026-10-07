@@ -8,7 +8,8 @@ export interface Responsable {
 export interface FondoFijoReg {
   id: string; // Nro
   nombre: string;
-  monto: number;
+  /** Sin dato todavía (Sucursal Reconquista y sus agencias). */
+  monto?: number;
   anexo: string;
   reintegrables?: string;
   observaciones?: string;
@@ -436,6 +437,45 @@ export const FONDOS_FIJOS_DATA: FondoFijoReg[] = [
       { nombre: 'Re, Mauro Sebastián', legajo: '82692', dni: 'DNI 35.150.361', domicilio: 'Italia 340- Humberto Primo' },
       { nombre: 'Berga, Lorena Paola', legajo: '83040', dni: 'DNI 31.364.737', domicilio: 'Av. Belgrano 169-Humberto Primo' },
       { nombre: 'Bonino, Guillermo Gustavo', legajo: '77188', dni: 'DNI 36.152.582', domicilio: 'Samyn 304- Humberto Primo' }
+    ]
+  },
+  // Sucursal Reconquista y sus agencias: por ahora solo los jefes, sin
+  // legajo, monto ni cuenta.
+  {
+    id: '1050',
+    nombre: 'Sucursal Reconquista',
+    anexo: 'A definir',
+    observaciones: 'Nómina incompleta: Jefe de Sucursal y Jefa Administrativa.',
+    responsables: [
+      { nombre: 'Alonso, Diego', legajo: '', dni: '', domicilio: '' },
+      { nombre: 'Corgniali, Rosana', legajo: '', dni: '', domicilio: '' }
+    ]
+  },
+  {
+    id: '1051',
+    nombre: 'Agencia Villa Ocampo',
+    anexo: 'A definir',
+    observaciones: 'Nómina incompleta: Jefe de Agencia.',
+    responsables: [
+      { nombre: 'Verón, Gabriel', legajo: '', dni: '', domicilio: '' }
+    ]
+  },
+  {
+    id: '1052',
+    nombre: 'Agencia Vera',
+    anexo: 'A definir',
+    observaciones: 'Nómina incompleta: Jefe de Agencia.',
+    responsables: [
+      { nombre: 'Capello, Mariano', legajo: '', dni: '', domicilio: '' }
+    ]
+  },
+  {
+    id: '1053',
+    nombre: 'Agencia Calchaquí',
+    anexo: 'A definir',
+    observaciones: 'Nómina incompleta: Jefe de Agencia.',
+    responsables: [
+      { nombre: 'Santiago, Juan Ignacio', legajo: '', dni: '', domicilio: '' }
     ]
   }
 ];

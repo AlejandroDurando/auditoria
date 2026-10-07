@@ -70,7 +70,7 @@ export function ResultadosExpediente({
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-8"
+      className="space-y-8 @container"
     >
       <div className="flex items-center justify-between mb-2">
         <div>
@@ -91,7 +91,7 @@ export function ResultadosExpediente({
 
       {/* Metadata Banner displaying Extracted Fields */}
       {result && (result.expedienteNumero || result.expedienteFecha || result.fondoFijoNumero || result.agenciaSucursal) && (
-        <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-6 shadow-none flex flex-col sm:flex-row gap-6 sm:items-center">
+        <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-6 shadow-none flex flex-col @2xl:flex-row gap-6 @2xl:items-center">
           {result.expedienteFecha && (
             <div className="flex-1 min-w-[130px]">
               <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Fecha Expediente</span>
@@ -119,7 +119,7 @@ export function ResultadosExpediente({
             </div>
           )}
           {result.expedienteNumero && (
-            <div className="flex-1 min-w-[130px] sm:border-l sm:border-[#E8E6DE] sm:pl-6">
+            <div className="flex-1 min-w-[130px] @2xl:border-l @2xl:border-[#E8E6DE] @2xl:pl-6">
               <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">N° de Expediente</span>
               <div className="flex items-center gap-1.5">
                 <span className="text-[13px] font-medium text-[#1A1A1A] font-mono">
@@ -145,7 +145,7 @@ export function ResultadosExpediente({
             </div>
           )}
           {result.fondoFijoNumero && (
-            <div className="flex-1 min-w-[130px] sm:border-l sm:border-[#E8E6DE] sm:pl-6">
+            <div className="flex-1 min-w-[130px] @2xl:border-l @2xl:border-[#E8E6DE] @2xl:pl-6">
               <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Fondo Fijo</span>
               <span className="text-sm font-medium text-[#004741]">
                 {result.fondoFijoNumero}
@@ -153,7 +153,7 @@ export function ResultadosExpediente({
             </div>
           )}
           {result.agenciaSucursal && (
-            <div className="flex-1 min-w-[180px] sm:border-l sm:border-[#E8E6DE] sm:pl-6">
+            <div className="flex-1 min-w-[180px] @2xl:border-l @2xl:border-[#E8E6DE] @2xl:pl-6">
               <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Origen / Agencia / Sucursal</span>
               <span className="text-sm font-medium text-slate-800">
                 {formatHistoryTitle(result.agenciaSucursal)}
@@ -173,7 +173,7 @@ export function ResultadosExpediente({
         const hasWarnings = payments.some(p => p?.validations?.some(v => v?.status === 'warning')) || !!result?.validacionesExpediente?.some(v => v.status === 'warning');
         
         return (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 @3xl:grid-cols-3 gap-6 mb-8">
             <div className="bg-[#F2EFE6] p-6 rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between gap-4 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Pagos Analizados</p>
               <p className="text-2xl font-bold text-slate-900">{totalPagos}</p>
@@ -181,7 +181,7 @@ export function ResultadosExpediente({
             <div className="bg-[#F2EFE6] p-6 rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between gap-4 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Importe Total</p>
               <div className="flex items-center gap-1.5 justify-between">
-                <p className="text-2xl font-mono font-bold text-slate-900">{formatCurrency(finalTotalImporte)}</p>
+                <p className="text-xl @5xl:text-2xl font-mono font-bold text-slate-900 min-w-0 break-words">{formatCurrency(finalTotalImporte)}</p>
                 <button
                   type="button"
                   onClick={() => {
@@ -273,7 +273,7 @@ export function ResultadosExpediente({
         const hasErrors = payments.some(p => p?.validations?.some(v => v?.status === 'fail')) || result?.balance_inversion?.validacion_v14?.resultado === 'error' || result?.balance_inversion?.conciliacion_total?.coinciden === false || (result?.duplicados?.length || 0) > 0 || !!result?.validacionesExpediente?.some(v => v.status === 'fail');
         if (payments.length === 0 || hasErrors || (!onIrRevisiva && !onIrPlanilla)) return null;
         return (
-          <div className="bg-[#E8EFEE] border border-[#004741]/15 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 transition-all hover:bg-[#ebf8f3] shadow-sm">
+          <div className="bg-[#E8EFEE] border border-[#004741]/15 rounded-2xl p-6 flex flex-col @3xl:flex-row @3xl:items-center justify-between gap-6 mb-8 transition-all hover:bg-[#ebf8f3] shadow-sm">
             <div className="flex gap-4 items-start">
               <div className="w-12 h-12 bg-[#F2EFE6] rounded-xl border border-emerald-500/10 flex items-center justify-center shrink-0 shadow-[0_4px_12px_rgba(15,110,86,0.04)] text-[#004741]">
                 <FileCheck2 className="w-6 h-6" />
@@ -285,7 +285,7 @@ export function ResultadosExpediente({
                 </p>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 md:self-center">
+            <div className="flex flex-col @2xl:flex-row gap-2 @3xl:self-center">
               {onIrRevisiva && (
               <button
                 onClick={onIrRevisiva}
@@ -356,7 +356,7 @@ export function ResultadosExpediente({
           </div>
           
           {result.balance_inversion.presente && (
-            <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="p-6 grid grid-cols-1 @5xl:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-[10px]">
                   <div className="bg-[#E8E4D8] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
@@ -411,7 +411,7 @@ export function ResultadosExpediente({
                           {c.coinciden ? 'Coinciden' : 'No coinciden'}
                         </span>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 @2xl:grid-cols-3 gap-2">
                         {fuentes.map((f, i) => (
                           <div key={i} className={cn(
                             "p-3 rounded-[8px] border-[0.5px]",
@@ -486,7 +486,7 @@ export function ResultadosExpediente({
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-3">
             {result.duplicados.map((d, idx) => (
               <div key={idx} className="bg-[#F2EFE6] border-[0.5px] border-[#F8CCCC] rounded-[8px] p-3">
                 <p className="text-[13px] font-semibold text-slate-900 font-mono">{safeText(d.identificador) || '—'}</p>
@@ -527,7 +527,7 @@ export function ResultadosExpediente({
             </div>
             <div className="border-t border-amber-250/50 mt-1 pt-3.5">
               <p className="text-[10px] font-bold text-amber-900 uppercase tracking-wider mb-2.5">Comprobantes identificados con Código 202:</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2.5">
                 {paymentsWith202.map((p, idx) => (
                   <div key={idx} className="bg-[#F2EFE6]/80 p-3 rounded-lg border border-amber-200/60 flex flex-col shadow-sm">
                     <span className="text-xs font-semibold text-slate-800">
@@ -578,7 +578,7 @@ export function ResultadosExpediente({
             </div>
             <div className="border-t border-yellow-200/80 mt-1 pt-3.5">
               <p className="text-[10px] font-bold text-yellow-900 uppercase tracking-wider mb-2.5">Facturas/Proveedores con Código 226:</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2.5">
                 {paymentsWith226.map((p, idx) => {
                   // Identify expected signer
                   let expectedSigner = "Jefe Administracion";
@@ -650,7 +650,7 @@ export function ResultadosExpediente({
       {/* Sección Informe Copiable */}
       {informeTexto !== undefined && (
       <div id="informe-copiable" className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] overflow-hidden transition-all shadow-none">
-        <div className="p-6 border-b-[0.5px] border-[#E8E6DE] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#F2EFE6]">
+        <div className="p-6 border-b-[0.5px] border-[#E8E6DE] flex flex-col @2xl:flex-row @2xl:items-center justify-between gap-4 bg-[#F2EFE6]">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shrink-0">
               <FileText className="w-6 h-6 text-[#004741]" />
@@ -713,7 +713,7 @@ function ValidacionesExpediente({ validaciones }: { validaciones: ValidationResu
           <p className="text-xs text-[#9A9890] mt-0.5">Controles que no se muestran en el Balance de Inversión.</p>
         </div>
       </div>
-      <div className="p-6 sm:p-8 flex flex-col gap-6">
+      <div className="p-6 @2xl:p-8 flex flex-col gap-6">
         {validaciones.map((v) => (
           <ValidacionItem key={v.id} id={v.id} title={v.title || v.id.toUpperCase()} status={v.status} observations={v.observations} />
         ))}
@@ -736,7 +736,7 @@ function ValidacionItem({ id, title, status, observations, accion }: {
         <StatusIcon status={status} />
       </div>
       <div className="flex-1">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
+        <div className="flex flex-col @2xl:flex-row @2xl:items-center @2xl:justify-between gap-3 mb-2">
           <div className="flex items-center gap-3">
             <span className={cn(
               "text-[11px] font-medium font-mono px-2 py-0.5 rounded shadow-none border-[0.5px]",
@@ -827,7 +827,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
     >
       <div 
         onClick={onToggle}
-        className="grid grid-cols-[75px_1.5fr_1fr_220px_24px] gap-4 items-center p-[11px_14px] cursor-pointer selection:bg-transparent select-none"
+        className="grid grid-cols-2 @3xl:grid-cols-[75px_1.5fr_1fr_220px_24px] gap-x-4 gap-y-2 items-center p-[11px_14px] cursor-pointer selection:bg-transparent select-none"
       >
         <div className="flex flex-col">
           <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">PIMyS N°</span>
@@ -865,7 +865,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
             </button>
           )}
         </div>
-        <div className="flex justify-end text-[#C8C6BE] shrink-0">
+        <div className="hidden @3xl:flex justify-end text-[#C8C6BE] shrink-0">
           <ChevronRight className={cn("w-4 h-4 transition-transform duration-200", isExpanded && "rotate-90")} />
         </div>
       </div>
@@ -878,7 +878,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
             exit={{ height: 0 }}
             className="border-t-[0.5px] border-[#E8E6DE] bg-[#E8E4D8]/40"
           >
-            <div className="p-6 sm:p-8">
+            <div className="p-6 @2xl:p-8">
               <h4 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-6">Detalle de Validaciones</h4>
               <div className="flex flex-col gap-6">
                 {currentValidations.map((v) => {
@@ -891,7 +891,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                         <StatusIcon status={status} />
                       </div>
                       <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
+                        <div className="flex flex-col @2xl:flex-row @2xl:items-center @2xl:justify-between gap-3 mb-2">
                           <div className="flex items-center gap-3">
                             <span className={cn(
                               "text-[11px] font-medium font-mono px-2 py-0.5 rounded shadow-none border-[0.5px]",
@@ -910,7 +910,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                                 e.stopPropagation();
                                 onViewPdf?.(payment.sourceFileIdx || 0, payment.pageNumber);
                               }}
-                              className="self-start sm:self-auto p-1.5 text-slate-500 hover:text-[#004741] hover:bg-[#E8EFEE] rounded-lg border-[0.5px] border-[#E2E0D8] transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
+                              className="self-start @2xl:self-auto p-1.5 text-slate-500 hover:text-[#004741] hover:bg-[#E8EFEE] rounded-lg border-[0.5px] border-[#E2E0D8] transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
                               title="ver pdf"
                             >
                               <Eye className="w-3.5 h-3.5" />
@@ -945,7 +945,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                       Vales de Provisión de Combustible / Ruedas ({payment.vales.length})
                     </h5>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4">
                     {payment.vales.map((vale, idx) => (
                       <div 
                         key={idx} 

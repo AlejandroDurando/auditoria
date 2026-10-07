@@ -31,6 +31,7 @@ import {
   AlertTriangle,
   FileSpreadsheet,
   Hash,
+  PackageSearch,
   Stamp,
   ChevronDown,
   Zap,
@@ -41,6 +42,7 @@ import {
 import { PlanillaControlFF } from './components/PlanillaControlFF';
 import { ResultadosExpediente } from './components/ResultadosExpediente';
 import { ExpedientesLector } from './components/ExpedientesLector';
+import { Matriculador } from './components/Matriculador';
 import { formatHistoryTitle, hasAccountingCode, renderBold, safeText, toSentenceCase } from './lib/formato';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn, formatCurrency } from './lib/utils';
@@ -541,7 +543,22 @@ export default function App() {
   const [sidebarOculta, setSidebarOculta] = useState(() => {
     try { return localStorage.getItem('sidebarOculta') === '1'; } catch { return false; }
   });
+  // En un celular la barra lateral ocupaba casi todo el ancho: ahi arranca
+  // oculta, se abre por encima de la pagina y se cierra al elegir una seccion.
+  const [pantallaAngosta, setPantallaAngosta] = useState(() => window.matchMedia('(max-width: 767px)').matches);
+  const [menuMovil, setMenuMovil] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 767px)');
+    const cambio = () => { setPantallaAngosta(mql.matches); setMenuMovil(false); };
+    mql.addEventListener('change', cambio);
+    return () => mql.removeEventListener('change', cambio);
+  }, []);
+  const barraOculta = pantallaAngosta ? !menuMovil : sidebarOculta;
   const alternarSidebar = () => {
+    if (pantallaAngosta) {
+      setMenuMovil(v => !v);
+      return;
+    }
     setSidebarOculta(v => {
       try { localStorage.setItem('sidebarOculta', v ? '0' : '1'); } catch { /* sin storage */ }
       return !v;
@@ -549,6 +566,7 @@ export default function App() {
     // Las vistas que miden su ancho (panel del PDF) se vuelven a acomodar.
     setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
   };
+  useEffect(() => { setMenuMovil(false); }, [activeTab]);
   const [isSidebarDragging, setIsSidebarDragging] = useState(false);
   const sidebarDragRef = useRef<{ startX: number; startW: number } | null>(null);
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
@@ -1316,7 +1334,15 @@ export default function App() {
       </AnimatePresence>
 
       {/* Sidebar */}
-      {!sidebarOculta && <aside style={{ width: sidebarWidth }} className="shrink-0 border-r-[0.5px] border-[#E8E6DE] flex flex-col bg-[#F2EFE6] shadow-none z-20 relative">
+      {pantallaAngosta && menuMovil && (
+        <div className="fixed inset-0 z-30 bg-black/25" onClick={() => setMenuMovil(false)} aria-hidden="true" />
+      )}
+      {!barraOculta && <aside
+        style={{ width: pantallaAngosta ? Math.min(sidebarWidth, 280) : sidebarWidth }}
+        className={cn(
+          "shrink-0 border-r-[0.5px] border-[#E8E6DE] flex flex-col bg-[#F2EFE6]",
+          pantallaAngosta ? "fixed inset-y-0 left-0 z-40 shadow-[0_0_40px_rgba(0,0,0,0.18)]" : "shadow-none z-20 relative"
+        )}>
         {/* Sidebar resize handle */}
         <div
           onMouseDown={(e) => {
@@ -1391,6 +1417,7 @@ export default function App() {
 
             <SidebarItem icon={Zap} label="Auditoría Rápida" active={activeTab === 'Rapida'} onClick={() => setActiveTab('Rapida')} />
             <SidebarItem icon={Hash} label="Códigos" active={activeTab === 'Códigos'} onClick={() => setActiveTab('Códigos')} />
+            <SidebarItem icon={PackageSearch} label="Matriculador" active={activeTab === 'Matriculador'} onClick={() => setActiveTab('Matriculador')} />
             <SidebarItem icon={Stamp} label="Autorizaciones PIMyS" active={activeTab === 'Autorizaciones'} onClick={() => setActiveTab('Autorizaciones')} />
             <SidebarItem icon={ShieldCheck} label="Normativa" active={activeTab === 'Normativa'} onClick={() => setActiveTab('Normativa')} />
           </div>
@@ -1420,11 +1447,11 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto flex flex-col bg-[#E8E4D8]">
         {/* Header */}
-        <header className="h-[42px] border-b-[0.5px] border-[#E8E6DE] flex items-center justify-between px-8 bg-[#F2EFE6] sticky top-0 z-10 shadow-none">
+        <header className="h-[42px] border-b-[0.5px] border-[#E8E6DE] flex items-center justify-between gap-3 px-4 sm:px-8 bg-[#F2EFE6] sticky top-0 z-10 shadow-none">
           <div className="flex items-center gap-4">
-            {sidebarOculta && (
+            {barraOculta && (
               <button type="button" onClick={alternarSidebar} title="Mostrar barra lateral" aria-label="Mostrar barra lateral"
-                className="-ml-4 p-1 text-[#9A9890] hover:text-[#1A1A1A] hover:bg-[#E5E1D5] rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
+                className="-ml-1 sm:-ml-4 p-1 text-[#9A9890] hover:text-[#1A1A1A] hover:bg-[#E5E1D5] rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
                 <PanelLeft className="w-4 h-4" />
               </button>
             )}
@@ -1448,7 +1475,7 @@ export default function App() {
                     setTimeout(() => setActiveTab('Historial'), 0);
                   }
                 }}
-                className="bg-[#E8E4D8] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-64 focus:border-[#004741] focus:bg-[#F2EFE6] transition-all outline-none text-[#1A1A1A]"
+                className="bg-[#E8E4D8] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-36 sm:w-64 focus:border-[#004741] focus:bg-[#F2EFE6] transition-all outline-none text-[#1A1A1A]"
               />
               {auditSearchQuery && (
                 <button
@@ -1779,6 +1806,8 @@ export default function App() {
           )}
 
           {activeTab === 'Lector' && <ExpedientesLector />}
+
+          {activeTab === 'Matriculador' && <Matriculador />}
 
           {activeTab === 'Historial' && (
             <motion.div 

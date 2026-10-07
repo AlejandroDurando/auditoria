@@ -1,31 +1,19 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { AlertCircle, ArrowLeft, CheckCircle2, ChevronRight, ExternalLink, FileText, KeyRound, Loader2, RefreshCw, Download, Search, Table2, X, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, ChevronRight, ExternalLink, FileText, Loader2, RefreshCw, Download, Search, Table2, X, XCircle } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 import type { ArchivoPdf, ExpedienteLector } from '../../api/expedientes';
 import { ResultadosExpediente } from './ResultadosExpediente';
 import { PdfScrollViewer } from './PdfScrollViewer';
 import { datosRevisivaLector, descargarRevisiva } from '../lib/revisiva';
+import { ClaveAcceso, guardarClave, leerClave } from './ClaveAcceso';
 
 // Expedientes auditados por el lector de expedientes, leidos del Google Sheet
-// a traves de /api/expedientes. La clave de acceso la escribe el usuario una
-// vez y queda en este navegador; nunca esta en el codigo.
-const CLAVE_STORAGE = 'lector-access-key';
+// a traves de /api/expedientes, con la clave de acceso (ClaveAcceso).
 const REGIONES = ['Rafaela', 'Sucursal Noroeste', 'Sucursal Oeste', 'Sucursal Reconquista'] as const;
 type Region = typeof REGIONES[number];
 
 const nroRendicion = (e: ExpedienteLector) => Number((e.rendicion || '').replace(/\D/g, '')) || 0;
-
-function leerClave(): string {
-  try { return localStorage.getItem(CLAVE_STORAGE) || ''; } catch { return ''; }
-}
-
-function guardarClave(clave: string) {
-  try {
-    if (clave) localStorage.setItem(CLAVE_STORAGE, clave);
-    else localStorage.removeItem(CLAVE_STORAGE);
-  } catch { /* sin almacenamiento: se pide en cada visita */ }
-}
 
 function aBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
@@ -140,7 +128,6 @@ function EstadoChip({ estado }: { estado: string }) {
 
 export function ExpedientesLector() {
   const [clave, setClave] = useState<string>(leerClave);
-  const [claveEscrita, setClaveEscrita] = useState('');
   const [expedientes, setExpedientes] = useState<ExpedienteLector[] | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -236,38 +223,7 @@ export function ExpedientesLector() {
   const actual = (expedientes || []).find(e => e.id === seleccionado) || null;
 
   if (!clave) {
-    return (
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-md">
-        <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-6 shadow-none">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-[#F2EFE6] rounded-[10px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
-              <KeyRound className="w-5 h-5 text-[#004741]" />
-            </div>
-            <div>
-              <h2 className="text-base font-medium text-slate-900">Expedientes del lector</h2>
-              <p className="text-xs text-[#9A9890] mt-0.5">Ingresá la clave de acceso. Queda guardada en este navegador.</p>
-            </div>
-          </div>
-          <form
-            onSubmit={e => { e.preventDefault(); const c = claveEscrita.trim(); if (c) { guardarClave(c); setClave(c); setClaveEscrita(''); } }}
-            className="flex gap-2"
-          >
-            <input
-              type="password"
-              value={claveEscrita}
-              onChange={e => setClaveEscrita(e.target.value)}
-              placeholder="Clave de acceso"
-              autoComplete="off"
-              className="flex-1 bg-white/60 border-[0.5px] border-[#D3D1C7] rounded-[7px] px-3 py-2 text-sm outline-none focus:border-[#004741]"
-            />
-            <button type="submit" className="py-[7px] px-[13px] bg-[#004741] text-white text-[13px] font-medium rounded-[7px] hover:bg-[#003330] transition-all outline-none cursor-pointer border-none">
-              Entrar
-            </button>
-          </form>
-          {error && <p className="text-xs text-[#A32D2D] mt-3">{error}</p>}
-        </div>
-      </motion.div>
-    );
+    return <ClaveAcceso titulo="Expedientes del lector" error={error} onClave={setClave} />;
   }
 
   if (actual) {

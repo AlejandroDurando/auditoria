@@ -8,10 +8,12 @@
 //   SHEET_ID_RAFAELA, SHEET_ID_NOROESTE, SHEET_ID_OESTE, SHEET_ID_RECONQUISTA (opcional)
 //   LECTOR_ACCESS_KEY                           clave que pide la vista
 //   R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY
-//                                               PDF en Cloudflare R2 (token de solo lectura)
+//                                               PDF y catalogo de matriculas en Cloudflare R2
+//                                               (token de solo lectura)
 //
 // GET /api/expedientes            -> { expedientes }
 // GET /api/expedientes?pdf=<clave> -> { url } firmada, vence en PDF_VENCE segundos
+// GET /api/expedientes?catalogo=1 -> catalogo de matriculas (Matriculador)
 
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { AwsClient } from 'aws4fetch';
@@ -400,6 +402,22 @@ async function urlFirmada(clave: string): Promise<string | null> {
   return firmado.url;
 }
 
+// ─── Catálogo de matrículas (Matriculador) ────────────────────────────────────
+// Lo arma y lo sube a R2 el lector (matriculas.py). Pesa unos 270 KB: se
+// devuelve entero y la busqueda se hace en el navegador.
+const CLAVE_CATALOGO = 'catalogo/matriculas.json';
+
+async function catalogoMatriculas(): Promise<{ estado: number; cuerpo: string }> {
+  const cfg = r2();
+  if (!cfg) return { estado: 500, cuerpo: JSON.stringify({ error: 'Falta configurar R2.' }) };
+  const r = await cfg.cliente.fetch(`${cfg.base}/${rutaR2(CLAVE_CATALOGO)}`);
+  if (r.status === 404) {
+    return { estado: 404, cuerpo: JSON.stringify({ error: 'Todavía no se subió el catálogo de matrículas (python3 matriculas.py en el lector).' }) };
+  }
+  if (!r.ok) return { estado: 502, cuerpo: JSON.stringify({ error: 'No se pudo leer el catálogo de matrículas.' }) };
+  return { estado: 200, cuerpo: await r.text() };
+}
+
 // ─── Clave de acceso ──────────────────────────────────────────────────────────
 
 function claveValida(recibida: unknown): boolean {
@@ -421,6 +439,18 @@ export default async function handler(req: any, res: any) {
   }
   if (!claveValida(req.headers['x-lector-key'])) {
     res.status(401).json({ error: 'Clave de acceso incorrecta.' });
+    return;
+  }
+  if (req.query?.catalogo !== undefined) {
+    try {
+      const { estado, cuerpo } = await catalogoMatriculas();
+      if (estado === 200) res.setHeader('Cache-Control', 'private, max-age=600');
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.status(estado).send(cuerpo);
+    } catch (e) {
+      console.error(e);
+      res.status(502).json({ error: 'No se pudo leer el catálogo de matrículas.' });
+    }
     return;
   }
   const pdf = req.query?.pdf;

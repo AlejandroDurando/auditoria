@@ -79,7 +79,7 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
     tipo: 'zona',
     zonas: [
       { zona: 'Rafaela', alcance: ZONAS_SUCURSAL.Rafaela, firmante: 'Cristian Berrino' },
-      { zona: 'Noroeste', alcance: ZONAS_SUCURSAL.Noroeste, firmante: 'Franco Blonksi' },
+      { zona: 'Noroeste', alcance: ZONAS_SUCURSAL.Noroeste, firmante: 'Franco Blonski' },
       { zona: 'Oeste', alcance: ZONAS_SUCURSAL.Oeste, firmante: 'Juan Pascualetto' },
       { zona: 'Reconquista', alcance: ZONAS_SUCURSAL.Reconquista, firmante: 'Diego Alonso' },
     ],

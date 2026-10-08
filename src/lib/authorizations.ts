@@ -74,6 +74,13 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
       'La autorización llega por correo de Movilidades Rafaela y debe figurar adjunta al PIMyS. También vale la firma de Fabio Ingaramo o de un agente de Movilidades como Aprobador. Si el PIMyS lo inicia otro sector, además hace falta la firma del jefe de ese sector.',
   },
   {
+    codigos: ['200'],
+    concepto: 'Compra de bienes muebles',
+    tipo: 'fijo',
+    firmantes: ['Mónica Pereyra'],
+    nota: 'Uso restrictivo: autorización previa del Área Abastecimiento. Es un alta de bien de uso: lleva formulario 4500 y se remite a Patrimonio.',
+  },
+  {
     codigos: ['202'],
     concepto: 'Adquisición de útiles, herramientas y equipos de trabajo',
     tipo: 'zona',

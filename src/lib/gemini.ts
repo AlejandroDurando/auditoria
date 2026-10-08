@@ -74,6 +74,14 @@ export interface AuditResult {
   duplicados?: DuplicadoDetectado[];
   /** Validaciones de expediente sin lugar propio en la pantalla (lector: V15, V17...). */
   validacionesExpediente?: ValidationResult[];
+  /** Pagos que no afectan el índice de rotación, por código, y el total de los
+   *  que sí lo afectan (lector de expedientes). Sumados dan el expediente. */
+  rotacion?: {
+    afecta: number;
+    pagosAfecta: number;
+    noAfecta: { codigo: string; concepto: string; importe: number; pagos: number }[];
+    aviso?: string;
+  };
 }
 function isQuotaError(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);

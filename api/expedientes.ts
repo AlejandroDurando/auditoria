@@ -164,6 +164,7 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
   const pagos: PaymentData[] = [];
   const archivoDePago: Array<string | undefined> = [];
   const deExpediente: Record<string, ValidationResult> = {};
+  let rotacion: AuditResult['rotacion'];
   for (const fila of detalle.slice(1)) {
     const id = texto(fila[2]);
     if (id === 'PAGO') {
@@ -176,6 +177,22 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
         leidoPorOcr: leido ? leido[1].trim() : undefined,
       });
       archivoDePago.push(texto(fila[6]) || undefined);
+      continue;
+    }
+    if (id === 'ROT') {
+      // 'Afectan el indice: $794.800,34 (6 pagos) | No afectan: 514
+      // Prosumidores $42.722,73 (1 pago)' (exportar_sheet.texto_rotacion).
+      const t = texto(fila[5]);
+      const af = t.match(/Afectan el indice: (\$\s?[\d.,]+) \((\d+) pagos?\)/);
+      const no = [...t.matchAll(/No afectan: (\d{3}) ([^$|]*?) (\$\s?[\d.,]+) \((\d+) pagos?\)/g)];
+      if (af && no.length) {
+        rotacion = {
+          afecta: pesos(af[1]) ?? 0,
+          pagosAfecta: Number(af[2]),
+          noAfecta: no.map(m => ({ codigo: m[1], concepto: m[2].trim(), importe: pesos(m[3]) ?? 0, pagos: Number(m[4]) })),
+          aviso: /Falta el importe/.test(t) ? 'Falta el importe de algún pago: verificar.' : undefined,
+        };
+      }
       continue;
     }
     if (!/^[VD]\d+$/.test(id)) continue;
@@ -230,6 +247,7 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
     fondoFijoNumero: rendicion ? `FF N° ${rendicion}` : undefined,
     agenciaSucursal: hoja,
     responsable,
+    rotacion,
   };
   if (v14 || montoAsignado !== undefined) {
     result.balance_inversion = {

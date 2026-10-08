@@ -246,6 +246,8 @@ export function ResultadosExpediente({
         );
       })()}
 
+      {result?.rotacion && <IndiceRotacion rotacion={result.rotacion} />}
+
       {(() => {
         const payments = result?.payments || [];
         if (payments.length === 0 && result?.totalAmount && result.totalAmount > 0) {
@@ -791,6 +793,63 @@ const CLAVES_ZONA: Record<string, RegExp> = {
 function zonaDe(texto: string) {
   const t = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
   return ZONAS_226.find(z => CLAVES_ZONA[z.zona]?.test(t));
+}
+
+/** Importes para el registro del índice de rotación: los pagos que no lo
+ *  afectan, separados por código, y el total de los que sí. Sumados dan el
+ *  total del expediente. Cada uno con su botón de copiar. */
+function IndiceRotacion({ rotacion }: { rotacion: NonNullable<AuditResult['rotacion']> }) {
+  const [copiado, setCopiado] = useState<string | null>(null);
+  const copiar = (clave: string, importe: number) => {
+    navigator.clipboard.writeText(formatCurrency(importe));
+    setCopiado(clave);
+    setTimeout(() => setCopiado(c => (c === clave ? null : c)), 2000);
+  };
+  const pagos = (n: number) => `${n} pago${n !== 1 ? 's' : ''}`;
+  const filas = [
+    ...rotacion.noAfecta.map(r => ({
+      clave: r.codigo, titulo: `${r.codigo} · ${r.concepto}`, detalle: `No afecta · ${pagos(r.pagos)}`,
+      importe: r.importe, destacada: true,
+    })),
+    { clave: 'afecta', titulo: 'Afectan el índice', detalle: pagos(rotacion.pagosAfecta),
+      importe: rotacion.afecta, destacada: false },
+  ];
+  return (
+    <div className="bg-[#FFF8E1] border border-[#F2C94C]/70 rounded-2xl p-5 mb-8">
+      <div className="flex items-start gap-2.5 mb-4">
+        <AlertCircle className="w-4 h-4 text-[#8A6A00] mt-0.5 shrink-0" />
+        <div>
+          <h4 className="text-[14px] font-semibold text-[#5C4700]">Hay pagos que no afectan el índice de rotación</h4>
+          <p className="text-[12px] text-[#7A6200] mt-0.5">Importes para el registro: sumados dan el total del expediente.</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2.5">
+        {filas.map(f => (
+          <div key={f.clave} className={cn(
+            "flex items-center justify-between gap-3 rounded-[10px] px-3.5 py-2.5 border",
+            f.destacada ? "bg-white/70 border-[#F2C94C]/60" : "bg-[#F2EFE6] border-[#E8E6DE]"
+          )}>
+            <div className="min-w-0">
+              <p className="text-[13px] font-medium text-slate-900 truncate">{f.titulo}</p>
+              <p className="text-[11px] text-[#9A9890]">{f.detalle}</p>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="font-mono text-[14px] font-semibold text-slate-900">{formatCurrency(f.importe)}</span>
+              <button
+                type="button"
+                onClick={() => copiar(f.clave, f.importe)}
+                className="p-1 text-slate-400 hover:text-[#004741] hover:bg-[#DED9CC] rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center"
+                title="Copiar importe"
+              >
+                {copiado === f.clave ? <Check className="w-3.5 h-3.5 text-[#004741]" /> : <Copy className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      {rotacion.aviso && <p className="text-[11px] text-[#A32D2D] mt-3">{rotacion.aviso}</p>}
+    </div>
+  );
 }
 
 function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentRowProps) {

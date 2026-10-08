@@ -32,6 +32,7 @@ import {
   FileSpreadsheet,
   Hash,
   PackageSearch,
+  BookUser,
   Stamp,
   ChevronDown,
   Zap,
@@ -43,6 +44,7 @@ import { PlanillaControlFF } from './components/PlanillaControlFF';
 import { ResultadosExpediente } from './components/ResultadosExpediente';
 import { ExpedientesLector } from './components/ExpedientesLector';
 import { BuscadorGlobal, type EntradaHistorial } from './components/BuscadorGlobal';
+import { GuiaTelefonica } from './components/GuiaTelefonica';
 import { irA, useRuta } from './lib/navegacion';
 import type { ExpedienteLector } from '../api/expedientes';
 import { Matriculador } from './components/Matriculador';
@@ -420,13 +422,13 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
 const SECCION_DE_TAB: Record<string, string> = {
   Dashboard: 'dashboard', Historial: 'historial', Lector: 'lector', Revisiva: 'revisiva',
   Planilla: 'planilla', Rapida: 'rapida', 'Códigos': 'codigos', Matriculador: 'matriculador',
-  Autorizaciones: 'autorizaciones', Normativa: 'normativa',
+  Autorizaciones: 'autorizaciones', Normativa: 'normativa', Guia: 'guia',
 };
 const TAB_DE_SECCION: Record<string, string> = Object.fromEntries(
   Object.entries(SECCION_DE_TAB).map(([tab, seccion]) => [seccion, tab]));
 const NOMBRE_DE_TAB: Record<string, string> = {
   Lector: 'Expedientes del lector', Rapida: 'Auditoría rápida', Revisiva: 'Planilla revisiva',
-  Planilla: 'Planilla control', Autorizaciones: 'Autorizaciones PIMyS',
+  Planilla: 'Planilla control', Autorizaciones: 'Autorizaciones PIMyS', Guia: 'Guía telefónica',
 };
 
 export default function App() {
@@ -1417,6 +1419,7 @@ export default function App() {
             <SidebarItem icon={Zap} label="Auditoría Rápida" active={activeTab === 'Rapida'} onClick={() => setActiveTab('Rapida')} />
             <SidebarItem icon={Hash} label="Códigos" active={activeTab === 'Códigos'} onClick={() => setActiveTab('Códigos')} />
             <SidebarItem icon={PackageSearch} label="Matriculador" active={activeTab === 'Matriculador'} onClick={() => setActiveTab('Matriculador')} />
+            <SidebarItem icon={BookUser} label="Guía telefónica" active={activeTab === 'Guia'} onClick={() => setActiveTab('Guia')} />
             <SidebarItem icon={Stamp} label="Autorizaciones PIMyS" active={activeTab === 'Autorizaciones'} onClick={() => setActiveTab('Autorizaciones')} />
             <SidebarItem icon={ShieldCheck} label="Normativa" active={activeTab === 'Normativa'} onClick={() => setActiveTab('Normativa')} />
           </div>
@@ -1775,6 +1778,8 @@ export default function App() {
 
           {activeTab === 'Matriculador' && <Matriculador />}
 
+          {activeTab === 'Guia' && <GuiaTelefonica />}
+
           {activeTab === 'Historial' && (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
@@ -1828,7 +1833,7 @@ export default function App() {
                   {history.map(entry => (
                     <div 
                       key={entry.id} 
-                      className="bg-superficie border-[0.5px] border-linea p-6 rounded-[12px] flex flex-col sm:flex-row gap-6 sm:items-center justify-between group animate-fade-in caja"
+                      className="bg-superficie border-[0.5px] border-linea p-6 rounded-[12px] flex flex-col sm:flex-row gap-6 sm:items-center justify-between group animate-fade-in caja elevable"
                     >
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">

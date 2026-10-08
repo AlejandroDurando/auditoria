@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, CheckCircle2, Clock, Loader2, Search, Table2, X, XCircle } from 'lucide-react';
+import { AlertCircle, BookUser, CheckCircle2, Clock, Loader2, Phone, Search, Table2, X, XCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
 import type { AuditResult, PaymentData } from '../lib/gemini';
 import type { ExpedienteLector } from '../../api/expedientes';
 import { cargarExpedientes, useExpedientesLector } from '../lib/expedientesLector';
+import { buscarEnGuia, cargarGuia, useGuia } from '../lib/guia';
+import { irA } from '../lib/navegacion';
 
-// Buscador del encabezado: busca a la vez en los expedientes del lector y en
-// el historial de auditorias del dashboard. Muestra los resultados en una
+// Buscador del encabezado: busca a la vez en los expedientes del lector, en
+// el historial de auditorias del dashboard y en la guia telefonica. Muestra los resultados en una
 // lista desplegable; elegir uno lo abre.
 
 export interface EntradaHistorial {
@@ -38,7 +40,7 @@ function coincide(cabecera: string, pagos: PaymentData[], tokens: string[]): { o
 
 interface Resultado {
   clave: string;
-  tipo: 'lector' | 'historial';
+  tipo: 'lector' | 'historial' | 'guia';
   titulo: string;
   detalle: string;
   estado?: string;
@@ -48,7 +50,8 @@ interface Resultado {
 
 const MAXIMO = 30;
 
-function Icono({ estado }: { estado?: string }) {
+function Icono({ estado, tipo }: { estado?: string; tipo: Resultado['tipo'] }) {
+  if (tipo === 'guia') return <Phone className="w-4 h-4 text-acento shrink-0" />;
   const e = (estado || '').toUpperCase();
   if (e === 'OK') return <CheckCircle2 className="w-4 h-4 text-ok-tinta shrink-0" />;
   if (e === 'ERROR') return <XCircle className="w-4 h-4 text-error shrink-0" />;
@@ -68,6 +71,7 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
   const caja = useRef<HTMLDivElement>(null);
   const lista = useRef<HTMLDivElement>(null);
   const { clave, expedientes, cargando } = useExpedientesLector();
+  const { guia } = useGuia();
   const esMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
   // ⌘K / Ctrl+K desde cualquier lugar.
@@ -93,7 +97,7 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
   const tokens = useMemo(() => palabras(consulta), [consulta]);
 
   const grupos = useMemo(() => {
-    if (!tokens.length) return { lector: [] as Resultado[], historial: [] as Resultado[], totalLector: 0, totalHistorial: 0 };
+    if (!tokens.length) return { lector: [] as Resultado[], historial: [] as Resultado[], guia: [] as Resultado[], totalLector: 0, totalHistorial: 0, totalGuia: 0 };
     const deLector: Array<Resultado & { orden: number }> = [];
     for (const e of expedientes || []) {
       const cabecera = normalizar([
@@ -129,13 +133,29 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
         abrir: () => onAbrirHistorial(h),
       });
     }
+    // Guia telefonica: solo coincidencias exactas; la seccion busca parecidos.
+    const deGuia: Resultado[] = [];
+    const enGuia = guia ? buscarEnGuia(guia, consulta) : null;
+    if (enGuia && !enGuia.aproximada) {
+      for (const r of enGuia.resultados) {
+        const c = r.contacto;
+        const nombres = c.agentes.filter((_, i) => r.agentes.has(i));
+        deGuia.push({
+          clave: `g-${r.indice}`, tipo: 'guia',
+          titulo: (nombres.length ? nombres : c.agentes).join(' · ') || c.sector,
+          detalle: [c.interno && `Interno ${c.interno}`, c.directo && `Directo ${c.directo}`, `${c.sector} · ${c.zona}`].filter(Boolean).join(' · '),
+          abrir: () => irA('guia', consulta.trim()),
+        });
+      }
+    }
     return {
       lector: deLector.slice(0, MAXIMO), totalLector: deLector.length,
       historial: deHistorial.slice(0, MAXIMO), totalHistorial: deHistorial.length,
+      guia: deGuia.slice(0, 8), totalGuia: deGuia.length,
     };
-  }, [tokens, expedientes, historial, onAbrirLector, onAbrirHistorial]);
+  }, [tokens, consulta, expedientes, historial, guia, onAbrirLector, onAbrirHistorial]);
 
-  const todos = [...grupos.lector, ...grupos.historial];
+  const todos = [...grupos.lector, ...grupos.historial, ...grupos.guia];
   useEffect(() => { setMarcado(0); }, [consulta]);
   useEffect(() => {
     lista.current?.querySelector<HTMLElement>(`[data-indice="${marcado}"]`)?.scrollIntoView({ block: 'nearest' });
@@ -173,7 +193,7 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
         indice === marcado && "bg-marca-suave"
       )}
     >
-      <span className="mt-0.5"><Icono estado={r.estado} /></span>
+      <span className="mt-0.5"><Icono estado={r.estado} tipo={r.tipo} /></span>
       <span className="min-w-0 flex-1">
         <span className="block text-[13px] font-medium text-tinta truncate">{r.titulo}</span>
         <span className="block text-[11.5px] text-tenue truncate">{r.detalle}</span>
@@ -206,9 +226,9 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
         type="search"
         value={consulta}
         onChange={e => { setConsulta(e.target.value); setAbierto(true); }}
-        onFocus={() => { setAbierto(true); if (clave) cargarExpedientes(); }}
+        onFocus={() => { setAbierto(true); if (clave) { cargarExpedientes(); cargarGuia(); } }}
         onKeyDown={alTeclear}
-        placeholder="Buscar expediente, FF, agencia, proveedor o PIMyS"
+        placeholder="Buscar expediente, FF, proveedor, PIMyS o persona"
         aria-label="Buscar en todos los expedientes"
         className="w-full h-9 bg-hundida border border-linea-fuerte rounded-[9px] pl-9 pr-16 text-[13px] text-tinta placeholder:text-tenue outline-none transition-all focus:bg-campo focus:border-acento focus:ring-[3px] focus:ring-acento/15 [&::-webkit-search-cancel-button]:hidden"
       />
@@ -239,6 +259,12 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
               {grupos.historial.map((r, i) => fila(r, grupos.lector.length + i))}
             </>
           )}
+          {grupos.guia.length > 0 && (
+            <>
+              {encabezado(<BookUser className="w-3.5 h-3.5" />, 'Guía telefónica', grupos.totalGuia, grupos.guia.length)}
+              {grupos.guia.map((r, i) => fila(r, grupos.lector.length + grupos.historial.length + i))}
+            </>
+          )}
           {!todos.length && !cargando && (
             <p className="px-3 py-6 text-center text-[13px] text-tenue">No hay resultados para "{consulta}".</p>
           )}
@@ -249,7 +275,7 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
           )}
           {!clave && (
             <p className="px-3 py-2 text-[11.5px] text-tenue border-t border-linea mt-1">
-              Para buscar también en los expedientes del lector, ingresá la clave en "Expedientes del lector".
+              Para buscar también en los expedientes del lector y en la guía telefónica, ingresá la clave en "Expedientes del lector".
             </p>
           )}
         </div>

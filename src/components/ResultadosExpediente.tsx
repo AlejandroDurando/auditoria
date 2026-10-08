@@ -222,7 +222,7 @@ export function ResultadosExpediente({
                 </p>
               </div>
             ) : (
-              <div className="bg-superficie p-6 rounded-[12px] border-[0.5px] border-linea flex flex-col justify-between gap-4 transition-all hover: caja">
+              <div className="bg-superficie p-6 rounded-[12px] border-[0.5px] border-linea flex flex-col justify-between gap-4 transition-all caja">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Estado General</p>
                 <div className={cn(
                   "inline-flex items-center justify-center font-bold w-fit",
@@ -716,7 +716,7 @@ function ValidacionesExpediente({ validaciones }: { validaciones: ValidationResu
           <p className="text-xs text-tenue mt-0.5">Controles que no se muestran en el Balance de Inversión.</p>
         </div>
       </div>
-      <div className="p-6 @2xl:p-8 flex flex-col gap-6">
+      <div className="p-6 @2xl:p-8 flex flex-col gap-3 bg-hundida/40">
         {validaciones.map((v) => (
           <ValidacionItem key={v.id} id={v.id} title={v.title || v.id.toUpperCase()} status={v.status} observations={v.observations} />
         ))}
@@ -734,15 +734,21 @@ function ValidacionItem({ id, title, status, observations, accion }: {
   key?: React.Key;
 }) {
   return (
-    <div className="flex gap-4 items-start pb-6 border-b-[0.5px] border-linea last:border-0 last:pb-0">
-      <div className="mt-1 shrink-0 bg-superficie p-1 rounded-full shadow-none border-[0.5px] border-linea">
+    <div className={cn(
+      "flex gap-3.5 items-start p-4 @2xl:p-5 rounded-[10px] bg-superficie border-[0.5px] border-linea border-l-[3px] caja elevable",
+      status === 'pass' ? "border-l-emerald-500" : status === 'fail' ? "border-l-error-acento" : "border-l-amber-400"
+    )}>
+      <div className={cn(
+        "mt-0.5 shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
+        status === 'pass' ? "bg-ok-fondo" : status === 'fail' ? "bg-error-fondo" : "bg-amber-50"
+      )}>
         <StatusIcon status={status} />
       </div>
-      <div className="flex-1">
-        <div className="flex flex-col @2xl:flex-row @2xl:items-center @2xl:justify-between gap-3 mb-2">
-          <div className="flex items-center gap-3">
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-col @2xl:flex-row @2xl:items-center @2xl:justify-between gap-2 @2xl:gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
             <span className={cn(
-              "text-[11px] font-medium font-mono px-2 py-0.5 rounded shadow-none border-[0.5px]",
+              "text-[11px] font-medium font-mono px-2 py-0.5 rounded border-[0.5px] shrink-0",
               status === 'pass' ? "bg-ok-fondo text-ok-tinta border-ok-linea" :
               status === 'fail' ? "bg-error-fondo text-error border-error-linea" :
               "bg-amber-50 text-amber-800 border-amber-200"
@@ -754,10 +760,10 @@ function ValidacionItem({ id, title, status, observations, accion }: {
           {accion}
         </div>
         <p className={cn(
-          "text-[13px] leading-relaxed mt-1.5 p-3.5 rounded-[8px] bg-superficie border-[0.5px] border-linea shadow-none border-l-2",
-          status === 'pass' ? "border-l-emerald-500 text-slate-600" :
-          status === 'fail' ? "border-l-error-acento text-slate-800" :
-          "border-l-amber-400 text-slate-600 italic"
+          "text-[13px] leading-relaxed mt-2.5 px-3.5 py-2.5 rounded-[8px] bg-hundida/60",
+          status === 'pass' ? "text-slate-600" :
+          status === 'fail' ? "text-slate-800" :
+          "text-slate-700 italic"
         )}>
           {(observations || 'Dato no analizado por la IA.').split('\n').map((line, li, arr) => (
             <React.Fragment key={li}>
@@ -896,13 +902,13 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
     <div 
       ref={rowRef} 
       className={cn(
-        "bg-superficie border-[0.5px] border-linea mb-4 last:mb-0 overflow-hidden transition-all shadow-none",
+        "bg-superficie border-[0.5px] border-linea mb-4 last:mb-0 overflow-hidden caja elevable-cabecera",
         errorCnt > 0 ? "border-l-3 border-l-error-acento rounded-r-[8px] rounded-l-none" : "rounded-[8px]"
       )}
     >
       <div 
         onClick={onToggle}
-        className="grid grid-cols-2 @3xl:grid-cols-[75px_1.5fr_1fr_220px_24px] gap-x-4 gap-y-2 items-center p-[11px_14px] cursor-pointer selection:bg-transparent select-none"
+        className="cabecera grid grid-cols-2 @3xl:grid-cols-[75px_1.5fr_1fr_220px_24px] gap-x-4 gap-y-2 items-center p-[11px_14px] cursor-pointer selection:bg-transparent select-none"
       >
         <div className="flex flex-col">
           <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">PIMyS N°</span>
@@ -954,59 +960,32 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
             className="border-t-[0.5px] border-linea bg-hundida/40"
           >
             <div className="p-6 @2xl:p-8">
-              <h4 className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-6">Detalle de Validaciones</h4>
-              <div className="flex flex-col gap-6">
+              <h4 className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-4">Detalle de Validaciones</h4>
+              <div className="flex flex-col gap-3">
                 {currentValidations.map((v) => {
                   const res = validationsList.find(rv => rv && rv.id && rv.id.toLowerCase() === v.id.toLowerCase());
                   const status = (res?.status as any) || 'warning';
                   
                   return (
-                    <div key={v.id} className="flex gap-4 items-start pb-6 border-b-[0.5px] border-linea last:border-0 last:pb-0">
-                      <div className="mt-1 shrink-0 bg-superficie p-1 rounded-full shadow-none border-[0.5px] border-linea">
-                        <StatusIcon status={status} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex flex-col @2xl:flex-row @2xl:items-center @2xl:justify-between gap-3 mb-2">
-                          <div className="flex items-center gap-3">
-                            <span className={cn(
-                              "text-[11px] font-medium font-mono px-2 py-0.5 rounded shadow-none border-[0.5px]",
-                              status === 'pass' ? "bg-ok-fondo text-ok-tinta border-ok-linea" :
-                              status === 'fail' ? "bg-error-fondo text-error border-error-linea" :
-                              "bg-amber-50 text-amber-800 border-amber-200"
-                            )}>
-                              {v.label}
-                            </span>
-                            <span className="text-[14px] font-medium text-slate-900 tracking-tight">{v.title}</span>
-                          </div>
-                          
-                          {payment.pageNumber && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onViewPdf?.(payment.sourceFileIdx || 0, payment.pageNumber);
-                              }}
-                              className="self-start @2xl:self-auto p-1.5 text-slate-500 hover:text-acento hover:bg-marca-suave rounded-lg border-[0.5px] border-linea transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
-                              title="ver pdf"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                        <p className={cn(
-                          "text-[13px] leading-relaxed mt-1.5 p-3.5 rounded-[8px] bg-superficie border-[0.5px] border-linea shadow-none border-l-2",
-                          status === 'pass' ? "border-l-emerald-500 text-slate-600" :
-                          status === 'fail' ? "border-l-error-acento text-slate-800" :
-                          "border-l-amber-400 text-slate-600 italic"
-                        )}>
-                          {(res?.observations || 'Dato no analizado por la IA.').split('\n').map((line, li, arr) => (
-                            <React.Fragment key={li}>
-                              {renderBold(line)}
-                              {li < arr.length - 1 && <br />}
-                            </React.Fragment>
-                          ))}
-                        </p>
-                      </div>
-                    </div>
+                    <ValidacionItem
+                      key={v.id}
+                      id={v.label}
+                      title={v.title}
+                      status={status}
+                      observations={res?.observations}
+                      accion={payment.pageNumber ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewPdf?.(payment.sourceFileIdx || 0, payment.pageNumber);
+                          }}
+                          className="self-start @2xl:self-auto p-1.5 text-slate-500 hover:text-acento hover:bg-marca-suave rounded-lg border-[0.5px] border-linea transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
+                          title="ver pdf"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                      ) : undefined}
+                    />
                   );
                 })}
               </div>

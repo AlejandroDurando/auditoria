@@ -161,17 +161,15 @@ export function InteractiveNormativa() {
                       return (
                         <div 
                           key={art.numero}
-                          className={`bg-superficie border rounded-[10px] transition-all overflow-hidden ${
-                            art.destacado 
-                              ? 'border-acento/40 shadow-xs' 
-                              : 'border-linea'
+                          className={`bg-superficie border rounded-[10px] overflow-hidden caja elevable-cabecera ${
+                            art.destacado ? 'border-acento/40' : 'border-linea'
                           }`}
                         >
                           <button
                             type="button"
                             onClick={() => toggleArticle(selectedDisp.id, art.numero)}
-                            className={`w-full flex items-center justify-between p-4 text-left outline-none cursor-pointer transition-colors ${
-                              art.destacado ? 'bg-marca/5 hover:bg-marca/10' : 'hover:bg-realce'
+                            className={`cabecera w-full flex items-center justify-between p-4 text-left outline-none cursor-pointer ${
+                              art.destacado ? 'bg-marca/5' : ''
                             }`}
                           >
                             <div className="flex items-center gap-3">

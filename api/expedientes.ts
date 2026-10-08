@@ -14,6 +14,7 @@
 // GET /api/expedientes            -> { expedientes }
 // GET /api/expedientes?pdf=<clave> -> { url } firmada, vence en PDF_VENCE segundos
 // GET /api/expedientes?catalogo=1 -> catalogo de matriculas (Matriculador)
+// GET /api/expedientes?catalogo=guia -> guia telefonica interna
 
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { AwsClient } from 'aws4fetch';
@@ -435,19 +436,24 @@ async function urlFirmada(clave: string): Promise<string | null> {
   return firmado.url;
 }
 
-// ─── Catálogo de matrículas (Matriculador) ────────────────────────────────────
-// Lo arma y lo sube a R2 el lector (matriculas.py). Pesa unos 270 KB: se
-// devuelve entero y la busqueda se hace en el navegador.
-const CLAVE_CATALOGO = 'catalogo/matriculas.json';
+// ─── Catálogos (Matriculador y guía telefónica) ───────────────────────────────
+// Los arma y los sube a R2 el lector (matriculas.py, guia.py): este repo es
+// publico y esos datos no van aca. Se devuelven enteros y la busqueda se hace
+// en el navegador.
+const CATALOGOS: Record<string, { clave: string; nombre: string; comando: string }> = {
+  matriculas: { clave: 'catalogo/matriculas.json', nombre: 'el catálogo de matrículas', comando: 'python3 matriculas.py' },
+  guia: { clave: 'catalogo/guia.json', nombre: 'la guía telefónica', comando: 'python3 guia.py' },
+};
 
-async function catalogoMatriculas(): Promise<{ estado: number; cuerpo: string }> {
+async function leerCatalogo(nombre: string): Promise<{ estado: number; cuerpo: string }> {
+  const catalogo = CATALOGOS[nombre] ?? CATALOGOS.matriculas;
   const cfg = r2();
   if (!cfg) return { estado: 500, cuerpo: JSON.stringify({ error: 'Falta configurar R2.' }) };
-  const r = await cfg.cliente.fetch(`${cfg.base}/${rutaR2(CLAVE_CATALOGO)}`);
+  const r = await cfg.cliente.fetch(`${cfg.base}/${rutaR2(catalogo.clave)}`);
   if (r.status === 404) {
-    return { estado: 404, cuerpo: JSON.stringify({ error: 'Todavía no se subió el catálogo de matrículas (python3 matriculas.py en el lector).' }) };
+    return { estado: 404, cuerpo: JSON.stringify({ error: `Todavía no se subió ${catalogo.nombre} (${catalogo.comando} en el lector).` }) };
   }
-  if (!r.ok) return { estado: 502, cuerpo: JSON.stringify({ error: 'No se pudo leer el catálogo de matrículas.' }) };
+  if (!r.ok) return { estado: 502, cuerpo: JSON.stringify({ error: `No se pudo leer ${catalogo.nombre}.` }) };
   return { estado: 200, cuerpo: await r.text() };
 }
 
@@ -476,13 +482,13 @@ export default async function handler(req: any, res: any) {
   }
   if (req.query?.catalogo !== undefined) {
     try {
-      const { estado, cuerpo } = await catalogoMatriculas();
+      const { estado, cuerpo } = await leerCatalogo(String(req.query.catalogo));
       if (estado === 200) res.setHeader('Cache-Control', 'private, max-age=600');
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.status(estado).send(cuerpo);
     } catch (e) {
       console.error(e);
-      res.status(502).json({ error: 'No se pudo leer el catálogo de matrículas.' });
+      res.status(502).json({ error: 'No se pudo leer el catálogo.' });
     }
     return;
   }

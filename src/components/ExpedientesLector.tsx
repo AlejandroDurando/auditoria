@@ -357,11 +357,11 @@ export function ExpedientesLector() {
             const errores = cuenta('ERROR');
             const revisar = g.items.length - errores - cuenta('OK');
             return (
-            <div key={g.titulo} className="bg-superficie border-[0.5px] border-linea rounded-[12px] overflow-hidden caja">
+            <div key={g.titulo} className="bg-superficie border-[0.5px] border-linea rounded-[12px] overflow-hidden caja elevable-cabecera">
               <button
                 type="button"
                 onClick={() => alternar(g.titulo)}
-                className="w-full flex flex-wrap items-center justify-between gap-2 px-5 py-4 bg-transparent border-none cursor-pointer outline-none text-left hover:bg-realce transition-all"
+                className="cabecera w-full flex flex-wrap items-center justify-between gap-2 px-5 py-4 bg-transparent border-none cursor-pointer outline-none text-left"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <ChevronRight className={cn("w-4 h-4 text-tenue transition-transform duration-200", abierta && "rotate-90")} />
@@ -381,7 +381,7 @@ export function ExpedientesLector() {
                     key={e.id}
                     type="button"
                     onClick={() => irA('lector', e.id)}
-                    className="w-full text-left bg-lienzo/45 border-[0.5px] border-linea p-4 sm:px-5 rounded-[10px] flex flex-col sm:flex-row gap-4 sm:items-center justify-between hover:bg-superficie hover:border-linea-fuerte transition-all cursor-pointer outline-none caja"
+                    className="w-full text-left bg-lienzo/45 border-[0.5px] border-linea p-4 sm:px-5 rounded-[10px] flex flex-col sm:flex-row gap-4 sm:items-center justify-between hover:bg-superficie hover:border-linea-fuerte cursor-pointer outline-none caja elevable"
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <EstadoChip estado={e.estado} />

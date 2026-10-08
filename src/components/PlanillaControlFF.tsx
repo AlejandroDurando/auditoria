@@ -197,17 +197,17 @@ export function PlanillaControlFF({ initialData }: Props) {
       <div className="max-w-2xl">
         {/* Header sección */}
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
-            <Zap className="w-6 h-6 text-[#004741]" />
+          <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center caja">
+            <Zap className="w-6 h-6 text-acento" />
           </div>
           <div>
             <h2 className="text-xl font-medium tracking-tight text-slate-900">Planilla control</h2>
-            <p className="text-xs text-[#9A9890] mt-0.5">Vista previa generada.</p>
+            <p className="text-xs text-tenue mt-0.5">Vista previa generada.</p>
           </div>
         </div>
 
         {/* Card planilla */}
-        <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-[28px_32px] max-w-[560px]">
+        <div className="papel bg-superficie border-[0.5px] border-linea rounded-[12px] p-[28px_32px] max-w-[560px] caja">
           {/* Header — logo EPE igual que Planilla Revisiva */}
           <div className="border border-black grid items-stretch text-[9px] mb-5" style={{ gridTemplateColumns: '160px 1fr' }}>
             <div className="p-2 flex items-center justify-center border-r border-black">
@@ -224,12 +224,12 @@ export function PlanillaControlFF({ initialData }: Props) {
           </div>
 
           {/* Título */}
-          <p className="text-center text-[12px] font-bold uppercase tracking-wide text-[#1A1A1A] mb-4">
+          <p className="text-center text-[12px] font-bold uppercase tracking-wide text-tinta mb-4">
             Planilla Control Fondo Fijo
           </p>
 
           {/* Grilla metadata */}
-          <div className="border-[0.5px] border-[#E8E6DE] rounded-[8px] overflow-hidden mb-5">
+          <div className="border-[0.5px] border-linea rounded-[8px] overflow-hidden mb-5">
             {[
               { label: 'Sector', value: meta.sector },
               { label: 'N.º de expediente', value: meta.expediente },
@@ -238,40 +238,40 @@ export function PlanillaControlFF({ initialData }: Props) {
             ].map((row, i, arr) => (
               <div
                 key={row.label}
-                className={cn('grid items-stretch', i < arr.length - 1 && 'border-b-[0.5px] border-[#E8E6DE]')}
+                className={cn('grid items-stretch', i < arr.length - 1 && 'border-b-[0.5px] border-linea')}
                 style={{ gridTemplateColumns: '160px 1fr' }}
               >
-                <div className="bg-[#E8E4D8] px-3 py-2.5 flex items-center">
-                  <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">{row.label}</span>
+                <div className="bg-hundida px-3 py-2.5 flex items-center">
+                  <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">{row.label}</span>
                 </div>
-                <div className="bg-[#F2EFE6] px-3 py-2.5 flex items-center border-l-[0.5px] border-[#E8E6DE]">
-                  <span className="text-[13px] font-medium text-[#1A1A1A]">{row.value || '—'}</span>
+                <div className="bg-superficie px-3 py-2.5 flex items-center border-l-[0.5px] border-linea">
+                  <span className="text-[13px] font-medium text-tinta">{row.value || '—'}</span>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Tabla observaciones */}
-          <p className="text-[13px] font-medium text-[#1A1A1A] mb-2">Observaciones</p>
+          <p className="text-[13px] font-medium text-tinta mb-2">Observaciones</p>
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-[#E8E4D8] border-[0.5px] border-[#E8E6DE]">
-                <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890] px-3 py-2 w-[140px]">
+              <tr className="bg-hundida border-[0.5px] border-linea">
+                <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-tenue px-3 py-2 w-[140px]">
                   N.º de orden
                 </th>
-                <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890] px-3 py-2">
+                <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-tenue px-3 py-2">
                   Observaciones
                 </th>
               </tr>
             </thead>
-            <tbody className="border-[0.5px] border-[#E8E6DE] border-t-0">
+            <tbody className="border-[0.5px] border-linea border-t-0">
               {filas.map((fila, i) => (
-                <tr key={fila.id} className={cn(i < filas.length - 1 && 'border-b-[0.5px] border-[#EEECE5]')}>
-                  <td className="px-3 py-2.5 text-[13px] font-medium text-[#004741] w-[140px]">
-                    {fila.orden || <span className="text-[#C8C6BE]">—</span>}
+                <tr key={fila.id} className={cn(i < filas.length - 1 && 'border-b-[0.5px] border-linea')}>
+                  <td className="px-3 py-2.5 text-[13px] font-medium text-acento w-[140px]">
+                    {fila.orden || <span className="text-tenue-2">—</span>}
                   </td>
-                  <td className="px-3 py-2.5 text-[13px] text-[#1A1A1A]">
-                    {fila.observacion || <span className="text-[#C8C6BE]">—</span>}
+                  <td className="px-3 py-2.5 text-[13px] text-tinta">
+                    {fila.observacion || <span className="text-tenue-2">—</span>}
                   </td>
                 </tr>
               ))}
@@ -279,11 +279,11 @@ export function PlanillaControlFF({ initialData }: Props) {
           </table>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-3.5 mt-5 border-t-[0.5px] border-[#EEECE5]">
-            <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">
+          <div className="flex items-center justify-between pt-3.5 mt-5 border-t-[0.5px] border-linea">
+            <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">
               Coordinación Rendición de Cuentas
             </span>
-            <span className="text-[11px] text-[#9A9890]">
+            <span className="text-[11px] text-tenue">
               Fecha: {formatFecha(meta.fecha)}
             </span>
           </div>
@@ -294,7 +294,7 @@ export function PlanillaControlFF({ initialData }: Props) {
           <button
             type="button"
             onClick={() => setVista('formulario')}
-            className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium text-[#004741] bg-[#F2EFE6] border-[0.5px] border-[#D3D1C7] rounded-[8px] cursor-pointer hover:bg-[#E8E4D8] transition-colors outline-none"
+            className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium text-acento bg-superficie border-[0.5px] border-linea-fuerte rounded-[8px] cursor-pointer hover:bg-hundida transition-colors outline-none"
           >
             <Pencil className="w-3.5 h-3.5" />
             Editar
@@ -302,7 +302,7 @@ export function PlanillaControlFF({ initialData }: Props) {
           <button
             type="button"
             onClick={() => descargarPDF(meta, filas)}
-            className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium text-white bg-[#004741] border-[0.5px] border-[#004741] rounded-[8px] cursor-pointer hover:bg-[#0a5c47] transition-colors outline-none"
+            className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium text-white bg-marca border-[0.5px] border-acento rounded-[8px] cursor-pointer hover:bg-marca-hover transition-colors outline-none"
           >
             <Download className="w-3.5 h-3.5" />
             Descargar
@@ -318,25 +318,25 @@ export function PlanillaControlFF({ initialData }: Props) {
       {/* Header sección */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
-            <Zap className="w-6 h-6 text-[#004741]" />
+          <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center caja">
+            <Zap className="w-6 h-6 text-acento" />
           </div>
           <div>
             <h2 className="text-xl font-medium tracking-tight text-slate-900">Planilla control</h2>
-            <p className="text-xs text-[#9A9890] mt-0.5">Generá y completá la planilla de control de Fondo Fijo.</p>
+            <p className="text-xs text-tenue mt-0.5">Generá y completá la planilla de control de Fondo Fijo.</p>
           </div>
         </div>
         <button
           type="button"
           onClick={reset}
-          className="px-4 py-2 text-[13px] font-medium text-white bg-[#004741] rounded-[8px] cursor-pointer hover:bg-[#0a5c47] transition-colors outline-none border-none"
+          className="px-4 py-2 text-[13px] font-medium text-white bg-marca rounded-[8px] cursor-pointer hover:bg-marca-hover transition-colors outline-none border-none"
         >
           Nueva planilla
         </button>
       </div>
 
       {/* Card formulario */}
-      <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-[20px_24px]">
+      <div className="bg-superficie border-[0.5px] border-linea rounded-[12px] p-[20px_24px] caja">
         {/* Metadata grid */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           {(
@@ -348,42 +348,42 @@ export function PlanillaControlFF({ initialData }: Props) {
             ] as { campo: keyof Metadata; label: string; type: string }[]
           ).map(({ campo, label, type }) => (
             <div key={campo} className="flex flex-col gap-1">
-              <label className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">
+              <label className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">
                 {label}
               </label>
               <input
                 type={type}
                 value={meta[campo]}
                 onChange={e => actualizarMeta(campo, e.target.value)}
-                className="border-[0.5px] border-[#E8E6DE] rounded-[6px] px-3 py-2 text-[13px] text-[#1A1A1A] outline-none focus:border-[#004741] transition-colors bg-[#E8E4D8] focus:bg-[#F2EFE6]"
+                className="border-[0.5px] border-linea rounded-[6px] px-3 py-2 text-[13px] text-tinta outline-none focus:border-acento transition-colors bg-hundida focus:bg-superficie"
               />
             </div>
           ))}
         </div>
 
         {/* Tabla observaciones */}
-        <p className="text-[13px] font-medium text-[#1A1A1A] mb-2">Observaciones</p>
+        <p className="text-[13px] font-medium text-tinta mb-2">Observaciones</p>
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-[#E8E4D8]" style={{ border: '0.5px solid #E8E6DE' }}>
-              <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890] px-3 py-2 w-[140px]">
+            <tr className="bg-hundida" style={{ border: '0.5px solid #E8E6DE' }}>
+              <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-tenue px-3 py-2 w-[140px]">
                 N.º de orden
               </th>
-              <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890] px-3 py-2">
+              <th className="text-left text-[10px] font-medium uppercase tracking-[0.06em] text-tenue px-3 py-2">
                 Observaciones
               </th>
             </tr>
           </thead>
           <tbody style={{ border: '0.5px solid #E8E6DE', borderTop: 'none' }}>
             {filas.map((fila, i) => (
-              <tr key={fila.id} className={cn(i < filas.length - 1 && 'border-b-[0.5px] border-[#EEECE5]')}>
+              <tr key={fila.id} className={cn(i < filas.length - 1 && 'border-b-[0.5px] border-linea')}>
                 <td className="px-3 py-1.5 w-[140px]">
                   <input
                     type="text"
                     value={fila.orden}
                     onChange={e => actualizarFila(fila.id, 'orden', e.target.value)}
                     placeholder="—"
-                    className="w-full text-[13px] font-medium text-[#004741] outline-none bg-transparent placeholder:text-[#C8C6BE]"
+                    className="w-full text-[13px] font-medium text-acento outline-none bg-transparent placeholder:text-tenue-2"
                   />
                 </td>
                 <td className="px-3 py-1.5">
@@ -392,7 +392,7 @@ export function PlanillaControlFF({ initialData }: Props) {
                     value={fila.observacion}
                     onChange={e => actualizarFila(fila.id, 'observacion', e.target.value)}
                     placeholder="Escribí una observación..."
-                    className="w-full text-[13px] text-[#1A1A1A] outline-none bg-transparent placeholder:text-[#C8C6BE]"
+                    className="w-full text-[13px] text-tinta outline-none bg-transparent placeholder:text-tenue-2"
                   />
                 </td>
               </tr>
@@ -404,7 +404,7 @@ export function PlanillaControlFF({ initialData }: Props) {
         <button
           type="button"
           onClick={agregarFila}
-          className="flex items-center gap-1 mt-3 text-[13px] font-medium text-[#004741] bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity outline-none p-0"
+          className="flex items-center gap-1 mt-3 text-[13px] font-medium text-acento bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity outline-none p-0"
         >
           <Plus className="w-3.5 h-3.5" />
           Agregar fila
@@ -414,7 +414,7 @@ export function PlanillaControlFF({ initialData }: Props) {
         <button
           type="button"
           onClick={() => setVista('preview')}
-          className="w-full mt-6 py-[10px] text-[13px] font-medium text-white bg-[#004741] rounded-[8px] cursor-pointer hover:bg-[#0a5c47] transition-colors outline-none border-none"
+          className="w-full mt-6 py-[10px] text-[13px] font-medium text-white bg-marca rounded-[8px] cursor-pointer hover:bg-marca-hover transition-colors outline-none border-none"
         >
           Generar planilla
         </button>

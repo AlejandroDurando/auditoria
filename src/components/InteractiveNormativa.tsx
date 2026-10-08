@@ -70,15 +70,15 @@ export function InteractiveNormativa() {
   return (
     <div className="space-y-6">
       {/* Tab Switcher & Interactive Header */}
-      <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] p-4 rounded-[12px] flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex p-[3px] bg-[#EEECE5] rounded-[8px] gap-[2px] w-fit select-none items-center self-start">
+      <div className="bg-superficie border-[0.5px] border-linea p-4 rounded-[12px] flex flex-col md:flex-row md:items-center justify-between gap-4 caja">
+        <div className="flex p-[3px] bg-hundida rounded-[8px] gap-[2px] w-fit select-none items-center self-start">
           <button
             type="button"
             onClick={() => setSubTab('disposiciones')}
             className={`transition-all duration-200 outline-none cursor-pointer text-xs py-1.5 px-4 whitespace-nowrap border-none leading-none ${
               subTab === 'disposiciones' 
-                ? "bg-[#F2EFE6] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
-                : "bg-transparent text-[#6B6A65] font-normal hover:text-slate-800"
+                ? "bg-superficie border-[0.5px] border-linea rounded-[6px] text-acento font-medium shadow-none"
+                : "bg-transparent text-tinta-2 font-normal hover:text-slate-800"
             }`}
           >
             <span className="flex items-center gap-1.5">
@@ -91,8 +91,8 @@ export function InteractiveNormativa() {
             onClick={() => setSubTab('fondos')}
             className={`transition-all duration-200 outline-none cursor-pointer text-xs py-1.5 px-4 whitespace-nowrap border-none leading-none ${
               subTab === 'fondos' 
-                ? "bg-[#F2EFE6] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
-                : "bg-transparent text-[#6B6A65] font-normal hover:text-slate-800"
+                ? "bg-superficie border-[0.5px] border-linea rounded-[6px] text-acento font-medium shadow-none"
+                : "bg-transparent text-tinta-2 font-normal hover:text-slate-800"
             }`}
           >
             <span className="flex items-center gap-1.5">
@@ -104,14 +104,14 @@ export function InteractiveNormativa() {
 
         {subTab === 'disposiciones' && (
           <div className="flex items-center gap-3">
-            <div className="flex bg-[#EEECE5]/60 rounded-lg p-0.5 border border-[#E8E6DE]">
+            <div className="flex bg-hundida/60 rounded-lg p-0.5 border border-linea">
               {DISPOSICIONES.map(disp => (
                 <button
                   key={disp.id}
                   onClick={() => setSelectedDispId(disp.id)}
                   className={`px-3 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
                     selectedDispId === disp.id 
-                      ? 'bg-[#F2EFE6] text-slate-900 shadow-sm' 
+                      ? 'bg-superficie text-slate-900 shadow-sm' 
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -124,8 +124,8 @@ export function InteractiveNormativa() {
               onClick={() => setShowOriginalDocumentMock(!showOriginalDocumentMock)}
               className={`inline-flex items-center gap-1.5 py-1 px-3 border rounded-[6px] text-xs font-semibold select-none transition-all cursor-pointer outline-none ${
                 showOriginalDocumentMock
-                  ? 'bg-[#D4E8E6] border-[#BFEDDB] text-[#003330]'
-                  : 'bg-[#F2EFE6] border-[#D3D1C7] text-slate-700 hover:bg-[#E5E1D5]'
+                  ? 'bg-ok-fondo border-ok-linea text-ok-tinta'
+                  : 'bg-superficie border-linea-fuerte text-slate-700 hover:bg-realce'
               }`}
               title="Alternar entre la vista analítica limpia y el facsímil oficial del documento"
             >
@@ -161,24 +161,24 @@ export function InteractiveNormativa() {
                       return (
                         <div 
                           key={art.numero}
-                          className={`bg-[#F2EFE6] border rounded-[10px] transition-all overflow-hidden ${
+                          className={`bg-superficie border rounded-[10px] transition-all overflow-hidden ${
                             art.destacado 
-                              ? 'border-[#004741]/40 shadow-xs' 
-                              : 'border-[#E8E6DE]'
+                              ? 'border-acento/40 shadow-xs' 
+                              : 'border-linea'
                           }`}
                         >
                           <button
                             type="button"
                             onClick={() => toggleArticle(selectedDisp.id, art.numero)}
                             className={`w-full flex items-center justify-between p-4 text-left outline-none cursor-pointer transition-colors ${
-                              art.destacado ? 'bg-[#004741]/5 hover:bg-[#004741]/10' : 'hover:bg-[#E5E1D5]'
+                              art.destacado ? 'bg-marca/5 hover:bg-marca/10' : 'hover:bg-realce'
                             }`}
                           >
                             <div className="flex items-center gap-3">
                               <span className={`px-2.5 py-1 text-xs font-bold rounded-md ${
                                 art.destacado 
-                                  ? 'bg-[#004741] text-white' 
-                                  : 'bg-[#DED9CC] text-slate-700'
+                                  ? 'bg-marca text-white' 
+                                  : 'bg-hundida-2 text-slate-700'
                               }`}>
                                 {art.numero}
                               </span>
@@ -207,7 +207,7 @@ export function InteractiveNormativa() {
                                 exit={{ height: 0, opacity: 0 }}
                                 transition={{ duration: 0.15 }}
                               >
-                                <div className="p-4 border-t border-slate-100 bg-[#F2EFE6] space-y-3">
+                                <div className="p-4 border-t border-slate-100 bg-superficie space-y-3">
                                   <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line font-medium">
                                     {art.texto}
                                   </p>
@@ -230,9 +230,9 @@ export function InteractiveNormativa() {
                 </div>
               ) : (
                 /* Original Document Mock View (Vibe of real paper Disposición) */
-                <div className="bg-[#F2EFE6] border-[0.5px] border-[#D3D1C7] rounded-[12px] p-8 md:p-12 shadow-md max-w-2xl mx-auto space-y-8 text-slate-800 font-sans relative overflow-hidden">
+                <div className="bg-superficie border-[0.5px] border-linea-fuerte rounded-[12px] p-8 md:p-12 shadow-md max-w-2xl mx-auto space-y-8 text-slate-800 font-sans relative overflow-hidden">
                   <div className="absolute right-0 top-0 w-24 h-24 overflow-hidden pointer-events-none select-none opacity-10">
-                    <div className="bg-[#004741] text-white text-center text-[10px] font-bold py-1.5 transform rotate-45 translate-x-7 translate-y-4">
+                    <div className="bg-marca text-white text-center text-[10px] font-bold py-1.5 transform rotate-45 translate-x-7 translate-y-4">
                       EPE OFICIAL
                     </div>
                   </div>
@@ -240,7 +240,7 @@ export function InteractiveNormativa() {
                   {/* Document Header */}
                   <div className="flex flex-col items-center border-b border-slate-200 pb-6 text-center space-y-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-10 h-10 rounded-lg bg-[#004741] text-white font-mono font-bold flex items-center justify-center text-lg shadow-inner">
+                      <div className="w-10 h-10 rounded-lg bg-marca text-white font-mono font-bold flex items-center justify-center text-lg shadow-inner">
                         EPE
                       </div>
                       <div className="text-left">
@@ -293,7 +293,7 @@ export function InteractiveNormativa() {
                         ? 'El Gerente de Administración' 
                         : 'El Área Finanzas y Administración'}
                     </p>
-                    <p className="text-xs font-extrabold text-[#004741] mt-1 tracking-widest uppercase">
+                    <p className="text-xs font-extrabold text-acento mt-1 tracking-widest uppercase">
                       Dispone:
                     </p>
                   </div>
@@ -314,7 +314,7 @@ export function InteractiveNormativa() {
 
                   {/* FIRMA DIGITAL / STAMPS */}
                   <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-2 p-2.5 bg-[#FAF9F5] border border-[#E8E6DE] rounded-lg">
+                    <div className="flex items-center gap-2 p-2.5 bg-superficie border border-linea rounded-lg">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                       <span className="text-[10px] text-slate-500 font-medium">Documento transcripto íntegramente con fidelidad absoluta</span>
                     </div>
@@ -357,14 +357,14 @@ export function InteractiveNormativa() {
             {/* Search Input bar */}
             <div className="relative max-w-lg">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-[#9A9890]" aria-hidden="true" />
+                <Search className="h-4 w-4 text-tenue" aria-hidden="true" />
               </div>
               <input
                 type="text"
                 placeholder="Buscar por nombre de agente, legajo, DNI, o nombre de agencia..."
                 value={fondoSearchQuery}
                 onChange={(e) => setFondoSearchQuery(e.target.value)}
-                className="bg-[#F2EFE6] border-[0.5px] border-[#E2E0D8] rounded-[8px] pl-10 pr-10 py-2.5 text-xs w-full focus:outline-none focus:border-[#004741] font-medium text-slate-900 placeholder:text-slate-400 transition-all shadow-none"
+                className="bg-superficie border-[0.5px] border-linea rounded-[8px] pl-10 pr-10 py-2.5 text-xs w-full focus:outline-none focus:border-acento font-medium text-slate-900 placeholder:text-slate-400 transition-all shadow-none"
               />
               {fondoSearchQuery && (
                 <button
@@ -380,11 +380,11 @@ export function InteractiveNormativa() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Fondos List column */}
               <div className="md:col-span-5 space-y-3 max-h-[500px] overflow-y-auto pr-2">
-                <div className="text-xs font-semibold text-slate-500 mb-2 sticky top-0 bg-[#E8E4D8] py-1">
+                <div className="text-xs font-semibold text-slate-500 mb-2 sticky top-0 bg-hundida py-1">
                   Encontrados ({filteredFondos.length})
                 </div>
                 {filteredFondos.length === 0 ? (
-                  <div className="p-8 text-center bg-[#F2EFE6] border border-[#E8E6DE] rounded-xl text-slate-400 text-xs">
+                  <div className="p-8 text-center bg-superficie border border-linea rounded-xl text-slate-400 text-xs caja">
                     Ningún fondo coincide con el filtro.
                   </div>
                 ) : (
@@ -394,15 +394,15 @@ export function InteractiveNormativa() {
                       onClick={() => setSelectedFondoId(fondo.id)}
                       className={`w-full text-left p-3.5 border rounded-xl transition-all cursor-pointer block outline-none ${
                         selectedFondoId === fondo.id 
-                          ? 'bg-[#D4E8E6] border-[#BFEDDB] shadow-xs' 
-                          : 'bg-[#F2EFE6] border-[#E8E6DE] hover:border-slate-300'
+                          ? 'bg-ok-fondo border-ok-linea shadow-xs' 
+                          : 'bg-superficie border-linea hover:border-slate-300'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-150 text-slate-600 rounded">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
                           Nº {fondo.id}
                         </span>
-                        <span className="text-xs font-bold text-[#004741]">
+                        <span className="text-xs font-bold text-acento">
                           {(fondo.monto != null ? formatCurrency(fondo.monto) : 'A definir')}
                         </span>
                       </div>
@@ -414,12 +414,12 @@ export function InteractiveNormativa() {
               </div>
 
               {/* Detail view of the selected Fondo */}
-              <div className="md:col-span-7 bg-[#F2EFE6] border border-[#E8E6DE] rounded-xl p-6 shadow-none">
+              <div className="md:col-span-7 bg-superficie border border-linea rounded-xl p-6 caja">
                 {selectedFondo ? (
                   <div className="space-y-6">
                     <div className="pb-4 border-b border-slate-100 flex justify-between items-start">
                       <div>
-                        <span className="px-2 py-0.5 bg-[#FAF9F5] border border-[#E8E6DE] text-slate-600 text-[10px] font-bold rounded">
+                        <span className="px-2 py-0.5 bg-superficie border border-linea text-slate-600 text-[10px] font-bold rounded">
                           FONDO FIJO Nº {selectedFondo.id}
                         </span>
                         <h3 className="text-base font-bold text-slate-900 mt-2">{selectedFondo.nombre}</h3>
@@ -429,8 +429,8 @@ export function InteractiveNormativa() {
                       </div>
                       <div className="text-right">
                         <span className="text-[10px] text-slate-400 block font-medium uppercase font-mono">Presupuesto Inicial</span>
-                        <span className="text-xl font-bold text-[#004741]">{(selectedFondo.monto != null ? formatCurrency(selectedFondo.monto) : 'A definir')}</span>
-                        <span className="text-[10px] bg-[#D4E8E6] text-[#003330] font-semibold px-2 py-0.5 rounded-full mt-1.5 inline-block">
+                        <span className="text-xl font-bold text-acento">{(selectedFondo.monto != null ? formatCurrency(selectedFondo.monto) : 'A definir')}</span>
+                        <span className="text-[10px] bg-ok-fondo text-ok-tinta font-semibold px-2 py-0.5 rounded-full mt-1.5 inline-block">
                           {selectedFondo.anexo}
                         </span>
                       </div>
@@ -455,7 +455,7 @@ export function InteractiveNormativa() {
                         {selectedFondo.responsables.map((resp, idx) => (
                           <div 
                             key={idx} 
-                            className="p-3 bg-[#E5E1D5] rounded-[8px] border border-slate-100 hover:bg-[#DED9CC]/50 transition-colors space-y-2"
+                            className="p-3 bg-realce rounded-[8px] border border-slate-100 hover:bg-hundida-2/50 transition-colors space-y-2"
                           >
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                               <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -463,10 +463,10 @@ export function InteractiveNormativa() {
                                 {resp.nombre}
                               </span>
                               <div className="flex items-center gap-2 font-mono text-[10px]">
-                                <span className="bg-[#F2EFE6] border border-[#E8E6DE] text-slate-600 px-1.5 py-0.5 rounded">
+                                <span className="bg-superficie border border-linea text-slate-600 px-1.5 py-0.5 rounded">
                                   Legajo: {resp.legajo}
                                 </span>
-                                <span className="bg-[#F2EFE6] border border-[#E8E6DE] text-slate-500 px-1.5 py-0.5 rounded">
+                                <span className="bg-superficie border border-linea text-slate-500 px-1.5 py-0.5 rounded">
                                   {resp.dni}
                                 </span>
                               </div>
@@ -481,7 +481,7 @@ export function InteractiveNormativa() {
                   </div>
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center p-12 text-center text-slate-400 space-y-3">
-                    <div className="w-12 h-12 rounded-full border-[0.5px] border-slate-200 flex items-center justify-center bg-[#E5E1D5]">
+                    <div className="w-12 h-12 rounded-full border-[0.5px] border-slate-200 flex items-center justify-center bg-realce">
                       <Search className="w-5 h-5 text-slate-400" />
                     </div>
                     <p className="text-xs font-semibold text-slate-800">Selecciona un Fondo Fijo de la lista</p>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { AlertCircle, ArrowLeft, CheckCircle2, ChevronRight, ExternalLink, FileText, Loader2, RefreshCw, Download, Search, Table2, X, XCircle } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
@@ -6,7 +6,9 @@ import type { ArchivoPdf, ExpedienteLector } from '../../api/expedientes';
 import { ResultadosExpediente } from './ResultadosExpediente';
 import { PdfScrollViewer } from './PdfScrollViewer';
 import { datosRevisivaLector, descargarRevisiva } from '../lib/revisiva';
-import { ClaveAcceso, guardarClave, leerClave } from './ClaveAcceso';
+import { ClaveAcceso } from './ClaveAcceso';
+import { cargarExpedientes, fijarClave, useExpedientesLector } from '../lib/expedientesLector';
+import { irA, useRuta, volverA } from '../lib/navegacion';
 
 // Expedientes auditados por el lector de expedientes, leidos del Google Sheet
 // a traves de /api/expedientes, con la clave de acceso (ClaveAcceso).
@@ -58,7 +60,7 @@ function VisorPdf({ archivo, clave, onCerrar, ancho, onAncho }: {
   return (
     // Panel fijo a la derecha, sin fondo que bloquee: la auditoria sigue
     // visible y con scroll a la izquierda.
-    <div className="fixed top-0 right-0 bottom-0 z-50 w-full lg:w-[var(--ancho-pdf)] border-l-[0.5px] border-[#E2E0D8]"
+    <div className="fixed top-0 right-0 bottom-0 z-50 w-full lg:w-[var(--ancho-pdf)] border-l-[0.5px] border-linea"
       style={{ '--ancho-pdf': `${ancho}px` } as React.CSSProperties}>
       {/* Borde izquierdo arrastrable para cambiar el ancho del PDF. */}
       <div
@@ -76,32 +78,32 @@ function VisorPdf({ archivo, clave, onCerrar, ancho, onAncho }: {
           window.addEventListener('mousemove', mover);
           window.addEventListener('mouseup', soltar);
         }}
-        className="hidden lg:block absolute left-0 top-0 h-full w-[6px] -ml-[3px] cursor-col-resize z-10 hover:bg-[#004741]/40 transition-colors"
+        className="hidden lg:block absolute left-0 top-0 h-full w-[6px] -ml-[3px] cursor-col-resize z-10 hover:bg-marca/40 transition-colors"
         title="Arrastrar para cambiar el ancho"
       />
-      <div className="h-full w-full bg-[#F2EFE6] shadow-xl flex flex-col">
-        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b-[0.5px] border-[#E8E6DE]">
+      <div className="h-full w-full bg-superficie shadow-xl flex flex-col">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b-[0.5px] border-linea">
           <span className="text-sm font-medium text-slate-800 truncate">{archivo.nombre}</span>
           <div className="flex items-center gap-1 shrink-0">
             {url && (
               <a href={url} target="_blank" rel="noopener noreferrer" title="Abrir en una pestaña nueva"
-                className="p-1.5 text-slate-500 hover:text-[#004741] hover:bg-[#E8EFEE] rounded-[6px]">
+                className="p-1.5 text-slate-500 hover:text-acento hover:bg-marca-suave rounded-[6px]">
                 <ExternalLink className="w-4 h-4" />
               </a>
             )}
             <button type="button" onClick={onCerrar} title="Cerrar"
-              className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-[#E5E1D5] rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
+              className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-realce rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
         <div className="flex-1 min-h-0">
           {error ? (
-            <div className="p-6 text-sm text-[#A32D2D]">{error}</div>
+            <div className="p-6 text-sm text-error">{error}</div>
           ) : base64 ? (
             <PdfScrollViewer base64={base64} fileName={archivo.nombre} />
           ) : (
-            <div className="p-6 text-sm text-[#9A9890] flex items-center gap-2">
+            <div className="p-6 text-sm text-tenue flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin" /> Abriendo el PDF…
             </div>
           )}
@@ -116,8 +118,8 @@ function EstadoChip({ estado }: { estado: string }) {
   return (
     <span className={cn(
       "px-[10px] py-[3px] rounded-[20px] text-[11px] font-medium leading-none inline-flex items-center gap-1",
-      e === 'OK' ? "bg-[#D4E8E6] text-[#003330]" :
-      e === 'ERROR' ? "bg-[#FCEBEB] text-[#A32D2D]" :
+      e === 'OK' ? "bg-ok-fondo text-ok-tinta" :
+      e === 'ERROR' ? "bg-error-fondo text-error" :
       "bg-amber-50 text-amber-800"
     )}>
       {e === 'OK' ? <CheckCircle2 className="w-3 h-3" /> : e === 'ERROR' ? <XCircle className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
@@ -127,12 +129,12 @@ function EstadoChip({ estado }: { estado: string }) {
 }
 
 export function ExpedientesLector() {
-  const [clave, setClave] = useState<string>(leerClave);
-  const [expedientes, setExpedientes] = useState<ExpedienteLector[] | null>(null);
-  const [cargando, setCargando] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { clave, expedientes, cargando, error } = useExpedientesLector();
   const [busqueda, setBusqueda] = useState('');
-  const [seleccionado, setSeleccionado] = useState<string | null>(null);
+  // El expediente abierto es parte de la direccion (#/lector/<id>): el "atras"
+  // del navegador vuelve a la lista.
+  const ruta = useRuta();
+  const seleccionado = ruta.seccion === 'lector' ? ruta.detalle : null;
   const [expandedPayment, setExpandedPayment] = useState<number | null>(null);
   const [pdfAbierto, setPdfAbierto] = useState<ArchivoPdf | null>(null);
   // Con el PDF abierto, la auditoria se angosta hasta el borde del panel
@@ -170,29 +172,7 @@ export function ExpedientesLector() {
   const [region, setRegion] = useState<Region>('Rafaela');
   const [abiertas, setAbiertas] = useState<Set<string>>(new Set());
 
-  const cargar = useCallback(async (conClave: string) => {
-    if (!conClave) return;
-    setCargando(true);
-    setError(null);
-    try {
-      const r = await fetch('/api/expedientes', { headers: { 'x-lector-key': conClave } });
-      if (r.status === 401) {
-        guardarClave('');
-        setClave('');
-        setError('La clave de acceso no es correcta.');
-        return;
-      }
-      const datos = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(datos.error || `Error ${r.status}`);
-      setExpedientes(datos.expedientes || []);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudieron leer los expedientes.');
-    } finally {
-      setCargando(false);
-    }
-  }, []);
-
-  useEffect(() => { if (clave) cargar(clave); }, [clave, cargar]);
+  useEffect(() => { if (clave) cargarExpedientes(); }, [clave]);
 
   const filtrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -221,9 +201,16 @@ export function ExpedientesLector() {
   });
 
   const actual = (expedientes || []).find(e => e.id === seleccionado) || null;
+  useEffect(() => {
+    setExpandedPayment(null);
+    setPdfAbierto(null);
+    // Al volver a la lista queda en la region del expediente que se abrio
+    // (puede venir del buscador del encabezado).
+    if (actual) setRegion(actual.region as Region);
+  }, [actual?.id]);
 
   if (!clave) {
-    return <ClaveAcceso titulo="Expedientes del lector" error={error} onClave={setClave} />;
+    return <ClaveAcceso titulo="Expedientes del lector" error={error} onClave={fijarClave} />;
   }
 
   if (actual) {
@@ -231,15 +218,15 @@ export function ExpedientesLector() {
       <div ref={columnaRef} style={anchoColumna ? { width: anchoColumna.ancho, maxWidth: 'none', marginLeft: anchoColumna.corrimiento } : undefined}>
         <button
           type="button"
-          onClick={() => { setSeleccionado(null); setExpandedPayment(null); }}
-          className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-[#004741] transition-colors cursor-pointer bg-transparent border-none outline-none"
+          onClick={() => volverA('lector')}
+          className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-acento transition-colors cursor-pointer bg-transparent border-none outline-none"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver a los expedientes del lector
         </button>
         {actual.archivos.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-2 px-1">
+            <h3 className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-2 px-1">
               Documentos del expediente ({actual.archivos.length})
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -248,7 +235,7 @@ export function ExpedientesLector() {
                   key={a.clave}
                   type="button"
                   onClick={() => setPdfAbierto(a)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F2EFE6] border-[0.5px] border-[#E2E0D8] rounded-[7px] text-xs text-slate-700 hover:text-[#004741] hover:bg-[#E8EFEE] transition-all cursor-pointer outline-none"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-superficie border-[0.5px] border-linea rounded-[7px] text-xs text-slate-700 hover:text-acento hover:bg-marca-suave transition-all cursor-pointer outline-none"
                   title={a.nombre}
                 >
                   <FileText className="w-3.5 h-3.5 shrink-0" />
@@ -270,7 +257,7 @@ export function ExpedientesLector() {
             type="button"
             onClick={() => descargarRevisiva(datosRevisivaLector(actual),
               `Planilla revisiva ${actual.carpeta || `FF N ${actual.rendicion} ${actual.hoja}`}.pdf`.replace(/°/g, ''))}
-            className="inline-flex items-center gap-2 py-[7px] px-[13px] bg-[#004741] text-white text-[13px] font-medium rounded-[7px] hover:bg-[#003330] transition-all cursor-pointer outline-none"
+            className="inline-flex items-center gap-2 py-[7px] px-[13px] bg-marca text-white text-[13px] font-medium rounded-[7px] hover:bg-marca-hover transition-all cursor-pointer outline-none"
           >
             <Download className="w-4 h-4" />
             Descargar planilla revisiva
@@ -285,12 +272,12 @@ export function ExpedientesLector() {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
-            <Table2 className="w-6 h-6 text-[#9A9890]" />
+          <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center caja">
+            <Table2 className="w-6 h-6 text-tenue" />
           </div>
           <div>
             <h2 className="text-xl font-medium tracking-tight text-slate-900">Expedientes del lector</h2>
-            <p className="text-xs text-[#9A9890] mt-0.5">
+            <p className="text-xs text-tenue mt-0.5">
               Auditados por el lector y exportados al Google Sheet{expedientes ? ` — ${expedientes.length} en total` : ''}.
             </p>
           </div>
@@ -298,16 +285,16 @@ export function ExpedientesLector() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => cargar(clave)}
+            onClick={() => cargarExpedientes(true)}
             disabled={cargando}
-            className="px-3 py-1.5 bg-[#F2EFE6] border border-[#D3D1C7] hover:bg-[#E5E1D5] text-slate-700 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none inline-flex items-center gap-1.5 disabled:opacity-60"
+            className="px-3 py-1.5 bg-superficie border border-linea-fuerte hover:bg-realce text-slate-700 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none inline-flex items-center gap-1.5 disabled:opacity-60"
           >
             {cargando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
             Actualizar
           </button>
           <button
             type="button"
-            onClick={() => { guardarClave(''); setClave(''); setExpedientes(null); }}
+            onClick={() => fijarClave('')}
             className="px-3 py-1.5 bg-transparent text-slate-500 hover:text-slate-900 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none border-none"
             title="Olvidar la clave en este navegador"
           >
@@ -316,7 +303,7 @@ export function ExpedientesLector() {
         </div>
       </div>
 
-      <div className="flex w-fit max-w-full overflow-x-auto p-[3px] bg-[#EEECE5] rounded-[8px] mb-6 gap-[2px] items-center select-none">
+      <div className="flex w-fit max-w-full overflow-x-auto p-[3px] bg-hundida rounded-[8px] mb-6 gap-[2px] items-center select-none">
         {REGIONES.map(r => {
           const cantidad = filtrados.filter(e => e.region === r).length;
           return (
@@ -325,10 +312,10 @@ export function ExpedientesLector() {
               type="button"
               onClick={() => setRegion(r)}
               className={cn(
-                "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] border-none",
+                "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] border-none whitespace-nowrap",
                 region === r
-                  ? "bg-[#F2EFE6] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
-                  : "bg-transparent text-[#6B6A65] font-normal"
+                  ? "bg-superficie border-[0.5px] border-linea rounded-[6px] text-acento font-medium shadow-none"
+                  : "bg-transparent text-tinta-2 font-normal"
               )}
             >
               {r}{expedientes ? ` (${cantidad})` : ''}
@@ -338,27 +325,27 @@ export function ExpedientesLector() {
       </div>
 
       <div className="relative mb-6">
-        <Search className="w-4 h-4 text-[#9A9890] absolute left-3 top-1/2 -translate-y-1/2" />
+        <Search className="w-4 h-4 text-tenue absolute left-3 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={busqueda}
           onChange={e => setBusqueda(e.target.value)}
           placeholder="Buscar por N° de expediente, rendición, fondo, fecha o estado"
-          className="w-full bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[8px] pl-9 pr-3 py-2 text-sm outline-none focus:border-[#004741]"
+          className="w-full bg-superficie border-[0.5px] border-linea rounded-[8px] pl-9 pr-3 py-2 text-sm outline-none focus:border-acento"
         />
       </div>
 
       {error && (
-        <div className="bg-[#FFF8F8] border border-[#F8CCCC] rounded-[12px] p-4 mb-6 text-xs text-[#A32D2D]">{error}</div>
+        <div className="bg-error-suave border border-error-linea rounded-[12px] p-4 mb-6 text-xs text-error">{error}</div>
       )}
 
       {cargando && !expedientes ? (
-        <div className="p-16 text-center text-[#9A9890] text-sm flex items-center justify-center gap-2">
+        <div className="p-16 text-center text-tenue text-sm flex items-center justify-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin" /> Leyendo el Google Sheet…
         </div>
       ) : grupos.length === 0 ? (
-        <div className="p-16 text-center border-[0.5px] border-dashed border-[#E8E6DE] rounded-[12px] bg-[#F2EFE6]/50">
-          <p className="text-[#9A9890] font-medium text-sm">
+        <div className="p-16 text-center border-[0.5px] border-dashed border-linea rounded-[12px] bg-superficie/50">
+          <p className="text-tenue font-medium text-sm">
             {busqueda ? `No se encontraron expedientes de ${region} para "${busqueda}".` : `No hay expedientes de ${region} en el Google Sheet.`}
           </p>
         </div>
@@ -370,21 +357,21 @@ export function ExpedientesLector() {
             const errores = cuenta('ERROR');
             const revisar = g.items.length - errores - cuenta('OK');
             return (
-            <div key={g.titulo} className="bg-[#EEECE5]/60 border-[0.5px] border-[#E8E6DE] rounded-[12px] overflow-hidden">
+            <div key={g.titulo} className="bg-superficie border-[0.5px] border-linea rounded-[12px] overflow-hidden caja">
               <button
                 type="button"
                 onClick={() => alternar(g.titulo)}
-                className="w-full flex flex-wrap items-center justify-between gap-2 px-5 py-4 bg-transparent border-none cursor-pointer outline-none text-left hover:bg-[#E5E1D5]/60 transition-all"
+                className="w-full flex flex-wrap items-center justify-between gap-2 px-5 py-4 bg-transparent border-none cursor-pointer outline-none text-left hover:bg-realce transition-all"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <ChevronRight className={cn("w-4 h-4 text-[#9A9890] transition-transform duration-200", abierta && "rotate-90")} />
+                  <ChevronRight className={cn("w-4 h-4 text-tenue transition-transform duration-200", abierta && "rotate-90")} />
                   <span className="text-sm font-medium text-slate-800">{g.titulo}</span>
-                  <span className="text-xs text-[#9A9890]">{g.items.length} {g.items.length === 1 ? 'expediente' : 'expedientes'}</span>
+                  <span className="text-xs text-tenue">{g.items.length} {g.items.length === 1 ? 'expediente' : 'expedientes'}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {errores > 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#FCEBEB] text-[#A32D2D]">{errores} con errores</span>}
+                  {errores > 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-error-fondo text-error">{errores} con errores</span>}
                   {revisar > 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800">{revisar} a revisar</span>}
-                  {errores === 0 && revisar === 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#D4E8E6] text-[#003330]">Todo OK</span>}
+                  {errores === 0 && revisar === 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-ok-fondo text-ok-tinta">Todo OK</span>}
                 </div>
               </button>
               {abierta && (
@@ -393,16 +380,16 @@ export function ExpedientesLector() {
                   <button
                     key={e.id}
                     type="button"
-                    onClick={() => { setSeleccionado(e.id); setExpandedPayment(null); }}
-                    className="w-full text-left bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] p-5 rounded-[12px] shadow-none flex flex-col sm:flex-row gap-4 sm:items-center justify-between hover:bg-[#ECE8DC] transition-all cursor-pointer outline-none"
+                    onClick={() => irA('lector', e.id)}
+                    className="w-full text-left bg-lienzo/45 border-[0.5px] border-linea p-4 sm:px-5 rounded-[10px] flex flex-col sm:flex-row gap-4 sm:items-center justify-between hover:bg-superficie hover:border-linea-fuerte transition-all cursor-pointer outline-none caja"
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <EstadoChip estado={e.estado} />
                       <span className="text-sm font-medium text-slate-800">FF N° {e.rendicion || '—'}</span>
-                      <span className="text-xs font-medium bg-[#E8E4D8] text-slate-500 border border-[#E8E6DE] px-2 py-0.5 rounded-md font-mono">
+                      <span className="text-xs font-medium bg-hundida text-slate-500 border border-linea px-2 py-0.5 rounded-md font-mono">
                         Exp. {e.expediente}{e.fecha ? ` (${e.fecha})` : ''}
                       </span>
-                      <span className="text-xs text-[#9A9890]">{e.nPagos} {e.nPagos === 1 ? 'pago' : 'pagos'}</span>
+                      <span className="text-xs text-tenue">{e.nPagos} {e.nPagos === 1 ? 'pago' : 'pagos'}</span>
                     </div>
                     <span className="text-sm font-mono font-medium text-slate-700 shrink-0">
                       {typeof e.result.totalAmount === 'number' ? formatCurrency(e.result.totalAmount) : ''}

@@ -42,6 +42,9 @@ import {
 import { PlanillaControlFF } from './components/PlanillaControlFF';
 import { ResultadosExpediente } from './components/ResultadosExpediente';
 import { ExpedientesLector } from './components/ExpedientesLector';
+import { BuscadorGlobal, type EntradaHistorial } from './components/BuscadorGlobal';
+import { irA, useRuta } from './lib/navegacion';
+import type { ExpedienteLector } from '../api/expedientes';
 import { Matriculador } from './components/Matriculador';
 import { formatHistoryTitle, hasAccountingCode, renderBold, safeText, toSentenceCase } from './lib/formato';
 import { motion, AnimatePresence } from 'motion/react';
@@ -185,7 +188,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
   const activeFile = files[activeFileIdx] || null;
 
   const statusIcon = (status: string) => {
-    if (status === 'pass') return <CheckCircle2 className="w-4 h-4 text-[#004741]" />;
+    if (status === 'pass') return <CheckCircle2 className="w-4 h-4 text-acento" />;
     if (status === 'fail') return <XCircle className="w-4 h-4 text-red-500" />;
     return <AlertTriangle className="w-4 h-4 text-amber-500" />;
   };
@@ -193,14 +196,14 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
   return (
     <div className="flex flex-1 min-h-0 h-full gap-0">
       {/* Left panel — form + results */}
-      <div style={{ width: leftWidth }} className="shrink-0 flex flex-col h-full overflow-y-auto bg-[#E8E4D8] p-6">
+      <div style={{ width: leftWidth }} className="shrink-0 flex flex-col h-full overflow-y-auto bg-hundida p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-9 h-9 bg-[#F2EFE6] rounded-[10px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center">
-            <Zap className="w-4 h-4 text-[#004741]" />
+          <div className="w-9 h-9 bg-superficie rounded-[10px] border-[0.5px] border-linea flex items-center justify-center caja">
+            <Zap className="w-4 h-4 text-acento" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-[16px] font-semibold text-[#1A1A1A] tracking-tight leading-none">Auditoría Rápida</h1>
-            <p className="text-[11px] text-[#9A9890] mt-0.5">Pagos sueltos, sin carátula ni Libro Diario.</p>
+            <h1 className="text-[16px] font-semibold text-tinta tracking-tight leading-none">Auditoría Rápida</h1>
+            <p className="text-[11px] text-tenue mt-0.5">Pagos sueltos, sin carátula ni Libro Diario.</p>
           </div>
         </div>
 
@@ -213,7 +216,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
               setSelectedModel(val);
               localStorage.setItem('epe_selected_model', val);
             }}
-            className="w-full px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-[#F2EFE6] text-slate-700 outline-none cursor-pointer hover:border-[#004741]/40 transition-colors"
+            className="w-full px-3 py-2 text-xs font-medium rounded-[8px] border border-linea bg-superficie text-slate-700 outline-none cursor-pointer hover:border-acento/40 transition-colors"
           >
             {MODELS.map(m => (
               <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
@@ -226,16 +229,16 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
           {...getRootProps()}
           className={cn(
             "border-[1.5px] border-dashed rounded-[10px] p-5 text-center cursor-pointer transition-colors mb-3",
-            isDragActive ? "border-[#004741] bg-[#E8EFEE]" : "border-[#E8E6DE] bg-[#F2EFE6] hover:border-[#004741]/40"
+            isDragActive ? "border-acento bg-marca-suave" : "border-linea bg-superficie hover:border-acento/40"
           )}
         >
           <input {...getInputProps()} />
           <div className="flex flex-col items-center gap-1.5">
-            <Upload className="w-6 h-6 text-[#BDBBB2]" />
-            <p className="text-xs text-[#9A9890]">
+            <Upload className="w-6 h-6 text-tenue-2" />
+            <p className="text-xs text-tenue">
               {files.length ? 'Agregá más comprobantes o hacé clic' : 'Arrastrá los comprobantes o hacé clic'}
             </p>
-            <p className="text-[10px] text-[#BDBBB2]">Solo PDF · podés subir varios pagos juntos</p>
+            <p className="text-[10px] text-tenue-2">Solo PDF · podés subir varios pagos juntos</p>
           </div>
         </div>
 
@@ -243,12 +246,12 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
         {files.length > 0 && (
           <div className="mb-3 space-y-1">
             <div className="flex items-center justify-between px-1 mb-1.5">
-              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890]">
+              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue">
                 {files.length} {files.length === 1 ? 'archivo' : 'archivos'}
               </span>
               <button
                 onClick={() => { setFiles([]); setResult(null); setActiveFileIdx(0); }}
-                className="text-[10px] font-medium text-[#9A9890] hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none outline-none p-0"
+                className="text-[10px] font-medium text-tenue hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none outline-none p-0"
               >
                 Limpiar todo
               </button>
@@ -260,15 +263,15 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
                 className={cn(
                   "flex items-center gap-2 px-2.5 py-1.5 rounded-[7px] cursor-pointer transition-colors border-[0.5px]",
                   idx === activeFileIdx
-                    ? "bg-[#E8EFEE] border-[#004741]/30"
-                    : "bg-[#F2EFE6] border-[#E8E6DE] hover:bg-[#E8E4D8]"
+                    ? "bg-marca-suave border-acento/30"
+                    : "bg-superficie border-linea hover:bg-hundida"
                 )}
               >
-                <FileText className={cn("w-3.5 h-3.5 shrink-0", idx === activeFileIdx ? "text-[#004741]" : "text-[#9A9890]")} />
-                <span className="text-[11px] text-[#1A1A1A] truncate flex-1 min-w-0" title={f.name}>{f.name}</span>
+                <FileText className={cn("w-3.5 h-3.5 shrink-0", idx === activeFileIdx ? "text-acento" : "text-tenue")} />
+                <span className="text-[11px] text-tinta truncate flex-1 min-w-0" title={f.name}>{f.name}</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
-                  className="text-[#9A9890] hover:text-red-500 transition-colors shrink-0 bg-transparent border-none outline-none p-0 cursor-pointer"
+                  className="text-tenue hover:text-red-500 transition-colors shrink-0 bg-transparent border-none outline-none p-0 cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -283,8 +286,8 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
           className={cn(
             "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium transition-all mb-5",
             files.length && !isProcessing
-              ? "bg-[#004741] text-white hover:bg-[#003330]"
-              : "bg-[#E8E6DE] text-[#BDBBB2] cursor-not-allowed"
+              ? "bg-marca text-white hover:bg-marca-hover"
+              : "bg-linea text-tenue-2 cursor-not-allowed"
           )}
         >
           {isProcessing ? (
@@ -298,17 +301,17 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
         {result && result.payments && result.payments.length > 0 && (
           <div className="space-y-3">
             {/* Resumen del lote */}
-            <div className="bg-[#E8EFEE] border-[0.5px] border-[#004741]/20 rounded-[10px] p-3.5">
+            <div className="bg-marca-suave border-[0.5px] border-acento/20 rounded-[10px] p-3.5">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-semibold text-[#004741]">
+                <span className="text-[11px] font-semibold text-acento">
                   {result.payments.length} {result.payments.length === 1 ? 'pago analizado' : 'pagos analizados'}
                 </span>
-                <span className="text-[11px] font-semibold text-[#004741] font-mono">
+                <span className="text-[11px] font-semibold text-acento font-mono">
                   {formatCurrency(result.payments.reduce((a, p) => a + (typeof p?.amount === 'number' && !isNaN(p.amount) ? p.amount : 0), 0))}
                 </span>
               </div>
               {result.overallSummary && (
-                <p className="text-[11px] text-[#6B6963] leading-relaxed mt-1.5">{safeText(result.overallSummary)}</p>
+                <p className="text-[11px] text-tinta-2 leading-relaxed mt-1.5">{safeText(result.overallSummary)}</p>
               )}
             </div>
 
@@ -322,49 +325,49 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
                 <div
                   key={idx}
                   className={cn(
-                    "bg-[#F2EFE6] border-[0.5px] rounded-[10px] overflow-hidden",
-                    errores > 0 ? "border-l-2 border-l-[#E24B4A] border-[#E8E6DE]" : "border-[#E8E6DE]"
+                    "bg-superficie border-[0.5px] rounded-[10px] overflow-hidden caja",
+                    errores > 0 ? "border-l-2 border-l-error-acento border-linea" : "border-linea"
                   )}
                 >
                   <button
                     onClick={() => setExpandedPayment(abierto ? null : idx)}
-                    className="w-full text-left px-4 py-3 hover:bg-[#E8E4D8]/50 transition-colors cursor-pointer bg-transparent border-none outline-none"
+                    className="w-full text-left px-4 py-3 hover:bg-hundida/50 transition-colors cursor-pointer bg-transparent border-none outline-none"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-[#1A1A1A] leading-tight truncate" title={pago?.providerName}>
+                        <p className="text-[13px] font-semibold text-tinta leading-tight truncate" title={pago?.providerName}>
                           {pago?.providerName || '—'}
                         </p>
-                        <p className="text-[10px] text-[#9A9890] mt-0.5">N° {pago?.orderNumber || '—'}</p>
+                        <p className="text-[10px] text-tenue mt-0.5">N° {pago?.orderNumber || '—'}</p>
                       </div>
                       <div className="text-right shrink-0 flex items-center gap-2">
                         <div>
-                          <p className="text-[13px] font-semibold text-[#004741] font-mono leading-tight">
+                          <p className="text-[13px] font-semibold text-acento font-mono leading-tight">
                             {formatCurrency(pago?.amount)}
                           </p>
                           <p className="text-[10px] mt-0.5">
                             {errores > 0 ? (
-                              <span className="text-[#A32D2D] font-medium">{errores} {errores === 1 ? 'error' : 'errores'}</span>
+                              <span className="text-error font-medium">{errores} {errores === 1 ? 'error' : 'errores'}</span>
                             ) : obs > 0 ? (
                               <span className="text-amber-700 font-medium">{obs} obs.</span>
                             ) : (
-                              <span className="text-[#004741] font-medium">Sin observaciones</span>
+                              <span className="text-acento font-medium">Sin observaciones</span>
                             )}
                           </p>
                         </div>
-                        <ChevronDown className={cn("w-3.5 h-3.5 text-[#9A9890] transition-transform shrink-0", abierto ? "rotate-180" : "")} />
+                        <ChevronDown className={cn("w-3.5 h-3.5 text-tenue transition-transform shrink-0", abierto ? "rotate-180" : "")} />
                       </div>
                     </div>
                   </button>
 
                   {abierto && (
-                    <div className="border-t border-[#F0EDE8] divide-y divide-[#F0EDE8]">
+                    <div className="border-t border-linea divide-y divide-linea">
                       {vals.map((v, vi) => (
                         <div key={v?.id || vi} className="flex items-start gap-2.5 px-4 py-2.5">
                           {statusIcon(v?.status)}
                           <div className="flex-1 min-w-0">
-                            <span className="text-[10px] font-bold text-[#1A1A1A] uppercase mr-1.5">{v?.id}</span>
-                            <p className="text-[11px] text-[#6B6963] mt-0.5 leading-relaxed">
+                            <span className="text-[10px] font-bold text-tinta uppercase mr-1.5">{v?.id}</span>
+                            <p className="text-[11px] text-tinta-2 mt-0.5 leading-relaxed">
                               {(safeText(v?.observations) || '—').split('\n').map((line, li, arr) => (
                                 <React.Fragment key={li}>
                                   {renderBold(line)}
@@ -384,8 +387,8 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
         )}
 
         {result && (!result.payments || result.payments.length === 0) && (
-          <div className="bg-amber-50 border border-amber-250 rounded-[10px] p-4">
-            <p className="text-[12px] font-semibold text-amber-850 mb-1">No se detectaron pagos</p>
+          <div className="bg-amber-50 border border-amber-200 rounded-[10px] p-4">
+            <p className="text-[12px] font-semibold text-amber-800 mb-1">No se detectaron pagos</p>
             <p className="text-[11px] text-amber-800 leading-relaxed">
               La IA no pudo extraer ningún pago de los archivos cargados. Probá subiendo menos archivos por vez, o verificá que los PDFs sean legibles.
             </p>
@@ -396,15 +399,15 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
       {/* Drag handle */}
       <div
         onMouseDown={onDividerMouseDown}
-        className="w-[5px] shrink-0 h-full cursor-col-resize bg-[#E8E6DE] hover:bg-[#004741]/40 transition-colors active:bg-[#004741]/60"
+        className="w-[5px] shrink-0 h-full cursor-col-resize bg-linea hover:bg-marca/40 transition-colors active:bg-marca/60"
       />
 
       {/* Right panel — PDF viewer */}
-      <div className="flex-1 min-w-0 h-full bg-[#DED9CC] flex flex-col">
+      <div className="flex-1 min-w-0 h-full bg-hundida-2 flex flex-col">
         {activeFile ? (
           <PdfScrollViewer base64={activeFile.base64} fileName={activeFile.name} />
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-[#BDBBB2]">
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-tenue-2">
             <FileText className="w-12 h-12" />
             <p className="text-sm">Los comprobantes aparecerán aquí</p>
           </div>
@@ -413,6 +416,18 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
     </div>
   );
 }
+
+const SECCION_DE_TAB: Record<string, string> = {
+  Dashboard: 'dashboard', Historial: 'historial', Lector: 'lector', Revisiva: 'revisiva',
+  Planilla: 'planilla', Rapida: 'rapida', 'Códigos': 'codigos', Matriculador: 'matriculador',
+  Autorizaciones: 'autorizaciones', Normativa: 'normativa',
+};
+const TAB_DE_SECCION: Record<string, string> = Object.fromEntries(
+  Object.entries(SECCION_DE_TAB).map(([tab, seccion]) => [seccion, tab]));
+const NOMBRE_DE_TAB: Record<string, string> = {
+  Lector: 'Expedientes del lector', Rapida: 'Auditoría rápida', Revisiva: 'Planilla revisiva',
+  Planilla: 'Planilla control', Autorizaciones: 'Autorizaciones PIMyS',
+};
 
 export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -425,7 +440,11 @@ export default function App() {
     try { localStorage.setItem('epe_dark_mode', String(darkMode)); } catch {}
   }, [darkMode]);
 
-  const [activeTab, setActiveTab] = useState('Dashboard');
+  // La seccion activa vive en la direccion (#/historial, #/lector/<id>…): el
+  // "atras" del navegador vuelve a la seccion anterior en vez de salir.
+  const ruta = useRuta();
+  const activeTab = TAB_DE_SECCION[ruta.seccion] ?? 'Dashboard';
+  const setActiveTab = useCallback((tab: string) => irA(SECCION_DE_TAB[tab] ?? 'dashboard'), []);
 
   // ── Autorizaciones PIMyS agregadas por el usuario ──────────────────────────
   const [customCodigos, setCustomCodigos] = useState<AutorizacionCodigo[]>([]);
@@ -492,10 +511,10 @@ export default function App() {
     showNotification('Autorización agregada', 'El auditor la tendrá en cuenta en las próximas auditorías.', 'success');
   };
   const [planillasOpen, setPlanillasOpen] = useState(false);
+  useEffect(() => { if (activeTab === 'Revisiva' || activeTab === 'Planilla') setPlanillasOpen(true); }, [activeTab]);
   const [dashboardMode, setDashboardMode] = useState<'Expedientes' | 'Viáticos'>('Expedientes');
   const [activeCodeCategory, setActiveCodeCategory] = useState<keyof typeof PIMYS_CODES>('Sucursales');
   const [codeSearchQuery, setCodeSearchQuery] = useState('');
-  const [auditSearchQuery, setAuditSearchQuery] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [auditProgress, setAuditProgress] = useState(0);
   const [auditProgressLabel, setAuditProgressLabel] = useState('');
@@ -740,6 +759,16 @@ export default function App() {
     });
   };
 
+  const abrirAuditoria = useCallback((entry: EntradaHistorial) => {
+    setResult(entry.result);
+    setActiveAuditId(entry.id);
+    // 'Rapida' no es un modo del selector del Dashboard: su reporte se
+    // renderiza igual que el de Expedientes.
+    setDashboardMode(entry.result.mode === 'Viáticos' ? 'Viáticos' : 'Expedientes');
+    setActiveTab('Dashboard');
+  }, [setActiveTab]);
+  const abrirExpedienteLector = useCallback((e: ExpedienteLector) => irA('lector', e.id), []);
+
   const deleteHistoryEntry = (id: string) => {
     setHistory(prev => {
       const updated = prev.filter(entry => entry.id !== id);
@@ -807,33 +836,6 @@ export default function App() {
     fileReader.readAsText(file);
   };
 
-  const filteredHistory = history.filter(entry => {
-    if (!auditSearchQuery.trim()) return true;
-
-    const normalize = (val: unknown) => {
-      const str = typeof val === 'string' ? val : val != null ? String(val) : '';
-      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-    };
-
-    const query = normalize(auditSearchQuery);
-    
-    const expNum = normalize(entry.result?.expedienteNumero || '');
-    const expFecha = normalize(entry.result?.expedienteFecha || '');
-    const agency = normalize(entry.result?.agenciaSucursal || '');
-    const ffNum = normalize(entry.result?.fondoFijoNumero || '');
-    const ffId = normalize(entry.FF || '');
-    const summary = normalize(entry.summary || '');
-    const resp = normalize(entry.result?.responsable || '');
-    
-    return expNum.includes(query) || 
-           expFecha.includes(query) || 
-           agency.includes(query) || 
-           ffNum.includes(query) || 
-           ffId.includes(query) || 
-           summary.includes(query) ||
-           resp.includes(query);
-  });
-
   const getFileCategoryInfo = (fileName: string): { label: string; weight: number; color: string } => {
     const name = fileName.toLowerCase();
     if (name.includes('caratula') || name.includes('carátula') || name.includes('portada')) {
@@ -864,7 +866,7 @@ export default function App() {
     if (name.includes('balance') || name.includes('invers') || name.includes('rendicion') || name.includes('rendición')) {
       return { label: 'Balance de Inversión', weight: 4, color: 'bg-blue-50 text-blue-700 border-blue-100' };
     }
-    return { label: 'Otro formato', weight: 5, color: 'bg-[#DED9CC] text-slate-600 border-slate-200' };
+    return { label: 'Otro formato', weight: 5, color: 'bg-hundida-2 text-slate-600 border-slate-200' };
   };
 
   const [selectedFiles, setSelectedFiles] = useState<{ id: string; name: string; size: number; base64: string; objectUrl: string }[]>([]);
@@ -1238,24 +1240,24 @@ export default function App() {
   } as any);
 
   return (
-    <div className="flex h-screen bg-[#E8E4D8] text-slate-900 font-sans overflow-hidden font-sans">
+    <div className="flex h-screen bg-lienzo text-tinta font-sans overflow-hidden">
       {/* Custom Notification Modal/Toast Overlay */}
       <AnimatePresence>
         {notification && (
-          <div className="fixed inset-0 bg-slate-850/40 backdrop-blur-xs flex items-center justify-center p-4 z-55">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-55">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#F2EFE6] rounded-[12px] max-w-md w-full shadow-none border-[0.5px] border-[#E8E6DE] overflow-hidden"
+              className="bg-superficie rounded-[12px] max-w-md w-full border-[0.5px] border-linea overflow-hidden caja"
             >
               <div className="p-6">
                 <div className="flex items-start gap-4">
                   <div className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                    notification.type === 'error' && "bg-[#FCEBEB] text-[#A32D2D]",
-                    notification.type === 'success' && "bg-[#D4E8E6] text-[#003330]",
-                    notification.type === 'info' && "bg-blue-50 text-[#004741]"
+                    notification.type === 'error' && "bg-error-fondo text-error",
+                    notification.type === 'success' && "bg-ok-fondo text-ok-tinta",
+                    notification.type === 'info' && "bg-blue-50 text-acento"
                   )}>
                     {notification.type === 'error' && <AlertCircle className="w-5 h-5" />}
                     {notification.type === 'success' && <CheckCircle2 className="w-5 h-5" />}
@@ -1269,11 +1271,11 @@ export default function App() {
                 </div>
               </div>
               
-              <div className="px-6 py-4 bg-[#E8E4D8] border-t-[0.5px] border-[#E8E6DE] flex justify-end">
+              <div className="px-6 py-4 bg-hundida border-t-[0.5px] border-linea flex justify-end">
                 <button
                   type="button"
                   onClick={() => setNotification(null)}
-                  className="px-4 py-1.5 bg-[#004741] hover:bg-[#003330] text-white text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none border-none shadow-none"
+                  className="px-4 py-1.5 bg-marca hover:bg-marca-hover text-white text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none border-none shadow-none"
                 >
                   Entendido
                 </button>
@@ -1285,12 +1287,12 @@ export default function App() {
 
       <AnimatePresence>
         {deleteConfirmId && (
-          <div className="fixed inset-0 bg-slate-850/40 backdrop-blur-xs flex items-center justify-center p-4 z-55">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-55">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#F2EFE6] rounded-[12px] max-w-md w-full shadow-none border-[0.5px] border-[#E8E6DE] overflow-hidden"
+              className="bg-superficie rounded-[12px] max-w-md w-full border-[0.5px] border-linea overflow-hidden caja"
             >
               <div className="p-6">
                 <div className="flex items-start gap-4">
@@ -1307,11 +1309,11 @@ export default function App() {
                 </div>
               </div>
               
-              <div className="px-6 py-4 bg-[#E8E4D8] border-t-[0.5px] border-[#E8E6DE] flex justify-end gap-2.5">
+              <div className="px-6 py-4 bg-hundida border-t-[0.5px] border-linea flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setDeleteConfirmId(null)}
-                  className="px-4 py-1.5 bg-[#F2EFE6] border border-[#D3D1C7] hover:bg-[#E5E1D5] text-slate-700 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none shadow-none"
+                  className="px-4 py-1.5 bg-superficie border border-linea-fuerte hover:bg-realce text-slate-700 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none shadow-none"
                 >
                   Cancelar
                 </button>
@@ -1323,7 +1325,7 @@ export default function App() {
                       setDeleteConfirmId(null);
                     }
                   }}
-                  className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none border-none shadow-none"
+                  className="px-4 py-1.5 bg-peligro hover:bg-peligro-hover text-white text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none border-none shadow-none"
                 >
                   Eliminar
                 </button>
@@ -1340,7 +1342,7 @@ export default function App() {
       {!barraOculta && <aside
         style={{ width: pantallaAngosta ? Math.min(sidebarWidth, 280) : sidebarWidth }}
         className={cn(
-          "shrink-0 border-r-[0.5px] border-[#E8E6DE] flex flex-col bg-[#F2EFE6]",
+          "shrink-0 border-r-[0.5px] border-linea flex flex-col bg-superficie",
           pantallaAngosta ? "fixed inset-y-0 left-0 z-40 shadow-[0_0_40px_rgba(0,0,0,0.18)]" : "shadow-none z-20 relative"
         )}>
         {/* Sidebar resize handle */}
@@ -1350,23 +1352,20 @@ export default function App() {
             setIsSidebarDragging(true);
             sidebarDragRef.current = { startX: e.clientX, startW: sidebarWidth };
           }}
-          className="absolute right-0 top-0 h-full w-[5px] cursor-col-resize z-30 hover:bg-[#004741]/40 transition-colors"
+          className="absolute right-0 top-0 h-full w-[5px] cursor-col-resize z-30 hover:bg-marca/40 transition-colors"
         />
-        <div className="p-6 border-b-[0.5px] border-[#E8E6DE]">
-          <div className="flex flex-col select-none">
-            <div className="flex items-center gap-2">
-              <div className="w-[28px] h-[28px] bg-[#004741] rounded-[6px] flex items-center justify-center text-white shrink-0">
+        <div className="h-[56px] shrink-0 px-5 flex items-center border-b-[0.5px] border-linea">
+          <div className="flex flex-col select-none w-full">
+            <div className="flex items-center gap-2.5">
+              <div className="w-[28px] h-[28px] bg-marca rounded-[6px] flex items-center justify-center text-white shrink-0">
                 <ShieldCheck className="w-3.5 h-3.5 text-white" />
               </div>
-              <h1 className="text-[13px] font-medium text-[#1A1A1A] tracking-tight leading-none">Auditor EPE</h1>
+              <h1 className="text-[12px] font-semibold text-tinta tracking-[0.05em] leading-none whitespace-nowrap">AUDITOR EXPEDIENTES</h1>
               <button type="button" onClick={alternarSidebar} title="Ocultar barra lateral" aria-label="Ocultar barra lateral"
-                className="ml-auto p-1 text-[#9A9890] hover:text-[#1A1A1A] hover:bg-[#E5E1D5] rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
+                className="ml-auto p-1 text-tenue hover:text-tinta hover:bg-realce rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
                 <PanelLeft className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-[11px] text-[#9A9890] pl-[36px] mt-1.5 leading-none">
-              Rendición de Cuentas
-            </p>
           </div>
         </div>
 
@@ -1383,21 +1382,21 @@ export default function App() {
                 className={cn(
                   "flex items-center gap-3 px-6 py-3 cursor-pointer transition-all duration-200 border-l-[3px] font-medium text-sm select-none",
                   (activeTab === 'Revisiva' || activeTab === 'Planilla')
-                    ? "border-l-[#004741] bg-[#E8EFEE] text-[#004741]"
-                    : "border-l-transparent text-slate-500 hover:bg-[#E5E1D5] hover:text-slate-900"
+                    ? "border-l-acento bg-marca-suave text-acento"
+                    : "border-l-transparent text-slate-500 hover:bg-realce hover:text-slate-900"
                 )}
               >
-                <FileSpreadsheet className={cn("w-5 h-5 shrink-0", (activeTab === 'Revisiva' || activeTab === 'Planilla') ? "text-[#004741]" : "text-slate-400")} />
+                <FileSpreadsheet className={cn("w-5 h-5 shrink-0", (activeTab === 'Revisiva' || activeTab === 'Planilla') ? "text-acento" : "text-slate-400")} />
                 <span className="flex-1">Planillas</span>
                 <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", planillasOpen ? "rotate-180" : "")} />
               </div>
               {planillasOpen && (
-                <div className="ml-6 border-l-[0.5px] border-[#E8E6DE]">
+                <div className="ml-6 border-l-[0.5px] border-linea">
                   <div
                     onClick={() => setActiveTab('Revisiva')}
                     className={cn(
                       "flex items-center gap-2 pl-5 pr-4 py-2.5 cursor-pointer text-[13px] transition-colors select-none",
-                      activeTab === 'Revisiva' ? "text-[#004741] font-medium" : "text-slate-500 hover:text-slate-900"
+                      activeTab === 'Revisiva' ? "text-acento font-medium" : "text-slate-500 hover:text-slate-900"
                     )}
                   >
                     Planilla Revisiva
@@ -1406,7 +1405,7 @@ export default function App() {
                     onClick={() => setActiveTab('Planilla')}
                     className={cn(
                       "flex items-center gap-2 pl-5 pr-4 py-2.5 cursor-pointer text-[13px] transition-colors select-none",
-                      activeTab === 'Planilla' ? "text-[#004741] font-medium" : "text-slate-500 hover:text-slate-900"
+                      activeTab === 'Planilla' ? "text-acento font-medium" : "text-slate-500 hover:text-slate-900"
                     )}
                   >
                     Planilla Control
@@ -1423,85 +1422,52 @@ export default function App() {
           </div>
         </nav>
 
-        <div className="p-4 border-t-[0.5px] border-[#E8E6DE] bg-[#F2EFE6]">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-9 h-9 bg-[#E8EFEE] text-[#004741] rounded-full flex items-center justify-center text-xs font-medium shrink-0">
-              AL
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-700 leading-none">Alejandro D.</p>
-              <p className="text-[10px] text-[#9A9890] uppercase tracking-[0.06em] font-medium mt-1">Rafaela, Sta Fe</p>
-            </div>
-            {/* Dark mode toggle */}
-            <button
-              onClick={() => setDarkMode(d => !d)}
-              title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer outline-none border-none bg-transparent hover:bg-[#E8EFEE] text-[#9A9890] hover:text-[#004741]"
-            >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-          </div>
+        <div className="px-6 py-4 border-t-[0.5px] border-linea">
+          <p className="text-[10px] text-tenue uppercase tracking-[0.06em] font-medium">Rafaela, Sta Fe</p>
         </div>
       </aside>}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto flex flex-col bg-[#E8E4D8]">
+      <main className="flex-1 overflow-y-auto flex flex-col bg-lienzo">
         {/* Header */}
-        <header className="h-[42px] border-b-[0.5px] border-[#E8E6DE] flex items-center justify-between gap-3 px-4 sm:px-8 bg-[#F2EFE6] sticky top-0 z-10 shadow-none">
-          <div className="flex items-center gap-4">
-            {barraOculta && (
-              <button type="button" onClick={alternarSidebar} title="Mostrar barra lateral" aria-label="Mostrar barra lateral"
-                className="-ml-1 sm:-ml-4 p-1 text-[#9A9890] hover:text-[#1A1A1A] hover:bg-[#E5E1D5] rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
-                <PanelLeft className="w-4 h-4" />
-              </button>
-            )}
-            <div className="flex items-center gap-1.5 text-[12px] text-[#9A9890] font-normal">
-              <span>Home</span>
-              <ChevronRight className="w-3 h-3 text-[#BDBBB2]" />
-              <span className="font-medium text-[#1A1A1A]">{activeTab}</span>
-            </div>
+        <header className="h-[56px] shrink-0 border-b-[0.5px] border-linea flex items-center gap-3 px-4 sm:px-8 bg-superficie sticky top-0 z-40">
+          {barraOculta && (
+            <button type="button" onClick={alternarSidebar} title="Mostrar barra lateral" aria-label="Mostrar barra lateral"
+              className="-ml-1 sm:-ml-4 p-1.5 text-tenue hover:text-tinta hover:bg-realce rounded-[6px] bg-transparent border-none cursor-pointer outline-none shrink-0">
+              <PanelLeft className="w-4 h-4" />
+            </button>
+          )}
+          <div className="hidden md:flex items-center gap-1.5 text-[12.5px] text-tenue font-normal min-w-0">
+            <span>Home</span>
+            <ChevronRight className="w-3 h-3 text-tenue-2 shrink-0" />
+            <span className="font-medium text-tinta truncate">{NOMBRE_DE_TAB[activeTab] ?? activeTab}</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#9A9890]" />
-              <input 
-                type="text" 
-                placeholder="Buscar expediente..." 
-                value={auditSearchQuery}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setAuditSearchQuery(val);
-                  if (val.trim() && activeTab !== 'Historial') {
-                    setTimeout(() => setActiveTab('Historial'), 0);
-                  }
-                }}
-                className="bg-[#E8E4D8] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-36 sm:w-64 focus:border-[#004741] focus:bg-[#F2EFE6] transition-all outline-none text-[#1A1A1A]"
-              />
-              {auditSearchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setAuditSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9A9890] hover:text-slate-700 cursor-pointer outline-none border-none p-0 bg-transparent flex items-center justify-center"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
+          <div className="flex-1 min-w-0 flex justify-end">
+            <BuscadorGlobal historial={history} onAbrirLector={abrirExpedienteLector} onAbrirHistorial={abrirAuditoria} />
           </div>
+          <button
+            type="button"
+            onClick={() => setDarkMode(d => !d)}
+            title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            aria-label={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            className="shrink-0 w-9 h-9 rounded-[9px] flex items-center justify-center transition-colors cursor-pointer outline-none border border-linea-fuerte bg-superficie text-tinta-2 hover:text-acento hover:bg-realce"
+          >
+            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
         </header>
 
         <div className={cn(activeTab === 'Rapida' ? "flex-1 flex flex-col overflow-hidden" : "p-8 max-w-6xl mx-auto w-full")}>
           {activeTab === 'Dashboard' && (
             <>
-              <div className="flex w-fit p-[3px] bg-[#EEECE5] rounded-[8px] mb-8 gap-[2px] items-center select-none">
+              <div className="flex w-fit p-[3px] bg-hundida rounded-[8px] mb-8 gap-[2px] items-center select-none">
                 <button
                   type="button"
                   onClick={() => { setDashboardMode('Expedientes'); setSelectedFiles([]); setResult(null); setActiveAuditId(null); setActivePdfViewer(null); }}
                   className={cn(
                     "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] border-none",
                     dashboardMode === 'Expedientes'
-                      ? "bg-[#F2EFE6] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
-                      : "bg-transparent text-[#6B6A65] font-normal"
+                      ? "bg-superficie border-[0.5px] border-linea rounded-[6px] text-acento font-medium shadow-none"
+                      : "bg-transparent text-tinta-2 font-normal"
                   )}
                 >
                   Expedientes
@@ -1513,8 +1479,8 @@ export default function App() {
                   className={cn(
                     "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] border-none",
                     dashboardMode === 'Viáticos'
-                      ? "bg-[#F2EFE6] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
-                      : "bg-transparent text-[#6B6A65] font-normal"
+                      ? "bg-superficie border-[0.5px] border-linea rounded-[6px] text-acento font-medium shadow-none"
+                      : "bg-transparent text-tinta-2 font-normal"
                   )}
                 >
                   Viáticos
@@ -1537,11 +1503,11 @@ export default function App() {
                   </div>
 
                   {/* Model Selector Card */}
-                  <div className="mb-8 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-5 shadow-none">
+                  <div className="mb-8 bg-superficie rounded-[12px] border-[0.5px] border-linea p-5 caja">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-0.5">
                         <h4 className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
-                          <Sparkles className="w-4 h-4 text-[#004741]" />
+                          <Sparkles className="w-4 h-4 text-acento" />
                           <span>Motor de Inteligencia Artificial (IA)</span>
                         </h4>
                         <p className="text-xs text-slate-500 max-w-md leading-relaxed">
@@ -1557,7 +1523,7 @@ export default function App() {
                             setSelectedModel(val);
                             localStorage.setItem('epe_selected_model', val);
                           }}
-                          className="px-3 py-2 text-xs font-medium rounded-[8px] border border-[#E8E6DE] bg-[#F2EFE6] text-slate-700 outline-none cursor-pointer hover:border-[#004741]/40 transition-colors"
+                          className="px-3 py-2 text-xs font-medium rounded-[8px] border border-linea bg-superficie text-slate-700 outline-none cursor-pointer hover:border-acento/40 transition-colors"
                         >
                           {MODELS.map(m => (
                             <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
@@ -1570,30 +1536,30 @@ export default function App() {
                   <div 
                     {...getRootProps()} 
                     className={cn(
-                      "border-[2px] border-dashed rounded-[12px] h-64 flex flex-col items-center justify-center transition-all cursor-pointer bg-[#F2EFE6] group shadow-none",
-                      isDragActive ? "border-[#004741] bg-[#E8EFEE]" : "border-[#E8E6DE] hover:border-[#004741]/40 hover:bg-[#E8E4D8]"
+                      "border-[2px] border-dashed rounded-[12px] h-64 flex flex-col items-center justify-center transition-all cursor-pointer bg-superficie group caja",
+                      isDragActive ? "border-acento bg-marca-suave" : "border-linea hover:border-acento/40 hover:bg-hundida"
                     )}
                   >
                     <input {...getInputProps()} />
                     <div className={cn(
                       "w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-105",
-                      isDragActive ? "bg-[#E8EFEE] text-[#004741]" : "bg-[#DED9CC] text-slate-400"
+                      isDragActive ? "bg-marca-suave text-acento" : "bg-hundida-2 text-slate-400"
                     )}>
                       <Upload className="w-6 h-6" />
                     </div>
-                    <p className="text-base font-medium text-slate-705 mb-0.5">Arrastra uno o más archivos PDF aquí</p>
+                    <p className="text-base font-medium text-slate-700 mb-0.5">Arrastra uno o más archivos PDF aquí</p>
                     <p className="text-xs text-slate-400">O haz clic para explorar tus archivos</p>
                     <div className="mt-4">
-                      <div className="px-3 py-1 bg-[#DED9CC] text-[#9A9890] text-[10px] font-medium rounded uppercase tracking-[0.06em]">Múltiples archivos permitidos</div>
+                      <div className="px-3 py-1 bg-hundida-2 text-tenue text-[10px] font-medium rounded uppercase tracking-[0.06em]">Múltiples archivos permitidos</div>
                     </div>
                   </div>
 
                   {/* List of files with clean, premium design */}
                   {selectedFiles.length > 0 && (
-                    <div className="mt-8 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-6 shadow-none">
-                      <div className="flex items-center justify-between mb-4 pb-3 border-b-[0.5px] border-[#E8E6DE]">
+                    <div className="mt-8 bg-superficie rounded-[12px] border-[0.5px] border-linea p-6 caja">
+                      <div className="flex items-center justify-between mb-4 pb-3 border-b-[0.5px] border-linea">
                         <div className="flex items-center gap-2">
-                          <Paperclip className="w-5 h-5 text-[#004741]" />
+                          <Paperclip className="w-5 h-5 text-acento" />
                           <h3 className="text-sm font-medium text-slate-800">Archivos para Auditar ({selectedFiles.length})</h3>
                         </div>
                         <button
@@ -1610,7 +1576,7 @@ export default function App() {
                           return (
                             <div 
                               key={file.id} 
-                              className="flex items-center justify-between p-3 bg-[#E5E1D5] border-[0.5px] border-[#E8E6DE] rounded-[8px] transition-all hover:bg-[#DED9CC]/50"
+                              className="flex items-center justify-between p-3 bg-realce border-[0.5px] border-linea rounded-[8px] transition-all hover:bg-hundida-2/50"
                             >
                               <div className="flex items-center gap-3 overflow-hidden">
                                 <div className="w-9 h-9 bg-rose-50 rounded-[8px] flex items-center justify-center text-rose-500 shrink-0 border-[0.5px] border-rose-100 font-normal text-[11px] font-semibold">
@@ -1618,12 +1584,12 @@ export default function App() {
                                 </div>
                                 <div className="truncate">
                                   <div className="flex flex-wrap items-center gap-1.5 truncate">
-                                    <p className="text-xs font-medium text-slate-750 truncate max-w-[200px] sm:max-w-xs">{file.name}</p>
+                                    <p className="text-xs font-medium text-slate-700 truncate max-w-[200px] sm:max-w-xs">{file.name}</p>
                                     <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 uppercase tracking-wider", cat.color)}>
                                       {cat.label}
                                     </span>
                                   </div>
-                                  <p className="text-[11px] text-slate-405 mt-0.5">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                  <p className="text-[11px] text-slate-400 mt-0.5">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
                                 </div>
                               </div>
                               <button
@@ -1638,13 +1604,13 @@ export default function App() {
                         })}
                       </div>
 
-                      <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-end items-center border-t-[0.5px] border-[#E8E6DE] pt-6">
-                        <p className="text-xs text-[#9A9890] sm:mr-auto">
+                      <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-end items-center border-t-[0.5px] border-linea pt-6">
+                        <p className="text-xs text-tenue sm:mr-auto">
                           Se analizarán {selectedFiles.length} documento{selectedFiles.length > 1 ? 's' : ''} de forma consolidada por la IA.
                         </p>
                         <button
                           onClick={handleStartAudit}
-                          className="w-full sm:w-auto px-4 py-2 bg-[#004741] text-white text-xs font-medium rounded-[7px] hover:bg-[#003330] transition-all shadow-none flex items-center justify-center gap-1.5 cursor-pointer outline-none border-none"
+                          className="w-full sm:w-auto px-4 py-2 bg-marca text-white text-xs font-medium rounded-[7px] hover:bg-marca-hover transition-all shadow-none flex items-center justify-center gap-1.5 cursor-pointer outline-none border-none"
                         >
                           <Sparkles className="w-4 h-4" />
                           <span>Iniciar Auditoría Combinada</span>
@@ -1655,26 +1621,26 @@ export default function App() {
                 </motion.div>
               ) : isProcessing ? (
                 <div className="mt-16 max-w-xl mx-auto flex flex-col items-center justify-center px-4">
-                  <div className="w-full bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-8 shadow-none flex flex-col relative overflow-hidden">
+                  <div className="w-full bg-superficie rounded-[12px] border-[0.5px] border-linea p-8 flex flex-col relative overflow-hidden caja">
                     {/* Visual gradient accent */}
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-[#004741]" />
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-marca" />
                     
                     {/* Live Percentage Circle or Big Display */}
                     <div className="flex items-baseline justify-between mb-2">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">Procesamiento de IA</span>
+                        <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">Procesamiento de IA</span>
                         <h3 className="text-sm font-medium text-slate-900 mt-0.5">Auditoría EPE Digital</h3>
                       </div>
-                      <div className="flex items-baseline font-mono text-3xl font-medium text-[#004741] select-none">
+                      <div className="flex items-baseline font-mono text-3xl font-medium text-acento select-none">
                         <span>{auditProgress}</span>
-                        <span className="text-xs text-[#9A9890] font-normal">%</span>
+                        <span className="text-xs text-tenue font-normal">%</span>
                       </div>
                     </div>
 
                     {/* Progress Bar Container */}
-                    <div className="w-full h-1.5 bg-[#E8E4D8] rounded-full overflow-hidden mt-3 relative">
+                    <div className="w-full h-1.5 bg-hundida rounded-full overflow-hidden mt-3 relative">
                       <div 
-                        className="h-full bg-[#004741] rounded-full transition-all duration-500 ease-out" 
+                        className="h-full bg-marca rounded-full transition-all duration-500 ease-out" 
                         style={{ width: `${auditProgress}%` }}
                       />
                     </div>
@@ -1685,11 +1651,11 @@ export default function App() {
                     </p>
 
                     {/* Divider */}
-                    <div className="h-px bg-[#E8E6DE] my-6 w-full" />
+                    <div className="h-px bg-linea my-6 w-full" />
 
                     {/* Interactive workflow checklist */}
                     <div className="space-y-4">
-                      <h4 className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">Fases del análisis consolidado</h4>
+                      <h4 className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">Fases del análisis consolidado</h4>
                       
                       {/* Phase 1 */}
                       <div className="flex items-center gap-3.5">
@@ -1697,7 +1663,7 @@ export default function App() {
                            <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         ) : (
                           <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-acento animate-spin" />
                           </div>
                       )}
                         <span className={cn(
@@ -1714,10 +1680,10 @@ export default function App() {
                           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         ) : auditProgress >= 30 ? (
                           <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-acento animate-spin" />
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-slate-205 bg-[#F2EFE6] shrink-0" />
+                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-superficie shrink-0" />
                         )}
                         <span className={cn(
                           "text-xs transition-colors duration-200",
@@ -1734,10 +1700,10 @@ export default function App() {
                           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         ) : auditProgress >= 60 ? (
                           <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-acento animate-spin" />
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-[#F2EFE6] shrink-0" />
+                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-superficie shrink-0" />
                         )}
                         <span className={cn(
                           "text-xs transition-colors duration-200",
@@ -1754,10 +1720,10 @@ export default function App() {
                           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         ) : auditProgress >= 85 ? (
                           <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-[#004741] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-acento animate-spin" />
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-[#F2EFE6] shrink-0" />
+                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-superficie shrink-0" />
                         )}
                         <span className={cn(
                           "text-xs transition-colors duration-200",
@@ -1770,7 +1736,7 @@ export default function App() {
                     </div>
 
                     {/* Divider */}
-                    <div className="h-px bg-[#E8E6DE] my-5 w-full" />
+                    <div className="h-px bg-linea my-5 w-full" />
 
                     {/* Cancel button */}
                     <button
@@ -1817,44 +1783,27 @@ export default function App() {
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
-                    <FileText className="w-6 h-6 text-[#9A9890]" />
+                  <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center caja">
+                    <FileText className="w-6 h-6 text-tenue" />
                   </div>
                   <div>
                     <h2 className="text-xl font-medium tracking-tight text-slate-900">Historial</h2>
-                    <p className="text-xs text-[#9A9890] mt-0.5">Auditorías previas completadas — {history.length} en total.</p>
+                    <p className="text-xs text-tenue mt-0.5">Auditorías previas completadas — {history.length} en total.</p>
                   </div>
-                  {history.length > 0 && (
-                    <div className="relative">
-                      <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#9A9890] pointer-events-none" />
-                      <input
-                        type="text"
-                        placeholder="Buscar..."
-                        value={auditSearchQuery}
-                        onChange={(e) => setAuditSearchQuery(e.target.value)}
-                        className="bg-[#E8E4D8] border-[0.5px] border-[#E2E0D8] rounded-[6px] pl-8 pr-8 py-1 text-[12px] w-52 focus:border-[#004741] focus:bg-[#F2EFE6] transition-all outline-none text-[#1A1A1A]"
-                      />
-                      {auditSearchQuery && (
-                        <button type="button" onClick={() => setAuditSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9A9890] hover:text-slate-700 cursor-pointer outline-none border-none p-0 bg-transparent flex items-center justify-center">
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={exportHistory}
-                    className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-[#F2EFE6] border border-[#D3D1C7] text-slate-700 text-xs font-medium rounded-[7px] hover:bg-[#E5E1D5] hover:text-slate-900 transition-all cursor-pointer shadow-none outline-none select-none"
+                    className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-superficie border border-linea-fuerte text-slate-700 text-xs font-medium rounded-[7px] hover:bg-realce hover:text-slate-900 transition-all cursor-pointer shadow-none outline-none select-none"
                     title="Exportar respaldo de historial en formato JSON"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Exportar Copia</span>
                   </button>
                   <label
-                    className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-[#D4E8E6] border border-[#BFEDDB] text-[#003330] text-xs font-medium rounded-[7px] hover:bg-[#d0f0e5] transition-all cursor-pointer shadow-none outline-none select-none"
+                    className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-ok-fondo border border-ok-linea text-ok-tinta text-xs font-medium rounded-[7px] hover:bg-marca-suave transition-all cursor-pointer shadow-none outline-none select-none"
                     title="Importar un archivo de respaldo JSON"
                   >
                     <Upload className="w-3.5 h-3.5" />
@@ -1870,31 +1819,16 @@ export default function App() {
               </div>
 
               {history.length === 0 ? (
-                <div className="p-16 text-center border-[0.5px] border-dashed border-[#E8E6DE] rounded-[12px] bg-[#F2EFE6]/50">
-                  <FileText className="w-12 h-12 text-[#9A9890]/40 mx-auto mb-4" />
-                  <p className="text-[#9A9890] font-medium text-sm">No hay auditorías registradas todavía.</p>
-                </div>
-              ) : filteredHistory.length === 0 ? (
-                <div className="p-16 text-center border-[0.5px] border-dashed border-[#E8E6DE] rounded-[12px] bg-[#F2EFE6]/50 animate-fade-in">
-                  <Search className="w-12 h-12 text-[#9A9890]/30 mx-auto mb-4" />
-                  <p className="text-slate-800 font-semibold text-sm mb-1">No se encontraron resultados para "{auditSearchQuery}"</p>
-                  <p className="text-xs text-[#9A9890] max-w-sm mx-auto leading-relaxed">
-                    Prueba con otro número de expediente (ej. <b className="text-slate-700">9708</b>), fecha, agencia, sucursal, responsable o palabra de resumen.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setAuditSearchQuery('')}
-                    className="mt-4 px-4 py-1.5 bg-[#F2EFE6] border border-[#D3D1C7] hover:bg-[#E5E1D5] hover:text-slate-900 text-slate-700 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none shadow-none"
-                  >
-                    Limpiar Búsqueda
-                  </button>
+                <div className="p-16 text-center border-[0.5px] border-dashed border-linea rounded-[12px] bg-superficie/50">
+                  <FileText className="w-12 h-12 text-tenue/40 mx-auto mb-4" />
+                  <p className="text-tenue font-medium text-sm">No hay auditorías registradas todavía.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filteredHistory.map(entry => (
+                  {history.map(entry => (
                     <div 
                       key={entry.id} 
-                      className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] p-6 rounded-[12px] shadow-none flex flex-col sm:flex-row gap-6 sm:items-center justify-between group animate-fade-in"
+                      className="bg-superficie border-[0.5px] border-linea p-6 rounded-[12px] flex flex-col sm:flex-row gap-6 sm:items-center justify-between group animate-fade-in caja"
                     >
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
@@ -1908,7 +1842,7 @@ export default function App() {
                               Rápida
                             </span>
                           ) : (
-                            <span className="px-[10px] py-[3px] bg-[#D4E8E6] text-[#003330] rounded-[20px] text-[11px] font-medium leading-none">
+                            <span className="px-[10px] py-[3px] bg-ok-fondo text-ok-tinta rounded-[20px] text-[11px] font-medium leading-none">
                               Expediente
                             </span>
                           )}
@@ -1940,19 +1874,19 @@ export default function App() {
                               {(entry.result.payments || []).length === 1 ? 'pago suelto' : 'pagos sueltos'}
                             </h3>
                           ) : (
-                            <span className="text-xs font-medium bg-[#E8E4D8] text-slate-600 px-2.5 py-1 rounded-md">
+                            <span className="text-xs font-medium bg-hundida text-slate-600 px-2.5 py-1 rounded-md">
                               FF-{entry.FF || 'Sin ID'}
                             </span>
                           )}
 
                           {entry.result?.expedienteNumero && (
-                            <span className="text-xs font-medium bg-[#E8E4D8] text-slate-500 border border-[#E8E6DE] px-2 py-0.5 rounded-md font-mono">
+                            <span className="text-xs font-medium bg-hundida text-slate-500 border border-linea px-2 py-0.5 rounded-md font-mono">
                               Exp. {entry.result.expedienteNumero}
                               {entry.result.expedienteFecha ? ` (${entry.result.expedienteFecha})` : ''}
                             </span>
                           )}
 
-                          <span className="text-xs text-[#9A9890] ml-auto sm:ml-2">
+                          <span className="text-xs text-tenue ml-auto sm:ml-2">
                             {new Date(entry.date).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
                           </span>
                         </div>
@@ -1960,15 +1894,8 @@ export default function App() {
                       </div>
                       <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
                         <button 
-                          onClick={() => {
-                            setResult(entry.result);
-                            setActiveAuditId(entry.id);
-                            // 'Rapida' no es un modo del selector del Dashboard:
-                            // su reporte se renderiza igual que el de Expedientes.
-                            setDashboardMode(entry.result.mode === 'Viáticos' ? 'Viáticos' : 'Expedientes');
-                            setActiveTab('Dashboard');
-                          }}
-                          className="py-[6px] px-[14px] bg-[#F2EFE6] border border-[#D3D1C7] text-[#004741] text-[13px] font-medium rounded-[7px] hover:bg-[#E8EFEE] transition-all shadow-none cursor-pointer select-none outline-none"
+                          onClick={() => abrirAuditoria(entry)}
+                          className="py-[6px] px-[14px] bg-superficie border border-linea-fuerte text-acento text-[13px] font-medium rounded-[7px] hover:bg-marca-suave transition-all shadow-none cursor-pointer select-none outline-none"
                         >
                           Ver Reporte
                         </button>
@@ -1978,7 +1905,7 @@ export default function App() {
                             setDeleteConfirmId(entry.id);
                           }}
                           title="Eliminar auditoría"
-                          className="p-2 text-[#9A9890] hover:text-red-600 hover:bg-red-50 rounded-[7px] transition-all cursor-pointer outline-none border border-transparent hover:border-red-100"
+                          className="p-2 text-tenue hover:text-red-600 hover:bg-red-50 rounded-[7px] transition-all cursor-pointer outline-none border border-transparent hover:border-red-100"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1997,12 +1924,12 @@ export default function App() {
               className="max-w-5xl"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
-                  <ShieldCheck className="w-6 h-6 text-[#004741]" />
+                <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center caja">
+                  <ShieldCheck className="w-6 h-6 text-acento" />
                 </div>
                 <div>
                   <h2 className="text-xl font-medium tracking-tight text-slate-900">Marco Normativo</h2>
-                  <p className="text-xs text-[#9A9890] mt-0.5">Reglas, límites y responsables vigentes para Fondos Fijos.</p>
+                  <p className="text-xs text-tenue mt-0.5">Reglas, límites y responsables vigentes para Fondos Fijos.</p>
                 </div>
               </div>
 
@@ -2030,16 +1957,16 @@ export default function App() {
               className="max-w-5xl"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
-                  <FileCheck2 className="w-6 h-6 text-[#004741]" />
+                <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center caja">
+                  <FileCheck2 className="w-6 h-6 text-acento" />
                 </div>
                 <div>
                   <h2 className="text-xl font-medium tracking-tight text-slate-900">Códigos PIMyS</h2>
-                  <p className="text-xs text-[#9A9890] mt-0.5">Diccionario completo de conceptos y códigos autorizados.</p>
+                  <p className="text-xs text-tenue mt-0.5">Diccionario completo de conceptos y códigos autorizados.</p>
                 </div>
               </div>
 
-              <div className="flex p-[3px] bg-[#EEECE5] rounded-[8px] mb-6 gap-[2px] w-fit select-none items-center">
+              <div className="flex p-[3px] bg-hundida rounded-[8px] mb-6 gap-[2px] w-fit select-none items-center">
                 {(Object.keys(PIMYS_CODES) as Array<keyof typeof PIMYS_CODES>).map(cat => (
                   <button
                     key={cat}
@@ -2048,8 +1975,8 @@ export default function App() {
                     className={cn(
                       "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] whitespace-nowrap border-none leading-none",
                       activeCodeCategory === cat 
-                        ? "bg-[#F2EFE6] border-[0.5px] border-[#E2E0D8] rounded-[6px] text-[#004741] font-medium shadow-none"
-                        : "bg-transparent text-[#6B6A65] font-normal"
+                        ? "bg-superficie border-[0.5px] border-linea rounded-[6px] text-acento font-medium shadow-none"
+                        : "bg-transparent text-tinta-2 font-normal"
                     )}
                   >
                     {cat}
@@ -2060,24 +1987,24 @@ export default function App() {
               <div className="mb-6">
                 <div className="relative max-w-md">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-4 w-4 text-[#9A9890]" aria-hidden="true" />
+                    <Search className="h-4 w-4 text-tenue" aria-hidden="true" />
                   </div>
                   <input
                     type="text"
                     value={codeSearchQuery}
                     onChange={(e) => setCodeSearchQuery(e.target.value)}
-                    className="block w-full pl-[36px] pr-[12px] py-[8px] border border-[#D3D1C7] rounded-[8px] bg-[#F2EFE6] text-[13px] text-[#1A1A1A] placeholder-[#9A9890] focus:border-[#004741] focus:ring-0 outline-none"
+                    className="block w-full pl-[36px] pr-[12px] py-[8px] border border-linea-fuerte rounded-[8px] bg-superficie text-[13px] text-tinta placeholder-tenue focus:border-acento focus:ring-0 outline-none"
                     placeholder="Buscar por código o palabra..."
                   />
                 </div>
               </div>
 
-              <div className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] shadow-none overflow-hidden mb-6">
+              <div className="bg-superficie rounded-[12px] border-[0.5px] border-linea overflow-hidden mb-6 caja">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left border-collapse">
-                    <thead className="bg-[#E8E4D8]/50 text-[10px] text-[#9A9890] uppercase font-medium tracking-[0.06em]">
-                      <tr className="bg-[#E8E4D8] border-b-[1.5px] border-[#D3D1C7]">
-                        <th className="p-[12px_16px] border-r-[0.5px] border-[#E8E6DE]" style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}>Código</th>
+                    <thead className="bg-hundida/50 text-[10px] text-tenue uppercase font-medium tracking-[0.06em]">
+                      <tr className="bg-hundida border-b-[1.5px] border-linea-fuerte">
+                        <th className="p-[12px_16px] border-r-[0.5px] border-linea" style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}>Código</th>
                         <th className="p-[12px_16px]">Descripción Completa</th>
                       </tr>
                     </thead>
@@ -2090,11 +2017,11 @@ export default function App() {
                           return item.code.toString().includes(query) || normalizeStr(item.descripcion).includes(query);
                         })
                         .map((item, idx) => (
-                        <tr key={idx} className="border-b border-[#E8E6DE] hover:bg-[#E5E1D5]/50 transition-colors">
-                          <td className="p-[12px_16px] font-mono font-medium text-[#004741] border-r-[0.5px] border-[#E8E6DE] align-top text-base whitespace-nowrap" style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}>
+                        <tr key={idx} className="border-b border-linea hover:bg-realce/50 transition-colors">
+                          <td className="p-[12px_16px] font-mono font-medium text-acento border-r-[0.5px] border-linea align-top text-base whitespace-nowrap" style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}>
                             {item.code}
                           </td>
-                          <td className="p-[12px_16px] text-[#1A1A1A] leading-[1.5] font-normal align-top text-[13px]">
+                          <td className="p-[12px_16px] text-tinta leading-[1.5] font-normal align-top text-[13px]">
                             {item.descripcion}
                           </td>
                         </tr>
@@ -2113,27 +2040,27 @@ export default function App() {
               className="max-w-5xl"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none">
-                  <Stamp className="w-6 h-6 text-[#004741]" />
+                <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center caja">
+                  <Stamp className="w-6 h-6 text-acento" />
                 </div>
                 <div>
                   <h2 className="text-xl font-medium tracking-tight text-slate-900">Autorizaciones PIMyS</h2>
-                  <p className="text-xs text-[#9A9890] mt-0.5">Firmas obligatorias según el código de gasto o el agente solicitante.</p>
+                  <p className="text-xs text-tenue mt-0.5">Firmas obligatorias según el código de gasto o el agente solicitante.</p>
                 </div>
               </div>
 
               {/* ── Por código de gasto ───────────────────────────────── */}
               <div className="flex items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#004741] rounded-full" />
-                  <h3 className="text-[10px] font-medium text-[#004741] uppercase tracking-[0.06em]">
+                  <span className="w-1.5 h-1.5 bg-marca rounded-full" />
+                  <h3 className="text-[10px] font-medium text-acento uppercase tracking-[0.06em]">
                     Según código de gasto
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowFormCodigo(v => !v)}
-                  className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold rounded-[7px] transition-all cursor-pointer border-none outline-none shadow-none"
+                  className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-marca hover:bg-marca-hover text-white text-xs font-semibold rounded-[7px] transition-all cursor-pointer border-none outline-none shadow-none"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>{showFormCodigo ? 'Cancelar' : 'Agregar código'}</span>
@@ -2141,31 +2068,31 @@ export default function App() {
               </div>
 
               {showFormCodigo && (
-                <div className="bg-[#F2EFE6] rounded-[12px] border border-[#004741]/30 p-5 mb-4 space-y-3">
+                <div className="bg-superficie rounded-[12px] border border-acento/30 p-5 mb-4 space-y-3 caja">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Código(s) *</label>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">Código(s) *</label>
                       <input type="text" value={formCodigo.codigos} placeholder="Ej: 610 o 610, 611"
                         onChange={e => setFormCodigo({ ...formCodigo, codigos: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-[13px] outline-none focus:border-acento" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Concepto *</label>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">Concepto *</label>
                       <input type="text" value={formCodigo.concepto} placeholder="Descripción del gasto"
                         onChange={e => setFormCodigo({ ...formCodigo, concepto: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-[13px] outline-none focus:border-acento" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1.5">Tipo de autorización</label>
+                    <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1.5">Tipo de autorización</label>
                     <div className="flex gap-2">
                       {(['fijo', 'zona'] as const).map(t => (
                         <button key={t} type="button" onClick={() => setFormCodigo({ ...formCodigo, tipo: t })}
                           className={cn("text-[12px] py-1.5 px-3 rounded-[6px] border transition-all cursor-pointer outline-none",
                             formCodigo.tipo === t
-                              ? "bg-[#004741] text-white border-[#004741] font-medium"
-                              : "bg-[#E8E4D8] text-slate-700 border-[#D3D1C7]")}>
+                              ? "bg-marca text-white border-acento font-medium"
+                              : "bg-hundida text-slate-700 border-linea-fuerte")}>
                           {t === 'fijo' ? 'Misma persona siempre' : 'Depende de la sucursal'}
                         </button>
                       ))}
@@ -2174,33 +2101,33 @@ export default function App() {
 
                   {formCodigo.tipo === 'fijo' ? (
                     <div>
-                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Autorizante(s) *</label>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">Autorizante(s) *</label>
                       <input type="text" value={formCodigo.firmantes} placeholder="Ej: Sergio Cenci, Gustavo Fernández (separá con coma si vale cualquiera)"
                         onChange={e => setFormCodigo({ ...formCodigo, firmantes: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-[13px] outline-none focus:border-acento" />
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {ZONAS.map(z => (
                         <div key={z}>
-                          <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">{z}</label>
+                          <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">{z}</label>
                           <input type="text" value={formCodigo[z]} placeholder="Nombre del jefe"
                             onChange={e => setFormCodigo({ ...formCodigo, [z]: e.target.value })}
-                            className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                            className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-[13px] outline-none focus:border-acento" />
                         </div>
                       ))}
                     </div>
                   )}
 
                   <div>
-                    <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Nota aclaratoria (opcional)</label>
+                    <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">Nota aclaratoria (opcional)</label>
                     <input type="text" value={formCodigo.nota} placeholder="Ej: la autorización llega por correo"
                       onChange={e => setFormCodigo({ ...formCodigo, nota: e.target.value })}
-                      className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                      className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-[13px] outline-none focus:border-acento" />
                   </div>
 
                   <button type="button" onClick={handleAddCodigo}
-                    className="bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all cursor-pointer border-none outline-none">
+                    className="bg-marca hover:bg-marca-hover text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all cursor-pointer border-none outline-none">
                     Guardar autorización
                   </button>
                 </div>
@@ -2210,12 +2137,12 @@ export default function App() {
                 {[...AUTORIZACIONES_POR_CODIGO, ...customCodigos].map((auth, idx) => (
                   <div
                     key={auth.id || idx}
-                    className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-5 shadow-none relative"
+                    className="bg-superficie rounded-[12px] border-[0.5px] border-linea p-5 relative caja"
                   >
                     {auth.custom && auth.id && (
                       <button type="button" onClick={() => setCustomCodigos(removeCodigo(auth.id!))}
                         title="Eliminar esta autorización"
-                        className="absolute top-4 right-4 p-1.5 text-[#9A9890] hover:text-[#A32D2D] rounded-[6px] transition-all cursor-pointer border-none bg-transparent outline-none">
+                        className="absolute top-4 right-4 p-1.5 text-tenue hover:text-error rounded-[6px] transition-all cursor-pointer border-none bg-transparent outline-none">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -2223,7 +2150,7 @@ export default function App() {
                       {auth.codigos.map(c => (
                         <span
                           key={c}
-                          className="font-mono text-[13px] font-medium text-[#004741] bg-[#D4E8E6] border-[0.5px] border-[#9FE1CB] px-2 py-0.5 rounded-[6px]"
+                          className="font-mono text-[13px] font-medium text-acento bg-ok-fondo border-[0.5px] border-ok-linea px-2 py-0.5 rounded-[6px]"
                         >
                           {c}
                         </span>
@@ -2233,14 +2160,14 @@ export default function App() {
 
                     {auth.tipo === 'fijo' ? (
                       <div className="mt-3 flex items-start gap-2 text-[13px]">
-                        <span className="text-[#9A9890] shrink-0">Autoriza:</span>
+                        <span className="text-tenue shrink-0">Autoriza:</span>
                         <strong className="font-semibold text-slate-900 break-all">{(auth.firmantes || []).join(' o ')}</strong>
                       </div>
                     ) : (
                       <div className="mt-3 overflow-x-auto">
                         <table className="w-full text-left border-collapse text-[13px]">
                           <thead>
-                            <tr className="bg-[#E8E4D8] border-b-[1.5px] border-[#D3D1C7] text-[10px] text-[#9A9890] uppercase tracking-[0.06em]">
+                            <tr className="bg-hundida border-b-[1.5px] border-linea-fuerte text-[10px] text-tenue uppercase tracking-[0.06em]">
                               <th className="p-[8px_12px] font-medium whitespace-nowrap">Sucursal</th>
                               <th className="p-[8px_12px] font-medium">Alcance</th>
                               <th className="p-[8px_12px] font-medium whitespace-nowrap">Autoriza</th>
@@ -2248,9 +2175,9 @@ export default function App() {
                           </thead>
                           <tbody>
                             {(auth.zonas || []).map(z => (
-                              <tr key={z.zona} className="border-b border-[#E8E6DE] last:border-0">
+                              <tr key={z.zona} className="border-b border-linea last:border-0">
                                 <td className="p-[8px_12px] font-medium text-slate-800 align-top whitespace-nowrap">{z.zona}</td>
-                                <td className="p-[8px_12px] text-[#6B6963] align-top leading-[1.5] text-[12px]">{z.alcance}</td>
+                                <td className="p-[8px_12px] text-tinta-2 align-top leading-[1.5] text-[12px]">{z.alcance}</td>
                                 <td className="p-[8px_12px] align-top whitespace-nowrap">
                                   <strong className="font-semibold text-slate-900">{z.firmante}</strong>
                                 </td>
@@ -2262,8 +2189,8 @@ export default function App() {
                     )}
 
                     {auth.excepcion && (
-                      <div className="mt-3 bg-amber-50 border border-amber-250 rounded-[8px] p-3">
-                        <p className="text-[11px] font-semibold text-amber-850 mb-1">
+                      <div className="mt-3 bg-amber-50 border border-amber-200 rounded-[8px] p-3">
+                        <p className="text-[11px] font-semibold text-amber-800 mb-1">
                           Excepción — {auth.excepcion.motivo}
                         </p>
                         <p className="text-[12px] text-amber-800 leading-relaxed">
@@ -2273,7 +2200,7 @@ export default function App() {
                     )}
 
                     {auth.nota && (
-                      <p className="mt-3 text-[12px] text-[#6B6963] leading-relaxed border-l-2 border-[#D3D1C7] pl-3">
+                      <p className="mt-3 text-[12px] text-tinta-2 leading-relaxed border-l-2 border-linea-fuerte pl-3">
                         {auth.nota}
                       </p>
                     )}
@@ -2284,15 +2211,15 @@ export default function App() {
               {/* ── Por sector / agente solicitante ───────────────────── */}
               <div className="flex items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#004741] rounded-full" />
-                  <h3 className="text-[10px] font-medium text-[#004741] uppercase tracking-[0.06em]">
+                  <span className="w-1.5 h-1.5 bg-marca rounded-full" />
+                  <h3 className="text-[10px] font-medium text-acento uppercase tracking-[0.06em]">
                     Según el agente solicitante del PIMyS
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowFormSector(v => !v)}
-                  className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold rounded-[7px] transition-all cursor-pointer border-none outline-none shadow-none"
+                  className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-marca hover:bg-marca-hover text-white text-xs font-semibold rounded-[7px] transition-all cursor-pointer border-none outline-none shadow-none"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>{showFormSector ? 'Cancelar' : 'Agregar sector'}</span>
@@ -2300,43 +2227,43 @@ export default function App() {
               </div>
 
               {showFormSector && (
-                <div className="bg-[#F2EFE6] rounded-[12px] border border-[#004741]/30 p-5 mb-4 space-y-3">
+                <div className="bg-superficie rounded-[12px] border border-acento/30 p-5 mb-4 space-y-3 caja">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Sector *</label>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">Sector *</label>
                       <input type="text" value={formSector.sector} placeholder="Ej: Laboratorio"
                         onChange={e => setFormSector({ ...formSector, sector: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-[13px] outline-none focus:border-acento" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Agente(s) solicitante(s) *</label>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">Agente(s) solicitante(s) *</label>
                       <input type="text" value={formSector.agentes} placeholder="Ej: Juan Pérez, Ana Gómez"
                         onChange={e => setFormSector({ ...formSector, agentes: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-[13px] outline-none focus:border-acento" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Jefe(s) autorizante(s) *</label>
+                      <label className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">Jefe(s) autorizante(s) *</label>
                       <input type="text" value={formSector.jefes} placeholder="Ej: Carlos Ruiz"
                         onChange={e => setFormSector({ ...formSector, jefes: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#D3D1C7] rounded-[8px] bg-white text-[13px] outline-none focus:border-[#004741]" />
+                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-[13px] outline-none focus:border-acento" />
                     </div>
                   </div>
-                  <p className="text-[11px] text-[#9A9890]">Si hay más de un nombre, separalos con coma: alcanza con la firma de cualquiera de ellos.</p>
+                  <p className="text-[11px] text-tenue">Si hay más de un nombre, separalos con coma: alcanza con la firma de cualquiera de ellos.</p>
                   <button type="button" onClick={handleAddSector}
-                    className="bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all cursor-pointer border-none outline-none">
+                    className="bg-marca hover:bg-marca-hover text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all cursor-pointer border-none outline-none">
                     Guardar autorización
                   </button>
                 </div>
               )}
-              <p className="text-[12px] text-[#9A9890] mb-4 leading-relaxed max-w-2xl">
+              <p className="text-[12px] text-tenue mb-4 leading-relaxed max-w-2xl">
                 Si el campo <strong className="font-medium text-slate-700">Solicitante</strong> del PIMyS corresponde a alguno de estos agentes, el formulario debe llevar la firma del jefe autorizante de su sector.
               </p>
 
-              <div className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] shadow-none overflow-hidden">
+              <div className="bg-superficie rounded-[12px] border-[0.5px] border-linea overflow-hidden caja">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-[13px]">
                     <thead>
-                      <tr className="bg-[#E8E4D8] border-b-[1.5px] border-[#D3D1C7] text-[10px] text-[#9A9890] uppercase tracking-[0.06em]">
+                      <tr className="bg-hundida border-b-[1.5px] border-linea-fuerte text-[10px] text-tenue uppercase tracking-[0.06em]">
                         <th className="p-[12px_16px] font-medium whitespace-nowrap">Sector</th>
                         <th className="p-[12px_16px] font-medium">Agente solicitante</th>
                         <th className="p-[12px_16px] font-medium">Jefe autorizante</th>
@@ -2345,9 +2272,9 @@ export default function App() {
                     </thead>
                     <tbody>
                       {[...AUTORIZACIONES_POR_SECTOR, ...customSectores].map((s, idx) => (
-                        <tr key={s.id || idx} className="border-b border-[#E8E6DE] last:border-0 hover:bg-[#E5E1D5]/50 transition-colors">
+                        <tr key={s.id || idx} className="border-b border-linea last:border-0 hover:bg-realce/50 transition-colors">
                           <td className="p-[12px_16px] font-medium text-slate-800 align-top leading-[1.4]">{s.sector}</td>
-                          <td className="p-[12px_16px] text-[#1A1A1A] align-top leading-[1.6]">
+                          <td className="p-[12px_16px] text-tinta align-top leading-[1.6]">
                             {s.agentes.join(' o ')}
                           </td>
                           <td className="p-[12px_16px] align-top leading-[1.6]">
@@ -2357,7 +2284,7 @@ export default function App() {
                             {s.custom && s.id && (
                               <button type="button" onClick={() => setCustomSectores(removeSector(s.id!))}
                                 title="Eliminar esta autorización"
-                                className="p-1.5 text-[#9A9890] hover:text-[#A32D2D] rounded-[6px] transition-all cursor-pointer border-none bg-transparent outline-none">
+                                className="p-1.5 text-tenue hover:text-error rounded-[6px] transition-all cursor-pointer border-none bg-transparent outline-none">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             )}
@@ -2369,7 +2296,7 @@ export default function App() {
                 </div>
               </div>
 
-              <p className="mt-6 text-[12px] text-[#9A9890] leading-relaxed max-w-2xl">
+              <p className="mt-6 text-[12px] text-tenue leading-relaxed max-w-2xl">
                 Estas reglas se aplican automáticamente en la validación <strong className="font-medium text-slate-700">V4 (Aprobadores)</strong> de cada auditoría.
               </p>
             </motion.div>
@@ -2383,12 +2310,12 @@ export default function App() {
               id="revisiva-tab-container"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shadow-none text-[#004741]">
+                <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center text-acento caja">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div>
                   <h2 className="text-xl font-medium tracking-tight text-slate-900">Planilla Revisiva</h2>
-                  <p className="text-xs text-[#9A9890] mt-0.5">Asistente de autocompletado y emisión del informe revisivo oficial de la EPE.</p>
+                  <p className="text-xs text-tenue mt-0.5">Asistente de autocompletado y emisión del informe revisivo oficial de la EPE.</p>
                 </div>
               </div>
 
@@ -2398,9 +2325,9 @@ export default function App() {
                   <div className="flex items-center justify-between h-5">
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Parámetros de Entrada</span>
                   </div>
-                  <div className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] p-6 shadow-none space-y-4">
+                  <div className="bg-superficie rounded-[12px] border-[0.5px] border-linea p-6 space-y-4 caja">
                     <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-[#004741]" />
+                      <Sparkles className="w-4 h-4 text-acento" />
                       <span>Filtro y Autocompletado</span>
                     </h3>
 
@@ -2419,7 +2346,7 @@ export default function App() {
                           setPdfResponsable('');
                           setPdfReparticion('');
                         }}
-                        className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#F2EFE6] text-slate-900 focus:border-[#004741] outline-none font-medium"
+                        className="block w-full px-3 py-2 border border-linea-fuerte rounded-lg text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium"
                       >
                         <option value="">Seleccionar...</option>
                         {Object.keys(SECTOR_MAPPING).map(g => (
@@ -2453,8 +2380,8 @@ export default function App() {
                           }
                         }}
                         className={cn(
-                          "block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#F2EFE6] text-slate-900 focus:border-[#004741] outline-none font-medium",
-                          !pdfGciaSuc && "opacity-60 cursor-not-allowed bg-[#E5E1D5]"
+                          "block w-full px-3 py-2 border border-linea-fuerte rounded-lg text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium",
+                          !pdfGciaSuc && "opacity-60 cursor-not-allowed bg-realce"
                         )}
                       >
                         <option value="">
@@ -2469,9 +2396,9 @@ export default function App() {
                     </div>
 
                     {/* Mapped Fields (Pre-filled + Editable) */}
-                    <div className="border-t border-slate-150 pt-4 mt-2 space-y-4">
+                    <div className="border-t border-slate-100 pt-4 mt-2 space-y-4">
                       <div>
-                        <label className="block text-xs font-semibold text-[#004741] uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-acento uppercase tracking-wider mb-1.5 flex items-center justify-between">
                           <span>Responsable (Autocompletado)</span>
                           <span className="text-[10px] text-slate-400 font-normal">Editable</span>
                         </label>
@@ -2480,7 +2407,7 @@ export default function App() {
                           type="text"
                           value={pdfResponsable}
                           onChange={(e) => setPdfResponsable(e.target.value)}
-                          className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#F2EFE6] text-slate-900 focus:border-[#004741] outline-none font-medium"
+                          className="block w-full px-3 py-2 border border-linea-fuerte rounded-lg text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium"
                           placeholder="Responsable oficial del sector"
                         />
                       </div>
@@ -2495,7 +2422,7 @@ export default function App() {
                           type="text"
                           value={pdfReparticion}
                           onChange={(e) => setPdfReparticion(e.target.value)}
-                          className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#F2EFE6] text-slate-900 focus:border-[#004741] outline-none font-medium"
+                          className="block w-full px-3 py-2 border border-linea-fuerte rounded-lg text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium"
                           placeholder="Nombre asignado de la repartición"
                         />
                       </div>
@@ -2510,7 +2437,7 @@ export default function App() {
                             type="text"
                             value={pdfFdoFijoNo}
                             onChange={(e) => setPdfFdoFijoNo(e.target.value)}
-                            className="block w-full px-3 py-2 border border-[#D3D1C7] rounded-lg text-sm bg-[#F2EFE6] text-slate-900 focus:border-[#004741] outline-none font-medium font-mono"
+                            className="block w-full px-3 py-2 border border-linea-fuerte rounded-lg text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium font-mono"
                             placeholder="Ej. FF-01"
                           />
                         </div>
@@ -2523,7 +2450,7 @@ export default function App() {
                         type="button"
                         id="generate-revisiva-btn"
                         onClick={handleDownloadPdf}
-                        className="w-full py-2.5 bg-[#004741] text-white hover:bg-[#003330] text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none shadow-sm"
+                        className="w-full py-2.5 bg-marca text-white hover:bg-marca-hover text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none shadow-sm"
                       >
                         <Download className="w-4 h-4" />
                         <span>Generar y descargar PDF</span>
@@ -2537,7 +2464,7 @@ export default function App() {
                           setPdfReparticion('');
                           setPdfFdoFijoNo('');
                         }}
-                        className="w-full py-2 border border-slate-200 bg-[#F2EFE6] hover:bg-[#E5E1D5] text-slate-600 text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                        className="w-full py-2 border border-slate-200 bg-superficie hover:bg-realce text-slate-600 text-xs font-semibold rounded-lg transition-all cursor-pointer"
                       >
                         Limpiar Selección
                       </button>
@@ -2545,7 +2472,7 @@ export default function App() {
                   </div>
 
                   {/* Summary Mapping Lists grouped elegantly */}
-                  <div className="bg-[#FFFDF9] border border-[#E9E4D4] rounded-xl p-5 text-slate-600 text-xs shadow-none space-y-3">
+                  <div className="bg-superficie border border-linea rounded-xl p-5 text-slate-600 text-xs space-y-3 caja">
                     <h4 className="font-semibold text-amber-900 flex items-center gap-1.5 uppercase tracking-wide text-[10px]">
                       <Info className="w-3.5 h-3.5 text-amber-700" />
                       <span>Grilla de Responsables Registrados</span>
@@ -2553,10 +2480,10 @@ export default function App() {
                     <p className="text-[11px] text-slate-500 leading-relaxed">
                       Estructura oficial de dependencias y agentes asignados:
                     </p>
-                    <div className="space-y-2 max-h-[220px] overflow-y-auto pr-2 divide-y divide-slate-150">
+                    <div className="space-y-2 max-h-[220px] overflow-y-auto pr-2 divide-y divide-slate-100">
                       {Object.entries(SECTOR_MAPPING).map(([gcia, sectors]) => (
                         <div key={gcia} className="pt-2 first:pt-0">
-                          <span className="font-semibold text-[#004741] text-[9.5px] uppercase tracking-wide block mb-1">
+                          <span className="font-semibold text-acento text-[9.5px] uppercase tracking-wide block mb-1">
                             {gcia}
                           </span>
                           <div className="grid grid-cols-1 gap-1 pl-1">
@@ -2565,7 +2492,7 @@ export default function App() {
                                 <span className="text-slate-600 font-medium truncate max-w-[190px]" title={s.label}>
                                   {s.label}
                                 </span>
-                                <span className="text-[#004741] font-mono text-[10.5px] font-bold shrink-0">
+                                <span className="text-acento font-mono text-[10.5px] font-bold shrink-0">
                                   {s.responsible}
                                 </span>
                               </div>
@@ -2584,12 +2511,12 @@ export default function App() {
                     <span className="text-[10.5px] text-slate-400 italic">Formato reglamentario</span>
                   </div>
 
-                  <div className="bg-[#EEECE5] rounded-[12px] p-6 shadow-inner overflow-x-hidden">
+                  <div className="bg-hundida rounded-[12px] p-6 shadow-inner overflow-x-hidden">
                     {/* Simulated Paper Sheet */}
-                    <div className="w-[580px] mx-auto bg-[#F2EFE6] text-black font-sans border-[0.5px] border-slate-300 p-8 space-y-4 shadow-md" style={{ minHeight: '750px' }} id="simulated-paper-page">
+                    <div className="papel w-[580px] mx-auto bg-superficie text-black font-sans border-[0.5px] border-slate-300 p-8 space-y-4 shadow-md" style={{ minHeight: '750px' }} id="simulated-paper-page">
                       {/* Paper Header */}
                       <div className="border border-black grid grid-cols-12 items-center text-center divide-x divide-black text-[9px]">
-                        <div className="col-span-4 p-2 flex flex-col items-center justify-center bg-[#F2EFE6]">
+                        <div className="col-span-4 p-2 flex flex-col items-center justify-center bg-superficie">
                           <div className="flex flex-col items-center justify-center select-none">
                             {/* Official-specification EPE Brand Logo (Uploaded by the user as Base64) */}
                             <img 
@@ -2613,14 +2540,14 @@ export default function App() {
 
                       {/* Fields Table */}
                       <div className="border border-black text-[8px] leading-tight">
-                        <div className="grid grid-cols-12 font-bold uppercase tracking-wider border-b border-black text-center divide-x divide-black py-0.5 bg-[#DED9CC]">
+                        <div className="grid grid-cols-12 font-bold uppercase tracking-wider border-b border-black text-center divide-x divide-black py-0.5 bg-hundida-2">
                           <div className="col-span-4">Responsable</div>
                           <div className="col-span-2">Fdo.Fijo Nro.</div>
                           <div className="col-span-3">Repartición</div>
                           <div className="col-span-3">Gcia./Suc.</div>
                         </div>
                         <div className="grid grid-cols-12 uppercase divide-x divide-black text-center min-h-[22px] items-center py-1 font-mono text-[8px]">
-                          <div className="col-span-4 px-1 truncate font-bold text-[#004741]">
+                          <div className="col-span-4 px-1 truncate font-bold text-acento">
                             {pdfResponsable || <span className="text-slate-300 italic font-sans text-[7px]">No ingresado</span>}
                           </div>
                           <div className="col-span-2 px-1 font-semibold">
@@ -2687,7 +2614,7 @@ export default function App() {
                         <div className="border border-black divide-y divide-black">
                           <div className="grid grid-cols-2 p-1 pl-1.5 items-center">
                             <span>Expresan el carácter provisorio de la documentación</span>
-                            <span className="text-center font-bold text-[8px] text-red-655">NO</span>
+                            <span className="text-center font-bold text-[8px] text-red-600">NO</span>
                           </div>
                           <div className="grid grid-cols-2 p-1 pl-1.5 items-center">
                             <span>Cumplen con las normas impositivas y previsionales</span>
@@ -2798,7 +2725,7 @@ export default function App() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0.95 }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="w-full lg:w-auto h-full border-l border-slate-200 bg-[#F2EFE6] shadow-2xl flex flex-col relative z-30 shrink-0"
+              className="w-full lg:w-auto h-full border-l border-slate-200 bg-superficie shadow-2xl flex flex-col relative z-30 shrink-0"
               style={{ width: isLargeScreen ? `${pdfWidth}px` : '100%' }}
             >
               {/* Splitter Handle for resizing */}
@@ -2806,21 +2733,21 @@ export default function App() {
                 <div
                   onMouseDown={startResize}
                   className={cn(
-                    "absolute left-0 top-0 bottom-0 w-2 cursor-col-resize flex items-center justify-center bg-[#E5E1D5]/50 border-r border-slate-200 hover:bg-[#004741]/20 transition-all z-50 group",
-                    isDragging && "bg-[#004741]/35 border-[#004741]/50 w-2.5"
+                    "absolute left-0 top-0 bottom-0 w-2 cursor-col-resize flex items-center justify-center bg-realce/50 border-r border-slate-200 hover:bg-marca/20 transition-all z-50 group",
+                    isDragging && "bg-marca/35 border-acento/50 w-2.5"
                   )}
                   title="Arrastrar para redimensionar"
                 >
-                  <div className="w-[3px] h-14 bg-slate-300 group-hover:bg-[#004741]/50 rounded-full transition-colors" />
+                  <div className="w-[3px] h-14 bg-slate-300 group-hover:bg-marca/50 rounded-full transition-colors" />
                 </div>
               )}
 
               {/* Sidebar Content Container (indented on large screens to clear the splitter) */}
               <div className="flex-1 flex flex-col min-h-0 lg:pl-2 w-full h-full">
                 {/* Header of the PDF Viewer */}
-                <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-[#E5E1D5]">
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-realce">
                   <div className="flex items-center gap-2 overflow-hidden mr-4">
-                    <div className="p-2 bg-[#004741]/10 rounded-lg text-[#004741] shrink-0">
+                    <div className="p-2 bg-marca/10 rounded-lg text-acento shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div className="overflow-hidden">
@@ -2852,7 +2779,7 @@ export default function App() {
                     {/* Expand / Open PDF in new tab using handleOpenPdfInNewTab */}
                     <button
                       onClick={() => handleOpenPdfInNewTab(activePdfViewer.fileUrl, activePdfViewer.fileName, activePdfViewer.pageNumber)}
-                      className="p-2 hover:bg-slate-200 text-slate-500 hover:text-[#004741] rounded-lg transition-colors cursor-pointer outline-none border-none bg-transparent"
+                      className="p-2 hover:bg-slate-200 text-slate-500 hover:text-acento rounded-lg transition-colors cursor-pointer outline-none border-none bg-transparent"
                       title="Abrir en pestaña nueva"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -2870,10 +2797,10 @@ export default function App() {
                 </div>
 
                 {/* Sandbox Tip Bar */}
-                <div className="px-4 py-2 bg-[#004741]/5 border-b border-[#004741]/10 text-xs text-slate-600 flex items-start gap-2 leading-relaxed">
-                  <Info className="w-4 h-4 text-[#004741] shrink-0 mt-0.5" />
+                <div className="px-4 py-2 bg-marca/5 border-b border-acento/10 text-xs text-slate-600 flex items-start gap-2 leading-relaxed">
+                  <Info className="w-4 h-4 text-acento shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-semibold text-[#004741]">Consejo:</span> El documento se visualiza directamente en tiempo real. Si necesitas verlo externo, puedes abrir o descargar desde arriba.
+                    <span className="font-semibold text-acento">Consejo:</span> El documento se visualiza directamente en tiempo real. Si necesitas verlo externo, puedes abrir o descargar desde arriba.
                   </div>
                 </div>
 
@@ -2882,7 +2809,7 @@ export default function App() {
                   const filesList = activeAuditId ? auditFilesMap[activeAuditId] : selectedFiles;
                   if (filesList && filesList.length > 1) {
                     return (
-                      <div className="px-4 py-2 border-b border-slate-100 bg-[#E5E1D5]/50 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap">
+                      <div className="px-4 py-2 border-b border-slate-100 bg-realce/50 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap">
                         <span className="font-semibold text-slate-400 mr-1 uppercase text-[10px] tracking-wider shrink-0">Documentos:</span>
                         {filesList.map((file) => {
                           const isActive = file.objectUrl === activePdfViewer.fileUrl;
@@ -2898,8 +2825,8 @@ export default function App() {
                               className={cn(
                                 "px-2.5 py-1 rounded-md border text-xs font-semibold transition-all cursor-pointer truncate max-w-[120px] outline-none",
                                 isActive 
-                                  ? "bg-[#004741] text-white border-[#004741]" 
-                                  : "bg-[#F2EFE6] text-slate-600 border-slate-200 hover:bg-[#DED9CC]"
+                                  ? "bg-marca text-white border-acento" 
+                                  : "bg-superficie text-slate-600 border-slate-200 hover:bg-hundida-2"
                               )}
                               title={file.name}
                             >
@@ -2914,7 +2841,7 @@ export default function App() {
                 })()}
 
                 {/* PDF Scroll Viewer - continuous scroll, all pages stacked */}
-                <div className="flex-1 relative overflow-hidden h-full min-h-0 bg-[#DED9CC]">
+                <div className="flex-1 relative overflow-hidden h-full min-h-0 bg-hundida-2">
                   <PdfScrollViewer
                     base64={activePdfViewer.fileBase64 || ''}
                     fileName={activePdfViewer.fileName}
@@ -2935,10 +2862,10 @@ function SidebarItem({ icon: Icon, label, active = false, onClick }: { icon: any
       className={cn(
       "flex items-center gap-3 px-6 py-3 cursor-pointer transition-all duration-200 border-l-[3px] font-medium text-sm select-none",
       active 
-        ? "!border-l-[#004741] !rounded-tl-none !rounded-bl-none rounded-tr-[6px] rounded-br-[6px] bg-[#E8EFEE] !text-[#004741] !font-medium" 
-        : "border-l-transparent text-slate-500 hover:bg-[#E5E1D5] hover:text-slate-900"
+        ? "!border-l-acento !rounded-tl-none !rounded-bl-none rounded-tr-[6px] rounded-br-[6px] bg-marca-suave !text-acento !font-medium" 
+        : "border-l-transparent text-slate-500 hover:bg-realce hover:text-slate-900"
     )}>
-      <Icon className={cn("w-5 h-5", active ? "text-[#004741]" : "text-slate-400")} />
+      <Icon className={cn("w-5 h-5", active ? "text-acento" : "text-slate-400")} />
       <span>{label}</span>
     </div>
   );
@@ -2946,7 +2873,7 @@ function SidebarItem({ icon: Icon, label, active = false, onClick }: { icon: any
 
 function InfoCard({ icon: Icon, iconColor, iconBg, title, description }: { icon: any, iconColor: string, iconBg: string, title: string, description: string }) {
   return (
-    <div className="bg-[#F2EFE6] p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-superficie p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
       <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-5", iconBg)}>
         <Icon className={cn("w-6 h-6", iconColor)} />
       </div>

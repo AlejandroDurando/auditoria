@@ -1,204 +1,223 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ─── Colores ──────────────────────────────────────────────────────────────
+   Toda la pagina usa estos tokens (bg-superficie, text-tenue, border-linea…),
+   nunca colores fijos: el modo oscuro solo redefine las variables.
+
+   lienzo       fondo de la pagina
+   superficie   cajas, barra lateral, encabezado
+   hundida      fondos dentro de una caja (chips, pistas, campos de busqueda)
+   realce       hover sobre una superficie
+   linea        bordes
+   tinta        texto principal · tinta-2 secundario · tenue apagado
+   marca        verde EPE de los botones · acento: el mismo verde para texto
+   ok / error / aviso   estados de las validaciones
+*/
 @theme {
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-lienzo: #E4DFD3;
+  --color-superficie: #FBF9F4;
+  --color-hundida: #EFEBE1;
+  --color-hundida-2: #E3DED1;
+  --color-realce: #F3EFE6;
+  --color-linea: #DFD9CB;
+  --color-linea-fuerte: #CBC4B3;
+  --color-campo: #FFFFFF;
+
+  --color-tinta: #1A1A1A;
+  --color-tinta-2: #5E5C56;
+  --color-tenue: #87847B;
+  --color-tenue-2: #B5B1A6;
+
+  --color-marca: #004741;
+  --color-marca-hover: #00332F;
+  --color-acento: #004741;
+  --color-marca-suave: #E1EDEA;
+
+  --color-ok-fondo: #D3EAE3;
+  --color-ok-tinta: #00463F;
+  --color-ok-linea: #A3DAC8;
+  --color-error: #A32D2D;
+  --color-error-fondo: #FAE3E2;
+  --color-error-suave: #FDF4F3;
+  --color-error-linea: #F0C3C1;
+  --color-error-acento: #E24B4A;
+  --color-aviso-fondo: #FFF3D1;
+  --color-aviso-linea: #EBC04A;
+  --color-aviso-tinta: #7A5C00;
+  --color-peligro: #DC2626;
+  --color-peligro-hover: #B91C1C;
+
+  /* Los chips "A revisar" se perdian sobre el fondo crema. */
+  --color-amber-50: #FDF0CF;
 }
-
-/* ─── Dark mode ───────────────────────────────────────────────────────────── */
-/*
-  Strategy: .dark class on <html> overrides every hardcoded sand/cypress color
-  used throughout the app. We cover all hex values and common Tailwind shades.
-*/
-
-/* Palette (dark)
-   bg-base     #0D1117  (deepest – main canvas)
-   bg-surface  #161B22  (cards, sidebar, header)
-   bg-raised   #1C2128  (inputs, code blocks)
-   bg-overlay  #21262D  (hover states, elevated)
-   border      #30363D  (all borders)
-   text-1      #E6EDF3  (primary text)
-   text-2      #8B949E  (secondary)
-   text-3      #6E7681  (muted / placeholders)
-   primary     #10B981  (accent green – replaces Cyprus teal)
-   primary-dim #064E3B  (subtle primary bg)
-*/
 
 :root {
   color-scheme: light;
+  --sombra-caja: 0 1px 2px rgba(56, 44, 20, 0.07), 0 4px 12px -3px rgba(56, 44, 20, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --sombra-caja-alta: 0 2px 4px rgba(56, 44, 20, 0.08), 0 12px 28px -8px rgba(56, 44, 20, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --sombra-boton: 0 1px 2px rgba(56, 44, 20, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
+
 .dark {
   color-scheme: dark;
+  --sombra-caja: 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 16px -6px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --sombra-caja-alta: 0 2px 6px rgba(0, 0, 0, 0.55), 0 16px 32px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --sombra-boton: 0 1px 2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  --color-lienzo: #0E1216;
+  --color-superficie: #171C21;
+  --color-hundida: #1E242A;
+  --color-hundida-2: #252C33;
+  --color-realce: #1F262D;
+  --color-linea: #2A323B;
+  --color-linea-fuerte: #3A444F;
+  --color-campo: #12171B;
+
+  --color-tinta: #E6EBEF;
+  --color-tinta-2: #B3BDC6;
+  --color-tenue: #8792A0;
+  --color-tenue-2: #5A6572;
+
+  --color-marca: #17806F;
+  --color-marca-hover: #1C9883;
+  --color-acento: #52CBB3;
+  --color-marca-suave: #132F2A;
+
+  --color-ok-fondo: #12352F;
+  --color-ok-tinta: #7EDCC6;
+  --color-ok-linea: #1F5A4E;
+  --color-error: #F29191;
+  --color-error-fondo: #3A1D20;
+  --color-error-suave: #2A181A;
+  --color-error-linea: #6A2D31;
+  --color-error-acento: #E5534B;
+  --color-aviso-fondo: #33290F;
+  --color-aviso-linea: #8A6A1A;
+  --color-aviso-tinta: #F2D27A;
+
+  /* Las escalas de Tailwind se dan vuelta: los tonos claros (fondos) pasan a
+     oscuros y los oscuros (texto) a claros. Los intermedios de los puntos de
+     estado (500) quedan. */
+  --color-slate-50: #1A2026;
+  --color-slate-100: #20272E;
+  --color-slate-200: #2B333B;
+  --color-slate-300: #3A444E;
+  --color-slate-400: #6B7782;
+  --color-slate-500: #8A96A1;
+  --color-slate-600: #A3AEB8;
+  --color-slate-700: #BAC4CD;
+  --color-slate-800: #D0D8DF;
+  --color-slate-900: #E3E9EE;
+  --color-slate-950: #EEF2F5;
+
+  --color-amber-50: #2E2512;
+  --color-amber-100: #3A2D12;
+  --color-amber-200: #5A4518;
+  --color-amber-300: #7A5D1C;
+  --color-amber-400: #E8A93A;
+  --color-amber-500: #F0B042;
+  --color-amber-600: #F2BC55;
+  --color-amber-700: #F5C76C;
+  --color-amber-800: #F7D27F;
+  --color-amber-900: #F9DD9A;
+  --color-amber-950: #FBE7B5;
+
+  --color-yellow-50: #29250F;
+  --color-yellow-100: #37310F;
+  --color-yellow-200: #574C15;
+  --color-yellow-600: #E8CF4A;
+  --color-yellow-700: #EDD866;
+  --color-yellow-800: #F0DF7E;
+  --color-yellow-900: #F4E79A;
+  --color-yellow-950: #F7EDB4;
+
+  --color-red-50: #2E1719;
+  --color-red-100: #3D1D20;
+  --color-red-200: #5C2A2E;
+  --color-red-500: #F06B6B;
+  --color-red-600: #F07C7C;
+  --color-red-700: #F49A9A;
+  --color-red-800: #F7B4B4;
+
+  --color-rose-50: #2E1719;
+  --color-rose-100: #3D1D20;
+  --color-rose-200: #5C2A2E;
+  --color-rose-500: #F06B7E;
+  --color-rose-600: #F27D8C;
+  --color-rose-700: #F49AA6;
+  --color-rose-800: #F7B4BE;
+
+  --color-emerald-50: #10261F;
+  --color-emerald-100: #13342A;
+  --color-emerald-500: #2FBF8F;
+  --color-emerald-600: #45CF9F;
+  --color-emerald-700: #6EDDB5;
+  --color-emerald-800: #9BE8CC;
+  --color-emerald-900: #C3F2E0;
+
+  --color-blue-50: #121F30;
+  --color-blue-100: #17283D;
+  --color-blue-500: #5B9BF0;
+  --color-blue-700: #8AB8F5;
+  --color-blue-900: #C2DAFA;
+
+  --color-indigo-50: #1A1D35;
+  --color-indigo-100: #222647;
+  --color-indigo-700: #A3ACF5;
+  --color-purple-100: #2A1E3A;
+  --color-purple-700: #C4A3F2;
 }
 
-/* === BACKGROUNDS === */
-/* Main canvas */
-.dark .bg-\[\#E8E4D8\]  { background-color: #0D1117 !important; }
-/* Cards / sidebar / surfaces */
-.dark .bg-\[\#F2EFE6\]  { background-color: #161B22 !important; }
-/* Slightly elevated */
-.dark .bg-\[\#DED9CC\]  { background-color: #1C2128 !important; }
-.dark .bg-\[\#E5E1D5\]  { background-color: #21262D !important; }
-/* Primary tint bg */
-.dark .bg-\[\#E8EFEE\]  { background-color: #0D2E26 !important; }
-/* White surfaces (inputs, tables) */
-.dark .bg-white         { background-color: #1C2128 !important; }
-/* Slate grays */
-.dark .bg-slate-50      { background-color: #161B22 !important; }
-.dark .bg-slate-100     { background-color: #1C2128 !important; }
-.dark .bg-slate-200     { background-color: #21262D !important; }
-/* Amber/warning bg */
-.dark .bg-amber-50      { background-color: #1F1A0E !important; }
-/* Rose/error bg */
-.dark .bg-\[\#FCEBEB\]  { background-color: #2D1515 !important; }
-.dark .bg-\[\#FFF8F8\]  { background-color: #2D1515 !important; }
-/* Pass bg */
-.dark .bg-\[\#D4E8E6\]  { background-color: #0D2E26 !important; }
-/* Info bg */
-.dark .bg-blue-50       { background-color: #0D1F2E !important; }
-/* Backdrop blur overlay */
-.dark .bg-slate-850\/40 { background-color: rgba(0,0,0,0.6) !important; }
-
-/* === PRIMARY COLOR === */
-.dark .bg-\[\#004741\]  { background-color: #10B981 !important; }
-.dark .bg-\[\#003330\]  { background-color: #059669 !important; }
-.dark .hover\:bg-\[\#003330\]:hover { background-color: #059669 !important; }
-.dark .hover\:bg-\[\#0a5c47\]:hover { background-color: #059669 !important; }
-
-/* === TEXT COLORS === */
-.dark .text-slate-900   { color: #E6EDF3 !important; }
-.dark .text-slate-850   { color: #E6EDF3 !important; }
-.dark .text-slate-800   { color: #CDD9E5 !important; }
-.dark .text-slate-700   { color: #ADBAC7 !important; }
-.dark .text-slate-650   { color: #ADBAC7 !important; }
-.dark .text-slate-600   { color: #8B949E !important; }
-.dark .text-slate-500   { color: #6E7681 !important; }
-.dark .text-slate-400   { color: #545D68 !important; }
-.dark .text-\[\#1A1A1A\] { color: #E6EDF3 !important; }
-.dark .text-\[\#6B6963\] { color: #8B949E !important; }
-.dark .text-\[\#9A9890\] { color: #6E7681 !important; }
-.dark .text-\[\#C8C6BE\] { color: #545D68 !important; }
-.dark .text-\[\#BDBBB2\] { color: #545D68 !important; }
-/* Primary text */
-.dark .text-\[\#004741\] { color: #10B981 !important; }
-.dark .text-\[\#003330\] { color: #6EE7B7 !important; }
-/* Pass text */
-.dark .text-\[\#003330\].bg-\[\#D4E8E6\] { color: #6EE7B7 !important; }
-/* Error text */
-.dark .text-\[\#A32D2D\] { color: #F87171 !important; }
-/* Amber text */
-.dark .text-amber-800   { color: #FCD34D !important; }
-.dark .text-amber-850   { color: #FCD34D !important; }
-/* Blue info text */
-.dark .text-blue-700    { color: #60A5FA !important; }
-/* White text stays white on dark primary buttons */
-.dark .bg-\[\#10B981\] .text-white,
-.dark .text-white       { color: #FFFFFF !important; }
-
-/* === BORDERS === */
-.dark .border-\[\#E8E6DE\]   { border-color: #30363D !important; }
-.dark .border-\[\#E8E4D8\]   { border-color: #30363D !important; }
-.dark .border-\[\#EEECE5\]   { border-color: #21262D !important; }
-.dark .border-\[\#D3D1C7\]   { border-color: #30363D !important; }
-.dark .border-\[\#E2E0D8\]   { border-color: #30363D !important; }
-.dark .border-slate-200      { border-color: #30363D !important; }
-.dark .border-slate-100      { border-color: #21262D !important; }
-.dark .divide-slate-100 > * + * { border-color: #21262D !important; }
-/* Primary border */
-.dark .border-\[\#004741\]   { border-color: #10B981 !important; }
-.dark .border-\[\#9FE1CB\]   { border-color: #065F46 !important; }
-/* Error border */
-.dark .border-rose-200       { border-color: #7F1D1D !important; }
-.dark .border-\[\#F8CCCC\]   { border-color: #7F1D1D !important; }
-/* Amber border */
-.dark .border-amber-250      { border-color: #78350F !important; }
-
-/* === LEFT BORDER ACCENTS (validation cards) === */
-.dark .border-l-\[\#004741\] { border-left-color: #10B981 !important; }
-.dark .border-l-\[\#E24B4A\] { border-left-color: #EF4444 !important; }
-.dark .border-l-\[\#9A9890\] { border-left-color: #545D68 !important; }
-.dark .border-l-emerald-500  { border-left-color: #10B981 !important; }
-.dark .border-l-amber-400    { border-left-color: #F59E0B !important; }
-
-/* === HOVER BACKGROUNDS === */
-.dark .hover\:bg-\[\#E8E4D8\]:hover  { background-color: #21262D !important; }
-.dark .hover\:bg-\[\#DED9CC\]:hover  { background-color: #21262D !important; }
-.dark .hover\:bg-\[\#E8EFEE\]:hover  { background-color: #0D2E26 !important; }
-.dark .hover\:bg-\[\#E5E1D5\]:hover  { background-color: #21262D !important; }
-.dark .hover\:bg-slate-200:hover     { background-color: #21262D !important; }
-.dark .hover\:bg-\[\#E8E4D8\]\/50:hover { background-color: rgba(33,38,45,0.5) !important; }
-.dark .hover\:text-slate-900:hover   { color: #E6EDF3 !important; }
-.dark .hover\:text-\[\#004741\]:hover { color: #10B981 !important; }
-
-/* === INPUTS === */
-.dark input,
-.dark textarea,
-.dark select {
-  background-color: #1C2128 !important;
-  color: #E6EDF3 !important;
-  border-color: #30363D !important;
+/* Hojas que imitan papel (planilla revisiva, planilla control): siguen
+   blancas en modo oscuro, como se van a imprimir. */
+.dark .papel {
+  color-scheme: light;
+  --sombra-caja: 0 4px 18px rgba(0, 0, 0, 0.5);
+  --color-superficie: #FFFFFF;
+  --color-hundida: #EFEBE1;
+  --color-hundida-2: #E3DED1;
+  --color-linea: #DFD9CB;
+  --color-linea-fuerte: #CBC4B3;
+  --color-tinta: #1A1A1A;
+  --color-tinta-2: #5E5C56;
+  --color-tenue: #87847B;
+  --color-acento: #004741;
+  --color-marca: #004741;
+  --color-slate-300: oklch(86.9% 0.022 252.894);
+  --color-slate-400: oklch(70.4% 0.04 256.788);
+  --color-slate-500: oklch(55.4% 0.046 257.417);
+  --color-slate-600: oklch(44.6% 0.043 257.281);
+  --color-slate-700: oklch(37.2% 0.044 257.287);
+  --color-slate-800: oklch(27.9% 0.041 260.031);
+  --color-slate-900: oklch(20.8% 0.042 265.755);
+  color: var(--color-tinta);
 }
-.dark input::placeholder,
-.dark textarea::placeholder { color: #545D68 !important; }
-.dark input:focus,
-.dark textarea:focus { border-color: #10B981 !important; }
 
-/* === ACTIVE / SELECTED STATES === */
-.dark .bg-\[\#1f4e79\],
-.dark .bg-\[\#004741\].text-white { background-color: #10B981 !important; color: #fff !important; }
+html, body {
+  background-color: var(--color-lienzo);
+  color: var(--color-tinta);
+}
 
-/* === SCROLLBAR (subtle dark styling) === */
-.dark ::-webkit-scrollbar { width: 6px; height: 6px; }
-.dark ::-webkit-scrollbar-track { background: #0D1117; }
-.dark ::-webkit-scrollbar-thumb { background: #30363D; border-radius: 3px; }
-.dark ::-webkit-scrollbar-thumb:hover { background: #545D68; }
+/* Cajas con relieve: un borde fino y una sombra suave. */
+@utility caja {
+  box-shadow: var(--sombra-caja);
+}
+@utility caja-alta {
+  box-shadow: var(--sombra-caja-alta);
+}
+button.caja:hover {
+  box-shadow: var(--sombra-caja-alta);
+}
+/* Botones secundarios (fondo de superficie con borde): un poco de relieve. */
+button.bg-superficie.border:not(.caja),
+label.bg-superficie.border:not(.caja) {
+  box-shadow: var(--sombra-boton);
+}
 
-/* === MISC UTILITY OVERRIDES === */
-/* Pass/fail badge bg already handled above; make sure text on primary button is always white */
-.dark button.bg-\[\#004741\] { background-color: #10B981 !important; color: #fff !important; }
-.dark button.bg-\[\#10B981\] { background-color: #10B981 !important; }
-
-/* Strong/bold text in observations */
-.dark strong.font-semibold.text-slate-900 { color: #E6EDF3 !important; }
-
-/* PDF scroll viewer dark bg */
-.dark .bg-\[\#DED9CC\] canvas { /* keep canvas white for PDF paper */ background: #fff; }
-
-/* Notification info card */
-.dark .bg-blue-50.text-\[\#004741\] { background-color: #0D1F2E !important; color: #60A5FA !important; }
-
-/* === PAYMENT ROW (expanded detail panel) === */
-/* Panel expandido de cada pago — fondo con opacidad */
-.dark .bg-\[\#E8E4D8\]\/40 { background-color: rgba(13,17,23,0.6) !important; }
-/* Observation boxes inside expanded row */
-.dark .bg-\[\#F2EFE6\].border-\[\#E8E6DE\] { background-color: #161B22 !important; border-color: #30363D !important; }
-/* Status icon bubble */
-.dark .bg-\[\#F2EFE6\].rounded-full { background-color: #21262D !important; }
-/* Row card background */
-.dark .bg-\[\#F2EFE6\].border-\[\#E8E6DE\].mb-4 { background-color: #161B22 !important; }
-/* Pass validation badge */
-.dark .bg-\[\#D4E8E6\].text-\[\#003330\].border-\[\#9FE1CB\] { background-color: #064E3B !important; color: #6EE7B7 !important; border-color: #065F46 !important; }
-/* Text inside observation boxes */
-.dark .text-slate-650 { color: #ADBAC7 !important; }
-.dark .text-slate-850 { color: #E6EDF3 !important; }
-/* Amber (warning) badge in dark */
-.dark .bg-amber-50.text-amber-850 { background-color: #1F1A0E !important; color: #FCD34D !important; }
-.dark .border-amber-250 { border-color: #78350F !important; }
-/* Error (fail) badge in dark */
-.dark .bg-\[\#FCEBEB\].text-\[\#A32D2D\] { background-color: #2D1515 !important; color: #F87171 !important; }
-/* Page button in payment row */
-.dark .border-\[\#E2E0D8\] { border-color: #30363D !important; }
-/* Stats cards */
-.dark .shadow-\[0_8px_30px_rgb\(0\,0\,0\,0\.04\)\] { box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important; }
-/* Divider lines inside expanded */
-.dark .border-b-\[0\.5px\].border-\[\#E8E6DE\] { border-color: #21262D !important; }
-.dark .border-t-\[0\.5px\].border-\[\#E8E6DE\] { border-color: #21262D !important; }
-/* Row border */
-.dark .border-\[0\.5px\].border-\[\#E8E6DE\] { border-color: #30363D !important; }
-
-/* === BALANCE / SUMMARY CARDS === */
-/* Rounded info boxes (balance inversion summary) */
-.dark .bg-\[\#E8E4D8\].rounded-\[8px\] { background-color: #1C2128 !important; }
-.dark .bg-\[\#E8E4D8\].p-\[10px_14px\] { background-color: #1C2128 !important; }
-/* Progress bar track */
-.dark .bg-\[\#E8E4D8\].rounded-full { background-color: #21262D !important; }
+.dark ::-webkit-scrollbar { width: 8px; height: 8px; }
+.dark ::-webkit-scrollbar-track { background: var(--color-lienzo); }
+.dark ::-webkit-scrollbar-thumb { background: var(--color-linea-fuerte); border-radius: 4px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: var(--color-tenue-2); }

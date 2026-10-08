@@ -80,14 +80,14 @@ export function ResultadosExpediente({
       <div className="flex items-center justify-between mb-2">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <span className="px-2 py-0.5 bg-[#D4E8E6] text-[#003330] rounded-[4px] text-[10px] font-medium uppercase tracking-[0.06em]">{etiqueta}</span>
+            <span className="px-2 py-0.5 bg-ok-fondo text-ok-tinta rounded-[4px] text-[10px] font-medium uppercase tracking-[0.06em]">{etiqueta}</span>
           </div>
           <h2 className="text-xl font-medium tracking-tight text-slate-900 mt-2">Resultados Generales</h2>
         </div>
         {onNuevaAuditoria && (
         <button 
           onClick={onNuevaAuditoria}
-          className="py-[7px] px-[13px] bg-[#004741] text-white text-[13px] font-medium rounded-[7px] hover:bg-[#003330] transition-all outline-none whitespace-nowrap cursor-pointer border-none shadow-none"
+          className="py-[7px] px-[13px] bg-marca text-white text-[13px] font-medium rounded-[7px] hover:bg-marca-hover transition-all outline-none whitespace-nowrap cursor-pointer border-none shadow-none"
         >
           Nueva Auditoría
         </button>
@@ -96,12 +96,12 @@ export function ResultadosExpediente({
 
       {/* Metadata Banner displaying Extracted Fields */}
       {result && (result.expedienteNumero || result.expedienteFecha || result.fondoFijoNumero || result.agenciaSucursal) && (
-        <div className="bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] rounded-[12px] p-6 shadow-none flex flex-col @2xl:flex-row gap-6 @2xl:items-center">
+        <div className="bg-superficie border-[0.5px] border-linea rounded-[12px] p-6 flex flex-col @2xl:flex-row gap-6 @2xl:items-center caja">
           {result.expedienteFecha && (
             <div className="flex-1 min-w-[130px]">
-              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Fecha Expediente</span>
+              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">Fecha Expediente</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-medium text-slate-750 font-mono">
+                <span className="text-sm font-medium text-slate-700 font-mono">
                   {result.expedienteFecha}
                 </span>
                 <button
@@ -111,11 +111,11 @@ export function ResultadosExpediente({
                     setCopiedFecha(true);
                     setTimeout(() => setCopiedFecha(false), 2000);
                   }}
-                  className="p-1 text-slate-400 hover:text-[#004741] hover:bg-[#DED9CC] rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0"
+                  className="p-1 text-slate-400 hover:text-acento hover:bg-hundida-2 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0"
                   title="Copiar fecha de expediente"
                 >
                   {copiedFecha ? (
-                    <Check className="w-3.5 h-3.5 text-[#004741]" />
+                    <Check className="w-3.5 h-3.5 text-acento" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" />
                   )}
@@ -124,10 +124,10 @@ export function ResultadosExpediente({
             </div>
           )}
           {result.expedienteNumero && (
-            <div className="flex-1 min-w-[130px] @2xl:border-l @2xl:border-[#E8E6DE] @2xl:pl-6">
-              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">N° de Expediente</span>
+            <div className="flex-1 min-w-[130px] @2xl:border-l @2xl:border-linea @2xl:pl-6">
+              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">N° de Expediente</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-[13px] font-medium text-[#1A1A1A] font-mono">
+                <span className="text-[13px] font-medium text-tinta font-mono">
                   {result.expedienteNumero}
                 </span>
                 <button
@@ -137,11 +137,11 @@ export function ResultadosExpediente({
                     setCopiedExpediente(true);
                     setTimeout(() => setCopiedExpediente(false), 2000);
                   }}
-                  className="p-1 text-slate-400 hover:text-[#004741] hover:bg-[#DED9CC] rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0"
+                  className="p-1 text-slate-400 hover:text-acento hover:bg-hundida-2 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0"
                   title="Copiar número de expediente"
                 >
                   {copiedExpediente ? (
-                    <Check className="w-3.5 h-3.5 text-[#004741]" />
+                    <Check className="w-3.5 h-3.5 text-acento" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" />
                   )}
@@ -150,16 +150,16 @@ export function ResultadosExpediente({
             </div>
           )}
           {result.fondoFijoNumero && (
-            <div className="flex-1 min-w-[130px] @2xl:border-l @2xl:border-[#E8E6DE] @2xl:pl-6">
-              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Fondo Fijo</span>
-              <span className="text-sm font-medium text-[#004741]">
+            <div className="flex-1 min-w-[130px] @2xl:border-l @2xl:border-linea @2xl:pl-6">
+              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">Fondo Fijo</span>
+              <span className="text-sm font-medium text-acento">
                 {result.fondoFijoNumero}
               </span>
             </div>
           )}
           {result.agenciaSucursal && (
-            <div className="flex-1 min-w-[180px] @2xl:border-l @2xl:border-[#E8E6DE] @2xl:pl-6">
-              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-[#9A9890] block mb-1">Origen / Agencia / Sucursal</span>
+            <div className="flex-1 min-w-[180px] @2xl:border-l @2xl:border-linea @2xl:pl-6">
+              <span className="text-[10px] uppercase tracking-[0.06em] font-medium text-tenue block mb-1">Origen / Agencia / Sucursal</span>
               <span className="text-sm font-medium text-slate-800">
                 {formatHistoryTitle(result.agenciaSucursal)}
               </span>
@@ -179,11 +179,11 @@ export function ResultadosExpediente({
         
         return (
           <div className="grid grid-cols-1 @3xl:grid-cols-3 gap-6 mb-8">
-            <div className="bg-[#F2EFE6] p-6 rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between gap-4 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+            <div className="bg-superficie p-6 rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between gap-4 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Pagos Analizados</p>
               <p className="text-2xl font-bold text-slate-900">{totalPagos}</p>
             </div>
-            <div className="bg-[#F2EFE6] p-6 rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between gap-4 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+            <div className="bg-superficie p-6 rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between gap-4 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Importe Total</p>
               <div className="flex items-center gap-1.5 justify-between">
                 <p className="text-xl @5xl:text-2xl font-mono font-bold text-slate-900 min-w-0 break-words">{formatCurrency(finalTotalImporte)}</p>
@@ -194,11 +194,11 @@ export function ResultadosExpediente({
                     setCopiedImporte(true);
                     setTimeout(() => setCopiedImporte(false), 2000);
                   }}
-                  className="p-1 text-slate-400 hover:text-[#004741] hover:bg-[#DED9CC] rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0 animate-fade-in"
+                  className="p-1 text-slate-400 hover:text-acento hover:bg-hundida-2 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center shrink-0 animate-fade-in"
                   title="Copiar importe total"
                 >
                   {copiedImporte ? (
-                    <Check className="w-3.5 h-3.5 text-[#004741]" />
+                    <Check className="w-3.5 h-3.5 text-acento" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" />
                   )}
@@ -206,15 +206,15 @@ export function ResultadosExpediente({
               </div>
             </div>
             {hasErrors ? (
-              <div className="bg-[#FFF8F8] p-6 rounded-r-[12px] rounded-l-none border-t-[0.5px] border-b-[0.5px] border-r-[0.5px] border-[#E8E6DE] border-l-[3px] border-l-[#E24B4A] shadow-none flex flex-col justify-between transition-all">
+              <div className="bg-error-suave p-6 rounded-r-[12px] rounded-l-none border-t-[0.5px] border-b-[0.5px] border-r-[0.5px] border-linea border-l-[3px] border-l-error-acento shadow-none flex flex-col justify-between transition-all">
                 <div>
-                  <p className="text-xs font-semibold text-[#A32D2D] uppercase tracking-widest mb-3">Estado General</p>
-                  <div className="flex items-center gap-1.5 text-[#A32D2D]">
-                    <AlertTriangle className="w-[16px] h-[16px] text-[#A32D2D] shrink-0" />
+                  <p className="text-xs font-semibold text-error uppercase tracking-widest mb-3">Estado General</p>
+                  <div className="flex items-center gap-1.5 text-error">
+                    <AlertTriangle className="w-[16px] h-[16px] text-error shrink-0" />
                     <span className="text-[15px] font-medium leading-none">Con errores</span>
                   </div>
                 </div>
-                <p className="text-[11px] text-[#C95B5B] leading-none mt-2">
+                <p className="text-[11px] text-error leading-none mt-2">
                   {(() => {
                     const erroredCount = payments.filter(p => p?.validations?.some(v => v?.status === 'fail')).length || 1;
                     return `${erroredCount} pago${erroredCount !== 1 ? 's' : ''} requiere${erroredCount !== 1 ? 'n' : ''} revisión`;
@@ -222,11 +222,11 @@ export function ResultadosExpediente({
                 </p>
               </div>
             ) : (
-              <div className="bg-[#F2EFE6] p-6 rounded-[12px] border-[0.5px] border-[#E8E6DE] shadow-none flex flex-col justify-between gap-4 transition-all hover:shadow-none">
+              <div className="bg-superficie p-6 rounded-[12px] border-[0.5px] border-linea flex flex-col justify-between gap-4 transition-all hover: caja">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Estado General</p>
                 <div className={cn(
                   "inline-flex items-center justify-center font-bold w-fit",
-                  hasWarnings ? "text-amber-500" : "text-[#004741]"
+                  hasWarnings ? "text-amber-500" : "text-acento"
                 )}>
                   {hasWarnings ? (
                     <div className="flex items-center gap-1.5 text-amber-700">
@@ -234,8 +234,8 @@ export function ResultadosExpediente({
                       <span className="text-sm font-medium">Con observaciones</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 text-[#004741]">
-                      <CheckCircle2 className="w-5 h-5 text-[#004741] shrink-0" />
+                    <div className="flex items-center gap-1.5 text-acento">
+                      <CheckCircle2 className="w-5 h-5 text-acento shrink-0" />
                       <span className="text-sm font-medium">Excelente</span>
                     </div>
                   )}
@@ -252,12 +252,12 @@ export function ResultadosExpediente({
         const payments = result?.payments || [];
         if (payments.length === 0 && result?.totalAmount && result.totalAmount > 0) {
           return (
-            <div className="bg-amber-50 border border-amber-250 rounded-2xl p-6 mb-8 flex gap-4 items-start">
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8 flex gap-4 items-start">
               <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5 text-amber-800" />
               </div>
               <div className="flex-1">
-                <h4 className="text-sm font-semibold text-amber-850 mb-1">La IA detectó el expediente pero no pudo analizar los pagos individuales</h4>
+                <h4 className="text-sm font-semibold text-amber-800 mb-1">La IA detectó el expediente pero no pudo analizar los pagos individuales</h4>
                 <p className="text-xs text-amber-800 leading-relaxed mb-3">
                   Se extrajo un importe total de <strong>{formatCurrency(result.totalAmount)}</strong>, pero el modelo no devolvió los pagos detallados.
                   Esto suele ocurrir cuando hay demasiados documentos para procesar en una sola llamada, o cuando la respuesta del modelo fue cortada por límite de tokens.
@@ -280,9 +280,9 @@ export function ResultadosExpediente({
         const hasErrors = payments.some(p => p?.validations?.some(v => v?.status === 'fail')) || result?.balance_inversion?.validacion_v14?.resultado === 'error' || result?.balance_inversion?.conciliacion_total?.coinciden === false || (result?.duplicados?.length || 0) > 0 || !!result?.validacionesExpediente?.some(v => v.status === 'fail');
         if (payments.length === 0 || hasErrors || (!onIrRevisiva && !onIrPlanilla)) return null;
         return (
-          <div className="bg-[#E8EFEE] border border-[#004741]/15 rounded-2xl p-6 flex flex-col @3xl:flex-row @3xl:items-center justify-between gap-6 mb-8 transition-all hover:bg-[#ebf8f3] shadow-sm">
+          <div className="bg-marca-suave border border-acento/15 rounded-2xl p-6 flex flex-col @3xl:flex-row @3xl:items-center justify-between gap-6 mb-8 transition-all hover:bg-marca-suave shadow-sm">
             <div className="flex gap-4 items-start">
-              <div className="w-12 h-12 bg-[#F2EFE6] rounded-xl border border-emerald-500/10 flex items-center justify-center shrink-0 shadow-[0_4px_12px_rgba(15,110,86,0.04)] text-[#004741]">
+              <div className="w-12 h-12 bg-superficie rounded-xl border border-emerald-500/10 flex items-center justify-center shrink-0 shadow-[0_4px_12px_rgba(15,110,86,0.04)] text-acento">
                 <FileCheck2 className="w-6 h-6" />
               </div>
               <div>
@@ -298,7 +298,7 @@ export function ResultadosExpediente({
               {onDescargarRevisiva && (
               <button
                 onClick={onDescargarRevisiva}
-                className="bg-[#004741] hover:bg-[#003330] text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer border-none outline-none shadow-none"
+                className="bg-marca hover:bg-marca-hover text-white text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer border-none outline-none shadow-none"
               >
                 <Download className="w-4 h-4" />
                 <span>Descargar planilla revisiva</span>
@@ -310,8 +310,8 @@ export function ResultadosExpediente({
                 className={cn(
                   "text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer outline-none shadow-none",
                   onDescargarRevisiva
-                    ? "bg-[#F2EFE6] hover:bg-[#E5E1D5] text-[#004741] border border-[#004741]/20"
-                    : "bg-[#004741] hover:bg-[#003330] text-white border-none"
+                    ? "bg-superficie hover:bg-realce text-acento border border-acento/20"
+                    : "bg-marca hover:bg-marca-hover text-white border-none"
                 )}
               >
                 <CheckCircle2 className="w-4 h-4" />
@@ -321,7 +321,7 @@ export function ResultadosExpediente({
               {onIrPlanilla && (
               <button
                 onClick={onIrPlanilla}
-                className="bg-[#F2EFE6] border border-[#004741] text-[#004741] text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer outline-none shadow-none hover:bg-[#E8EFEE]"
+                className="bg-superficie border border-acento text-acento text-xs font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer outline-none shadow-none hover:bg-marca-suave"
               >
                 <FileSpreadsheet className="w-4 h-4" />
                 <span>Ir a Planilla Control</span>
@@ -347,14 +347,14 @@ export function ResultadosExpediente({
       </div>
 
       {result?.balance_inversion && result.mode !== 'Viáticos' && (
-        <div className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] overflow-hidden transition-all shadow-none">
-          <div className="p-6 border-b-[0.5px] border-[#E8E6DE] flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shrink-0">
-              <Landmark className="w-6 h-6 text-[#004741]" />
+        <div className="bg-superficie rounded-[12px] border-[0.5px] border-linea overflow-hidden transition-all caja">
+          <div className="p-6 border-b-[0.5px] border-linea flex items-center gap-4">
+            <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center shrink-0 caja">
+              <Landmark className="w-6 h-6 text-acento" />
             </div>
             <div>
               <h3 className="text-base font-medium text-slate-900 leading-tight">Balance de Inversión</h3>
-              <p className="text-xs text-[#9A9890] mt-0.5">
+              <p className="text-xs text-tenue mt-0.5">
                 {result.balance_inversion.presente 
                   ? "Análisis del saldo y rendiciones pendientes." 
                   : "La planilla de Balance de Inversión no fue adjuntada."}
@@ -364,9 +364,9 @@ export function ResultadosExpediente({
               <div className="ml-auto">
                 <span className={cn(
                   "px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border-none select-none",
-                  result.balance_inversion.validacion_v14.resultado === 'ok' ? 'bg-[#D4E8E6] text-[#003330]' :
-                  result.balance_inversion.validacion_v14.resultado === 'error' ? 'bg-[#FCEBEB] text-[#A32D2D]' :
-                  'bg-amber-50 text-amber-850'
+                  result.balance_inversion.validacion_v14.resultado === 'ok' ? 'bg-ok-fondo text-ok-tinta' :
+                  result.balance_inversion.validacion_v14.resultado === 'error' ? 'bg-error-fondo text-error' :
+                  'bg-amber-50 text-amber-800'
                 )}>
                   <StatusIcon status={result.balance_inversion.validacion_v14.resultado === 'ok' ? 'pass' : result.balance_inversion.validacion_v14.resultado === 'error' ? 'fail' : 'warning'} />
                   <span>
@@ -382,29 +382,29 @@ export function ResultadosExpediente({
             <div className="p-6 grid grid-cols-1 @5xl:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-[10px]">
-                  <div className="bg-[#E8E4D8] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
-                    <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Monto Fijo Asignado</p>
+                  <div className="bg-hundida p-[10px_14px] rounded-[8px] border-[0.5px] border-linea">
+                    <p className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-1">Monto Fijo Asignado</p>
                     <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.monto_asignado || 0)}</p>
                   </div>
-                  <div className="bg-[#E8E4D8] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
-                    <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Total Pendiente</p>
+                  <div className="bg-hundida p-[10px_14px] rounded-[8px] border-[0.5px] border-linea">
+                    <p className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-1">Total Pendiente</p>
                     <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.total_pendiente || 0)}</p>
                   </div>
-                  <div className="bg-[#E8E4D8] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
-                    <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Saldo en Banco</p>
+                  <div className="bg-hundida p-[10px_14px] rounded-[8px] border-[0.5px] border-linea">
+                    <p className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-1">Saldo en Banco</p>
                     <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.saldo_banco_declarado || 0)}</p>
                   </div>
-                  <div className="bg-[#E8E4D8] p-[10px_14px] rounded-[8px] border-[0.5px] border-[#E8E6DE]">
-                    <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1">Saldo Calculado</p>
+                  <div className="bg-hundida p-[10px_14px] rounded-[8px] border-[0.5px] border-linea">
+                    <p className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-1">Saldo Calculado</p>
                     <p className="text-[13px] font-mono font-medium text-slate-800">{formatCurrency(result.balance_inversion.saldo_banco_calculado || 0)}</p>
                   </div>
                 </div>
                 {result.balance_inversion.validacion_v14?.detalle && (
                   <div className={cn(
                     "p-4 rounded-r-[8px] rounded-l-none border-l-2",
-                    result.balance_inversion.validacion_v14.resultado === 'ok' ? "bg-[#E8EFEE] border-l-[#004741] text-[#003330]" :
-                    result.balance_inversion.validacion_v14.resultado === 'error' ? "bg-[#FFF8F8] border-l-[#E24B4A] text-[#A32D2D]" :
-                    "bg-[#E8E4D8] border-l-[#9A9890] text-slate-700"
+                    result.balance_inversion.validacion_v14.resultado === 'ok' ? "bg-marca-suave border-l-acento text-ok-tinta" :
+                    result.balance_inversion.validacion_v14.resultado === 'error' ? "bg-error-suave border-l-error-acento text-error" :
+                    "bg-hundida border-l-tenue text-slate-700"
                   )}>
                     <p className="text-xs font-medium leading-relaxed">
                       {result.balance_inversion.validacion_v14.detalle}
@@ -422,14 +422,14 @@ export function ResultadosExpediente({
                   return (
                     <div className="mt-4">
                       <div className="flex items-center gap-2 mb-2.5">
-                        <h4 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em]">
+                        <h4 className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em]">
                           Conciliación del importe a reponer
                         </h4>
                         <span className={cn(
                           "text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none",
                           c.coinciden
-                            ? "bg-[#D4E8E6] text-[#003330]"
-                            : "bg-[#FCEBEB] text-[#A32D2D]"
+                            ? "bg-ok-fondo text-ok-tinta"
+                            : "bg-error-fondo text-error"
                         )}>
                           {c.coinciden ? 'Coinciden' : 'No coinciden'}
                         </span>
@@ -439,13 +439,13 @@ export function ResultadosExpediente({
                           <div key={i} className={cn(
                             "p-3 rounded-[8px] border-[0.5px]",
                             c.coinciden
-                              ? "bg-[#F2EFE6] border-[#E8E6DE]"
-                              : "bg-[#FFF8F8] border-[#F8CCCC]"
+                              ? "bg-superficie border-linea"
+                              : "bg-error-suave border-error-linea"
                           )}>
-                            <p className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-1 leading-tight">{f.label}</p>
+                            <p className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-1 leading-tight">{f.label}</p>
                             <p className={cn(
                               "text-[13px] font-mono font-medium",
-                              c.coinciden ? "text-slate-800" : "text-[#A32D2D]"
+                              c.coinciden ? "text-slate-800" : "text-error"
                             )}>
                               {f.valor ? formatCurrency(f.valor) : '—'}
                             </p>
@@ -455,7 +455,7 @@ export function ResultadosExpediente({
                       {c.detalle && (
                         <p className={cn(
                           "text-[11px] leading-relaxed mt-2",
-                          c.coinciden ? "text-[#6B6963]" : "text-[#A32D2D] font-medium"
+                          c.coinciden ? "text-tinta-2" : "text-error font-medium"
                         )}>
                           {safeText(c.detalle)}
                         </p>
@@ -466,11 +466,11 @@ export function ResultadosExpediente({
               </div>
               
               <div>
-                <h4 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-4">Rendiciones Pendientes de Reintegro</h4>
+                <h4 className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-4">Rendiciones Pendientes de Reintegro</h4>
                 {result.balance_inversion.rendiciones_pendientes && result.balance_inversion.rendiciones_pendientes.length > 0 ? (
-                  <div className="border-[0.5px] border-[#E8E6DE] rounded-[8px] overflow-hidden bg-[#F2EFE6] shadow-none">
+                  <div className="border-[0.5px] border-linea rounded-[8px] overflow-hidden bg-superficie shadow-none">
                     <table className="w-full text-xs text-left border-collapse">
-                      <thead className="bg-[#E8E4D8] text-[10px] text-[#9A9890] uppercase font-medium border-b-[0.5px] border-[#E8E6DE]">
+                      <thead className="bg-hundida text-[10px] text-tenue uppercase font-medium border-b-[0.5px] border-linea">
                         <tr>
                           <th className="px-4 py-2.5 font-medium tracking-[0.06em]">Rendición N°</th>
                           <th className="px-4 py-2.5 text-right font-medium tracking-[0.06em]">Importe</th>
@@ -478,7 +478,7 @@ export function ResultadosExpediente({
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {result.balance_inversion.rendiciones_pendientes.map((rendicion, idx) => (
-                          <tr key={idx} className="hover:bg-[#E8E4D8]/50 transition-colors">
+                          <tr key={idx} className="hover:bg-hundida/50 transition-colors">
                             <td className="px-4 py-2.5 font-normal text-slate-800">{rendicion.numero}</td>
                             <td className="px-4 py-2.5 text-right font-mono font-normal text-slate-700">{formatCurrency(rendicion.importe)}</td>
                           </tr>
@@ -497,24 +497,24 @@ export function ResultadosExpediente({
 
       {/* Alerta de documentación duplicada en el expediente */}
       {result?.duplicados && result.duplicados.length > 0 && (
-        <div className="bg-[#FFF8F8] border border-[#F8CCCC] rounded-[12px] p-5 shadow-none flex flex-col gap-4 mb-4">
+        <div className="bg-error-suave border border-error-linea rounded-[12px] p-5 shadow-none flex flex-col gap-4 mb-4">
           <div className="flex gap-3 items-start">
-            <div className="w-9 h-9 rounded-[10px] bg-[#FCEBEB] flex items-center justify-center shrink-0">
-              <Copy className="w-4 h-4 text-[#A32D2D]" />
+            <div className="w-9 h-9 rounded-[10px] bg-error-fondo flex items-center justify-center shrink-0">
+              <Copy className="w-4 h-4 text-error" />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-semibold text-[#A32D2D] leading-tight">Documentación duplicada en el expediente</h4>
-              <p className="text-xs text-[#A32D2D]/90 mt-1 leading-relaxed">
+              <h4 className="text-sm font-semibold text-error leading-tight">Documentación duplicada en el expediente</h4>
+              <p className="text-xs text-error/90 mt-1 leading-relaxed">
                 Se detectó documentación adjuntada más de una vez. Verificá que no se haya contabilizado dos veces la misma transacción, ni omitido un pago distinto del mismo proveedor.
               </p>
             </div>
           </div>
           <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-3">
             {result.duplicados.map((d, idx) => (
-              <div key={idx} className="bg-[#F2EFE6] border-[0.5px] border-[#F8CCCC] rounded-[8px] p-3">
+              <div key={idx} className="bg-superficie border-[0.5px] border-error-linea rounded-[8px] p-3">
                 <p className="text-[13px] font-semibold text-slate-900 font-mono">{safeText(d.identificador) || '—'}</p>
-                {d.motivo && <p className="text-[11px] text-[#6B6963] mt-1 leading-relaxed">{safeText(d.motivo)}</p>}
-                {d.paginas && <p className="text-[10px] text-[#9A9890] mt-1">Ubicación: {safeText(d.paginas)}</p>}
+                {d.motivo && <p className="text-[11px] text-tinta-2 mt-1 leading-relaxed">{safeText(d.motivo)}</p>}
+                {d.paginas && <p className="text-[10px] text-tenue mt-1">Ubicación: {safeText(d.paginas)}</p>}
               </div>
             ))}
           </div>
@@ -548,11 +548,11 @@ export function ResultadosExpediente({
                 </p>
               </div>
             </div>
-            <div className="border-t border-amber-250/50 mt-1 pt-3.5">
+            <div className="border-t border-amber-200/50 mt-1 pt-3.5">
               <p className="text-[10px] font-bold text-amber-900 uppercase tracking-wider mb-2.5">Comprobantes identificados con Código 202:</p>
               <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2.5">
                 {paymentsWith202.map((p, idx) => (
-                  <div key={idx} className="bg-[#F2EFE6]/80 p-3 rounded-lg border border-amber-200/60 flex flex-col shadow-sm">
+                  <div key={idx} className="bg-superficie/80 p-3 rounded-lg border border-amber-200/60 flex flex-col shadow-sm">
                     <span className="text-xs font-semibold text-slate-800">
                       {p.providerName ? toSentenceCase(p.providerName) : 'Proveedor no identificado'}
                     </span>
@@ -590,7 +590,7 @@ export function ResultadosExpediente({
               <div>
                 <h4 className="text-sm font-semibold text-yellow-950 leading-tight">Suma Atención: Control de Aprobación Código 226</h4>
                 <p className="text-xs text-yellow-800 mt-1 leading-relaxed">
-                  Se ha detectado imputación con el código <strong className="font-semibold text-yellow-910">226 (Mantenimiento de maquinarias menores)</strong>. Estas compras deben estar debidamente autorizadas por el Jefe Administrativo de la Sucursal correspondiente:
+                  Se ha detectado imputación con el código <strong className="font-semibold text-yellow-900">226 (Mantenimiento de maquinarias menores)</strong>. Estas compras deben estar debidamente autorizadas por el Jefe Administrativo de la Sucursal correspondiente:
                 </p>
                 <ul className="text-xs text-yellow-900 mt-2 space-y-1 list-disc pl-4 font-medium">
                   {ZONAS_226.map(z => (
@@ -621,7 +621,7 @@ export function ResultadosExpediente({
                                          (v4Val?.status === 'pass' && !v4Obs.includes("FALTA"));
 
                   return (
-                    <div key={idx} className="bg-[#F2EFE6]/90 p-3 rounded-lg border border-yellow-250 flex flex-col shadow-sm">
+                    <div key={idx} className="bg-superficie/90 p-3 rounded-lg border border-yellow-200 flex flex-col shadow-sm">
                       <div className="flex justify-between items-start gap-1">
                         <span className="text-xs font-semibold text-slate-800">
                           {p.providerName ? toSentenceCase(p.providerName) : 'Proveedor no identificado'}
@@ -652,15 +652,15 @@ export function ResultadosExpediente({
 
       {/* Sección Informe Copiable */}
       {informeTexto !== undefined && (
-      <div id="informe-copiable" className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] overflow-hidden transition-all shadow-none">
-        <div className="p-6 border-b-[0.5px] border-[#E8E6DE] flex flex-col @2xl:flex-row @2xl:items-center justify-between gap-4 bg-[#F2EFE6]">
+      <div id="informe-copiable" className="bg-superficie rounded-[12px] border-[0.5px] border-linea overflow-hidden transition-all caja">
+        <div className="p-6 border-b-[0.5px] border-linea flex flex-col @2xl:flex-row @2xl:items-center justify-between gap-4 bg-superficie">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shrink-0">
-              <FileText className="w-6 h-6 text-[#004741]" />
+            <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center shrink-0 caja">
+              <FileText className="w-6 h-6 text-acento" />
             </div>
             <div>
               <h3 className="text-base font-medium text-slate-900 leading-tight">Informe de Auditoría</h3>
-              <p className="text-xs text-[#9A9890] mt-0.5">
+              <p className="text-xs text-tenue mt-0.5">
                 Resumen estructurado de desvíos para copiar y enviar al responsable.
               </p>
             </div>
@@ -671,8 +671,8 @@ export function ResultadosExpediente({
             className={cn(
               "inline-flex items-center justify-center gap-1.5 py-[7px] px-[13px] rounded-[7px] text-[13px] font-medium transition-all border-none outline-none cursor-pointer shadow-none",
               copiedInforme 
-                ? "bg-[#D4E8E6] text-[#003330] hover:bg-[#d0f0e5]"
-                : "bg-[#004741] text-white hover:bg-[#003330]"
+                ? "bg-ok-fondo text-ok-tinta hover:bg-marca-suave"
+                : "bg-marca text-white hover:bg-marca-hover"
             )}
           >
             {copiedInforme ? (
@@ -690,10 +690,10 @@ export function ResultadosExpediente({
         </div>
 
         <div className="p-6 bg-[#2D2D2D] text-white font-mono text-xs rounded-b-[12px] shadow-none relative border-t-[0.5px] border-[#3A3A3A]">
-          <div className="absolute top-4 right-4 bg-[#3A3A3A] text-[#9A9890] text-[9px] uppercase font-medium tracking-[0.06em] px-2 py-0.5 rounded select-none">
+          <div className="absolute top-4 right-4 bg-[#3A3A3A] text-tenue text-[9px] uppercase font-medium tracking-[0.06em] px-2 py-0.5 rounded select-none">
             Vista Previa
           </div>
-          <pre className="whitespace-pre-wrap leading-relaxed overflow-x-auto selection:bg-[#004741]/40 max-h-[400px] pr-2">
+          <pre className="whitespace-pre-wrap leading-relaxed overflow-x-auto selection:bg-marca/40 max-h-[400px] pr-2">
             {informeTexto}
           </pre>
         </div>
@@ -706,14 +706,14 @@ export function ResultadosExpediente({
 
 function ValidacionesExpediente({ validaciones }: { validaciones: ValidationResult[] }) {
   return (
-    <div className="bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] overflow-hidden transition-all shadow-none">
-      <div className="p-6 border-b-[0.5px] border-[#E8E6DE] flex items-center gap-4">
-        <div className="w-12 h-12 bg-[#F2EFE6] rounded-[12px] border-[0.5px] border-[#E8E6DE] flex items-center justify-center shrink-0">
-          <FileCheck2 className="w-6 h-6 text-[#004741]" />
+    <div className="bg-superficie rounded-[12px] border-[0.5px] border-linea overflow-hidden transition-all caja">
+      <div className="p-6 border-b-[0.5px] border-linea flex items-center gap-4">
+        <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center shrink-0 caja">
+          <FileCheck2 className="w-6 h-6 text-acento" />
         </div>
         <div>
           <h3 className="text-base font-medium text-slate-900 leading-tight">Validaciones del Expediente</h3>
-          <p className="text-xs text-[#9A9890] mt-0.5">Controles que no se muestran en el Balance de Inversión.</p>
+          <p className="text-xs text-tenue mt-0.5">Controles que no se muestran en el Balance de Inversión.</p>
         </div>
       </div>
       <div className="p-6 @2xl:p-8 flex flex-col gap-6">
@@ -734,8 +734,8 @@ function ValidacionItem({ id, title, status, observations, accion }: {
   key?: React.Key;
 }) {
   return (
-    <div className="flex gap-4 items-start pb-6 border-b-[0.5px] border-[#E8E6DE] last:border-0 last:pb-0">
-      <div className="mt-1 shrink-0 bg-[#F2EFE6] p-1 rounded-full shadow-none border-[0.5px] border-[#E8E6DE]">
+    <div className="flex gap-4 items-start pb-6 border-b-[0.5px] border-linea last:border-0 last:pb-0">
+      <div className="mt-1 shrink-0 bg-superficie p-1 rounded-full shadow-none border-[0.5px] border-linea">
         <StatusIcon status={status} />
       </div>
       <div className="flex-1">
@@ -743,20 +743,20 @@ function ValidacionItem({ id, title, status, observations, accion }: {
           <div className="flex items-center gap-3">
             <span className={cn(
               "text-[11px] font-medium font-mono px-2 py-0.5 rounded shadow-none border-[0.5px]",
-              status === 'pass' ? "bg-[#D4E8E6] text-[#003330] border-[#9FE1CB]" :
-              status === 'fail' ? "bg-[#FCEBEB] text-[#A32D2D] border-[#F8CCCC]" :
-              "bg-amber-50 text-amber-800 border-amber-250"
+              status === 'pass' ? "bg-ok-fondo text-ok-tinta border-ok-linea" :
+              status === 'fail' ? "bg-error-fondo text-error border-error-linea" :
+              "bg-amber-50 text-amber-800 border-amber-200"
             )}>
               {id.toUpperCase()}
             </span>
-            <span className="text-[14px] font-medium text-slate-850 tracking-tight">{title}</span>
+            <span className="text-[14px] font-medium text-slate-900 tracking-tight">{title}</span>
           </div>
           {accion}
         </div>
         <p className={cn(
-          "text-[13px] leading-relaxed mt-1.5 p-3.5 rounded-[8px] bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] shadow-none border-l-2",
-          status === 'pass' ? "border-l-emerald-500 text-slate-650" :
-          status === 'fail' ? "border-l-[#E24B4A] text-slate-800" :
+          "text-[13px] leading-relaxed mt-1.5 p-3.5 rounded-[8px] bg-superficie border-[0.5px] border-linea shadow-none border-l-2",
+          status === 'pass' ? "border-l-emerald-500 text-slate-600" :
+          status === 'fail' ? "border-l-error-acento text-slate-800" :
           "border-l-amber-400 text-slate-600 italic"
         )}>
           {(observations || 'Dato no analizado por la IA.').split('\n').map((line, li, arr) => (
@@ -815,39 +815,39 @@ function IndiceRotacion({ rotacion }: { rotacion: NonNullable<AuditResult['rotac
       importe: rotacion.afecta, destacada: false },
   ];
   return (
-    <div className="bg-[#FFF8E1] border border-[#F2C94C]/70 rounded-2xl p-5 mb-8">
+    <div className="bg-aviso-fondo border border-aviso-linea/70 rounded-2xl p-5 mb-8">
       <div className="flex items-start gap-2.5 mb-4">
-        <AlertCircle className="w-4 h-4 text-[#8A6A00] mt-0.5 shrink-0" />
+        <AlertCircle className="w-4 h-4 text-aviso-tinta mt-0.5 shrink-0" />
         <div>
-          <h4 className="text-[14px] font-semibold text-[#5C4700]">Hay pagos que no afectan el índice de rotación</h4>
-          <p className="text-[12px] text-[#7A6200] mt-0.5">Importes para el registro: sumados dan el total del expediente.</p>
+          <h4 className="text-[14px] font-semibold text-aviso-tinta">Hay pagos que no afectan el índice de rotación</h4>
+          <p className="text-[12px] text-aviso-tinta mt-0.5">Importes para el registro: sumados dan el total del expediente.</p>
         </div>
       </div>
       <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2.5">
         {filas.map(f => (
           <div key={f.clave} className={cn(
             "flex items-center justify-between gap-3 rounded-[10px] px-3.5 py-2.5 border",
-            f.destacada ? "bg-white/70 border-[#F2C94C]/60" : "bg-[#F2EFE6] border-[#E8E6DE]"
+            f.destacada ? "bg-campo/70 border-aviso-linea/60" : "bg-superficie border-linea"
           )}>
             <div className="min-w-0">
               <p className="text-[13px] font-medium text-slate-900 truncate">{f.titulo}</p>
-              <p className="text-[11px] text-[#9A9890]">{f.detalle}</p>
+              <p className="text-[11px] text-tenue">{f.detalle}</p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               <span className="font-mono text-[14px] font-semibold text-slate-900">{formatCurrency(f.importe)}</span>
               <button
                 type="button"
                 onClick={() => copiar(f.clave, f.importe)}
-                className="p-1 text-slate-400 hover:text-[#004741] hover:bg-[#DED9CC] rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center"
+                className="p-1 text-slate-400 hover:text-acento hover:bg-hundida-2 rounded transition-all cursor-pointer outline-none border-none flex items-center justify-center"
                 title="Copiar importe"
               >
-                {copiado === f.clave ? <Check className="w-3.5 h-3.5 text-[#004741]" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiado === f.clave ? <Check className="w-3.5 h-3.5 text-acento" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             </div>
           </div>
         ))}
       </div>
-      {rotacion.aviso && <p className="text-[11px] text-[#A32D2D] mt-3">{rotacion.aviso}</p>}
+      {rotacion.aviso && <p className="text-[11px] text-error mt-3">{rotacion.aviso}</p>}
     </div>
   );
 }
@@ -871,22 +871,22 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
   let badgeEl = null;
   if (errorCnt > 0) {
     badgeEl = (
-      <div className="bg-[#FCEBEB] text-[#A32D2D] px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0 border-none select-none">
-        <AlertCircle className="w-3.5 h-3.5 text-[#A32D2D]" />
+      <div className="bg-error-fondo text-error px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0 border-none select-none">
+        <AlertCircle className="w-3.5 h-3.5 text-error" />
         <span>{errorCnt} Errores</span>
       </div>
     );
   } else if (warnCnt > 0) {
     badgeEl = (
-      <div className="bg-amber-50 text-amber-850 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0 border-none select-none">
+      <div className="bg-amber-50 text-amber-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0 border-none select-none">
         <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
         <span>{warnCnt} Obs.</span>
       </div>
     );
   } else {
     badgeEl = (
-      <div className="bg-[#D4E8E6] text-[#003330] px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0 border-none select-none">
-        <CheckCircle2 className="w-3.5 h-3.5 text-[#003330]" />
+      <div className="bg-ok-fondo text-ok-tinta px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0 border-none select-none">
+        <CheckCircle2 className="w-3.5 h-3.5 text-ok-tinta" />
         <span>{validCnt}/{totalCnt} Validaciones</span>
       </div>
     );
@@ -896,8 +896,8 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
     <div 
       ref={rowRef} 
       className={cn(
-        "bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] mb-4 last:mb-0 overflow-hidden transition-all shadow-none",
-        errorCnt > 0 ? "border-l-3 border-l-[#E24B4A] rounded-r-[8px] rounded-l-none" : "rounded-[8px]"
+        "bg-superficie border-[0.5px] border-linea mb-4 last:mb-0 overflow-hidden transition-all shadow-none",
+        errorCnt > 0 ? "border-l-3 border-l-error-acento rounded-r-[8px] rounded-l-none" : "rounded-[8px]"
       )}
     >
       <div 
@@ -905,23 +905,23 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
         className="grid grid-cols-2 @3xl:grid-cols-[75px_1.5fr_1fr_220px_24px] gap-x-4 gap-y-2 items-center p-[11px_14px] cursor-pointer selection:bg-transparent select-none"
       >
         <div className="flex flex-col">
-          <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">PIMyS N°</span>
+          <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">PIMyS N°</span>
           <span className="text-[13px] font-medium text-slate-900">{payment?.orderNumber}</span>
         </div>
         <div className="flex flex-col min-w-0">
-          <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">Proveedor</span>
+          <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">Proveedor</span>
           <span className="text-[13px] font-medium text-slate-900 truncate block" title={payment?.providerName}>
             {toSentenceCase(payment?.providerName || '')}
           </span>
           {payment?.leidoPorOcr && (
-            <span className="text-[10px] text-[#9A9890] flex items-center gap-1 mt-0.5 truncate" title={`Leído por OCR: ${payment.leidoPorOcr}`}>
+            <span className="text-[10px] text-tenue flex items-center gap-1 mt-0.5 truncate" title={`Leído por OCR: ${payment.leidoPorOcr}`}>
               <ScanText className="w-3 h-3 shrink-0" />
               <span className="truncate">Leído por OCR: {payment.leidoPorOcr}</span>
             </span>
           )}
         </div>
         <div className="flex flex-col items-start">
-          <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#9A9890]">Importe</span>
+          <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">Importe</span>
           <span className="font-mono text-[13px] font-medium text-slate-900">{formatCurrency(payment?.amount)}</span>
         </div>
         <div className="flex items-center justify-end gap-2 shrink-0">
@@ -932,7 +932,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                 e.stopPropagation();
                 onViewPdf?.(payment?.sourceFileIdx || 0, payment?.pageNumber);
               }}
-              className="p-1 px-2 text-[#9A9890] hover:text-[#004741] hover:bg-[#E8EFEE] rounded-[6px] border-[0.5px] border-[#E2E0D8] transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
+              className="p-1 px-2 text-tenue hover:text-acento hover:bg-marca-suave rounded-[6px] border-[0.5px] border-linea transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
               title="Ver original"
             >
               <Eye className="w-3.5 h-3.5 mr-1" />
@@ -940,7 +940,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
             </button>
           )}
         </div>
-        <div className="hidden @3xl:flex justify-end text-[#C8C6BE] shrink-0">
+        <div className="hidden @3xl:flex justify-end text-tenue-2 shrink-0">
           <ChevronRight className={cn("w-4 h-4 transition-transform duration-200", isExpanded && "rotate-90")} />
         </div>
       </div>
@@ -951,18 +951,18 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
             initial={{ height: 0 }}
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
-            className="border-t-[0.5px] border-[#E8E6DE] bg-[#E8E4D8]/40"
+            className="border-t-[0.5px] border-linea bg-hundida/40"
           >
             <div className="p-6 @2xl:p-8">
-              <h4 className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] mb-6">Detalle de Validaciones</h4>
+              <h4 className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-6">Detalle de Validaciones</h4>
               <div className="flex flex-col gap-6">
                 {currentValidations.map((v) => {
                   const res = validationsList.find(rv => rv && rv.id && rv.id.toLowerCase() === v.id.toLowerCase());
                   const status = (res?.status as any) || 'warning';
                   
                   return (
-                    <div key={v.id} className="flex gap-4 items-start pb-6 border-b-[0.5px] border-[#E8E6DE] last:border-0 last:pb-0">
-                      <div className="mt-1 shrink-0 bg-[#F2EFE6] p-1 rounded-full shadow-none border-[0.5px] border-[#E8E6DE]">
+                    <div key={v.id} className="flex gap-4 items-start pb-6 border-b-[0.5px] border-linea last:border-0 last:pb-0">
+                      <div className="mt-1 shrink-0 bg-superficie p-1 rounded-full shadow-none border-[0.5px] border-linea">
                         <StatusIcon status={status} />
                       </div>
                       <div className="flex-1">
@@ -970,13 +970,13 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                           <div className="flex items-center gap-3">
                             <span className={cn(
                               "text-[11px] font-medium font-mono px-2 py-0.5 rounded shadow-none border-[0.5px]",
-                              status === 'pass' ? "bg-[#D4E8E6] text-[#003330] border-[#9FE1CB]" :
-                              status === 'fail' ? "bg-[#FCEBEB] text-[#A32D2D] border-[#F8CCCC]" :
-                              "bg-amber-50 text-amber-800 border-amber-250"
+                              status === 'pass' ? "bg-ok-fondo text-ok-tinta border-ok-linea" :
+                              status === 'fail' ? "bg-error-fondo text-error border-error-linea" :
+                              "bg-amber-50 text-amber-800 border-amber-200"
                             )}>
                               {v.label}
                             </span>
-                            <span className="text-[14px] font-medium text-slate-850 tracking-tight">{v.title}</span>
+                            <span className="text-[14px] font-medium text-slate-900 tracking-tight">{v.title}</span>
                           </div>
                           
                           {payment.pageNumber && (
@@ -985,7 +985,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                                 e.stopPropagation();
                                 onViewPdf?.(payment.sourceFileIdx || 0, payment.pageNumber);
                               }}
-                              className="self-start @2xl:self-auto p-1.5 text-slate-500 hover:text-[#004741] hover:bg-[#E8EFEE] rounded-lg border-[0.5px] border-[#E2E0D8] transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
+                              className="self-start @2xl:self-auto p-1.5 text-slate-500 hover:text-acento hover:bg-marca-suave rounded-lg border-[0.5px] border-linea transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
                               title="ver pdf"
                             >
                               <Eye className="w-3.5 h-3.5" />
@@ -993,9 +993,9 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                           )}
                         </div>
                         <p className={cn(
-                          "text-[13px] leading-relaxed mt-1.5 p-3.5 rounded-[8px] bg-[#F2EFE6] border-[0.5px] border-[#E8E6DE] shadow-none border-l-2",
-                          status === 'pass' ? "border-l-emerald-500 text-slate-650" :
-                          status === 'fail' ? "border-l-[#E24B4A] text-slate-800" :
+                          "text-[13px] leading-relaxed mt-1.5 p-3.5 rounded-[8px] bg-superficie border-[0.5px] border-linea shadow-none border-l-2",
+                          status === 'pass' ? "border-l-emerald-500 text-slate-600" :
+                          status === 'fail' ? "border-l-error-acento text-slate-800" :
                           "border-l-amber-400 text-slate-600 italic"
                         )}>
                           {(res?.observations || 'Dato no analizado por la IA.').split('\n').map((line, li, arr) => (
@@ -1013,10 +1013,10 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
 
               {/* Render Vales segment for mobility vouchers (combustibles, motor, ruedas, etc.) */}
               {payment.vales && payment.vales.length > 0 && (
-                <div className="mt-8 pt-6 border-t-[0.5px] border-[#E8E6DE]">
+                <div className="mt-8 pt-6 border-t-[0.5px] border-linea">
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="w-1.5 h-1.5 bg-[#004741] rounded-full" />
-                    <h5 className="text-[10px] font-medium text-[#004741] uppercase tracking-[0.06em]">
+                    <span className="w-1.5 h-1.5 bg-marca rounded-full" />
+                    <h5 className="text-[10px] font-medium text-acento uppercase tracking-[0.06em]">
                       Vales de Provisión de Combustible / Ruedas ({payment.vales.length})
                     </h5>
                   </div>
@@ -1025,23 +1025,23 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                       <div 
                         key={idx} 
                         className={cn(
-                          "bg-[#F2EFE6] border-[0.5px] rounded-[12px] p-4 transition-all flex flex-col justify-between gap-3 shadow-none",
-                          vale.legible ? "border-[#E8E6DE]" : "border-amber-300 bg-amber-50/10"
+                          "bg-superficie border-[0.5px] rounded-[12px] p-4 transition-all flex flex-col justify-between gap-3 caja",
+                          vale.legible ? "border-linea" : "border-amber-300 bg-amber-50/10"
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] bg-[#E5E1D5] border-[0.5px] border-[#E8E6DE] px-2 py-0.5 rounded">
+                          <span className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] bg-realce border-[0.5px] border-linea px-2 py-0.5 rounded">
                             Vale N° {vale.numero}
                           </span>
                           <span className={cn(
                             "px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider flex items-center gap-1",
                             vale.legible 
-                              ? "bg-[#D4E8E6] text-[#003330]" 
-                              : "bg-amber-100 text-amber-805"
+                              ? "bg-ok-fondo text-ok-tinta" 
+                              : "bg-amber-100 text-amber-800"
                           )}>
                             {vale.legible ? (
                               <>
-                                <CheckCircle2 className="w-3 h-3 text-[#004741]" />
+                                <CheckCircle2 className="w-3 h-3 text-acento" />
                                 Legible
                               </>
                             ) : (
@@ -1054,7 +1054,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                         </div>
                         
                         <div className="space-y-1">
-                          <span className="text-[10px] font-medium text-[#9A9890] uppercase tracking-[0.06em] block">
+                          <span className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] block">
                             Precio Total
                           </span>
                           {vale.legible && vale.precioTotal ? (
@@ -1069,8 +1069,8 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                         </div>
 
                         {vale.textoExtraido && (
-                          <div className="mt-1 pt-2 border-t-[0.5px] border-dashed border-[#E8E6DE] text-xs text-[#6B6A65]">
-                            <strong className="font-medium text-[#9A9890] uppercase text-[9px] tracking-wider block mb-1">Detalle extraído:</strong> 
+                          <div className="mt-1 pt-2 border-t-[0.5px] border-dashed border-linea text-xs text-tinta-2">
+                            <strong className="font-medium text-tenue uppercase text-[9px] tracking-wider block mb-1">Detalle extraído:</strong> 
                             <span className="font-normal">{vale.textoExtraido}</span>
                           </div>
                         )}

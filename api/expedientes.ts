@@ -199,6 +199,21 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
     if (n !== undefined) p.amount = n;
   }
 
+  // Vales de combustible o de ruedas que el lector leyo con IA: V10 los
+  // nombra ('Vale N° 18146 - PRECIO TOTAL: $51.801,60', 'Letra no legible en
+  // vale N° 18146') y la pagina los muestra en su seccion.
+  for (const p of pagos) {
+    const v10 = p.validations.find(v => v.id === 'v10')?.observations || '';
+    const vales: NonNullable<PaymentData['vales']> = [];
+    for (const m of v10.matchAll(/Vale N° (\S+) - PRECIO TOTAL: (\$\s?\d[\d.]*,\d{2})/g)) {
+      vales.push({ numero: m[1], precioTotal: m[2], legible: true });
+    }
+    for (const m of v10.matchAll(/Letra no legible en vale N° ([^.\s]+(?: numero)?)/g)) {
+      vales.push({ numero: m[1], legible: false });
+    }
+    if (vales.length) p.vales = vales;
+  }
+
   // V14 y V16 van a su lugar en el Balance si dieron OK o ERROR; un REVISAR,
   // y V15 y V17, a la lista de validaciones del expediente.
   const otras: ValidationResult[] = [];

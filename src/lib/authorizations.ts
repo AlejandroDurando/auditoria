@@ -63,7 +63,7 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
     codigos: ['302', '310', '313', '314', '400', '401', '412', '415', '418'],
     concepto: 'Movilidades (alquileres, mano de obra y repuestos de vehículos y equipos)',
     tipo: 'fijo',
-    firmantes: ['pimysmovrafaela@epe.santafe.gov.ar'],
+    firmantes: ['pimysmovrafaela@epe.santafe.gov.ar', 'pimysmovsantafe@epe.santafe.gov.ar'],
     excepcion: {
       motivo: 'La compra la realiza el propio sector Movilidades Rafaela',
       agentes: ['Mariano Cipolatti', 'Alejandro Mansilla', 'Carlos Ternengo'],
@@ -71,7 +71,7 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
     },
     equivalentes: ['Fabio Ingaramo', 'Mariano Cipolatti', 'Alejandro Mansilla', 'Carlos Ternengo'],
     nota:
-      'La autorización llega por correo de Movilidades Rafaela y debe figurar adjunta al PIMyS. También vale la firma de Fabio Ingaramo o de un agente de Movilidades como Aprobador. Si el PIMyS lo inicia otro sector, además hace falta la firma del jefe de ese sector.',
+      'Suc. Reconquista y sus agencias (Villa Ocampo, Vera, Calchaquí): autoriza Movilidades Santa Fe (pimysmovsantafe@epe.santafe.gov.ar); el correo de Movilidades Rafaela no vale ahí. Resto de las zonas: la autorización llega por correo de Movilidades Rafaela y debe figurar adjunta al PIMyS. También vale la firma de Fabio Ingaramo o de un agente de Movilidades como Aprobador. Si el PIMyS lo inicia otro sector, además hace falta la firma del jefe de ese sector.',
   },
   {
     codigos: ['200'],

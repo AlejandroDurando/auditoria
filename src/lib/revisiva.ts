@@ -314,11 +314,12 @@ const GCIA_DE_REGION: Record<string, string> = {
  *  coincide con la agencia ('Las Rosas' -> 'Ag. Las Rosas', D. Malier). */
 export function datosRevisivaLector(e: { region: string; hoja: string; rendicion: string; responsable?: string }): DatosRevisiva {
   const gciaSuc = GCIA_DE_REGION[e.region] || '';
-  const agencia = sinAcentos(e.hoja);
-  const sector = (SECTOR_MAPPING[gciaSuc] || []).find(s => {
-    const nombre = sinAcentos(s.label).replace(/^ag\.\s*/, '').replace(/\s*\(.*\)$/, '');
-    return nombre === agencia;
-  });
+  // Sin acentos ni puntuacion: la hoja 'Suc. Reconquista' es el sector 'Suc
+  // Reconquista'; 'Ag. Las Rosas' o 'Las Rosas', 'Ag. Las Rosas'.
+  const clave = (s: string) => sinAcentos(s).replace(/\s*\(.*\)$/, '')
+    .replace(/[^a-z0-9]+/g, ' ').trim().replace(/^ag /, '');
+  const agencia = clave(e.hoja);
+  const sector = (SECTOR_MAPPING[gciaSuc] || []).find(s => clave(s.label) === agencia);
   return {
     responsable: sector?.responsible || (e.responsable || '').replace(/^\d+\s*-\s*/, ''),
     fondoFijo: e.rendicion,

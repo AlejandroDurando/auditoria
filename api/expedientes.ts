@@ -223,11 +223,15 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
   for (const p of pagos) {
     const v10 = p.validations.find(v => v.id === 'v10')?.observations || '';
     const vales: NonNullable<PaymentData['vales']> = [];
-    for (const m of v10.matchAll(/Vale N° (\S+) - PRECIO TOTAL: (\$\s?\d[\d.]*,\d{2})/g)) {
-      vales.push({ numero: m[1], precioTotal: m[2], legible: true });
+    // El precio va como numero ('190000.00', igual que el dashboard) y el
+    // detalle que leyo Gemini viene entre « ».
+    for (const m of v10.matchAll(/Vale N° (\S+) - PRECIO TOTAL: (\$\s?\d[\d.]*,\d{2})(?: - Detalle: «([^»]*)»)?/g)) {
+      const n = pesos(m[2]);
+      vales.push({ numero: m[1], precioTotal: n !== undefined ? n.toFixed(2) : undefined, legible: n !== undefined,
+                   textoExtraido: m[3] });
     }
-    for (const m of v10.matchAll(/Letra no legible en vale N° ([^.\s]+(?: numero)?)/g)) {
-      vales.push({ numero: m[1], legible: false });
+    for (const m of v10.matchAll(/Letra no legible en vale N° ([^.\s]+(?: numero)?)(?: - Detalle: «([^»]*)»)?/g)) {
+      vales.push({ numero: m[1], legible: false, textoExtraido: m[2] });
     }
     if (vales.length) p.vales = vales;
   }

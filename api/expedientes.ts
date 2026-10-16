@@ -499,7 +499,10 @@ export default async function handler(req: any, res: any) {
   const pdf = req.query?.pdf;
   if (pdf !== undefined) {
     // Solo PDF dentro de una carpeta: 'FF N° 219 Las Rosas/archivo.pdf'.
-    if (typeof pdf !== 'string' || !/^[^/]+\/[^/]+\.pdf$/i.test(pdf) || pdf.includes('..')) {
+    // '..' solo es peligroso como carpeta entera; dentro de un nombre vale
+    // ('Aguas Santafesinas S.A 200A1630442..pdf', FF 162).
+    if (typeof pdf !== 'string' || !/^[^/]+\/[^/]+\.pdf$/i.test(pdf)
+        || pdf.split('/').some(p => p === '..' || p === '.')) {
       res.status(400).json({ error: 'Archivo no valido.' });
       return;
     }

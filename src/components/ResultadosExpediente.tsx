@@ -246,6 +246,54 @@ export function ResultadosExpediente({
         );
       })()}
 
+      {/* Alerta Patrimonio (códigos 200 y 202): arriba, antes de los pagos */}
+      {(() => {
+        const codigoPatrimonio = (payment: any) => {
+          const v3 = payment?.validations?.find((val: any) => val?.id === 'v3');
+          return ['200', '202'].find(c => v3 && hasAccountingCode(v3.observations, c)) || null;
+        };
+        const paymentsWith202 = (result?.payments || []).filter(payment => codigoPatrimonio(payment));
+        const codigos = [...new Set(paymentsWith202.map(codigoPatrimonio))].sort().join(' y ');
+
+        if (paymentsWith202.length === 0) return null;
+
+        return (
+          <div className="bg-amber-50 border border-amber-200 rounded-[12px] p-5 shadow-none flex flex-col gap-4 mb-8">
+            <div className="flex gap-3.5 items-start">
+              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0 text-amber-700">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-amber-950 leading-tight">Enviar expediente a Patrimonio para alta bien de uso</h4>
+                <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                  Se ha detectado la imputación con el código contable <strong className="font-semibold text-amber-950">{codigos}</strong> (alta de bien de uso). Deberás remitir este expediente al área de Patrimonio para el correspondiente alta física del bien de uso.
+                </p>
+              </div>
+            </div>
+            <div className="border-t border-amber-200/50 mt-1 pt-3.5">
+              <p className="text-[10px] font-bold text-amber-900 uppercase tracking-wider mb-2.5">Comprobantes identificados con Código {codigos}:</p>
+              <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2.5">
+                {paymentsWith202.map((p, idx) => (
+                  <div key={idx} className="bg-superficie/80 p-3 rounded-lg border border-amber-200/60 flex flex-col shadow-sm">
+                    <span className="text-xs font-semibold text-slate-800">
+                      {p.providerName ? toSentenceCase(p.providerName) : 'Proveedor no identificado'}
+                    </span>
+                    <span className="text-[11px] text-slate-500 mt-1 font-mono">
+                      Factura/PIMyS N°: <span className="font-medium text-slate-700">{p.orderNumber || 'S/N'}</span> · Código {codigoPatrimonio(p)}
+                    </span>
+                    {p.amount !== undefined && p.amount > 0 && (
+                      <span className="text-[11px] text-slate-600 mt-1 font-medium">
+                        Monto: <span className="font-semibold text-slate-800">{formatCurrency(p.amount)}</span>
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {result?.rotacion && <IndiceRotacion rotacion={result.rotacion} />}
 
       {(() => {
@@ -525,52 +573,6 @@ export function ResultadosExpediente({
       {result?.validacionesExpediente && result.validacionesExpediente.length > 0 && (
         <ValidacionesExpediente validaciones={result.validacionesExpediente} />
       )}
-
-      {/* Alerta Patrimonio para Código 202 */}
-      {(() => {
-        const paymentsWith202 = (result?.payments || []).filter(payment => {
-          const v3 = payment?.validations?.find(val => val?.id === 'v3');
-          return v3 ? hasAccountingCode(v3.observations, '202') : false;
-        });
-
-        if (paymentsWith202.length === 0) return null;
-
-        return (
-          <div className="bg-amber-50 border border-amber-200 rounded-[12px] p-5 shadow-none flex flex-col gap-4 mt-6 mb-2">
-            <div className="flex gap-3.5 items-start">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0 text-amber-700">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-amber-950 leading-tight">Enviar expediente a Patrimonio para alta bien de uso</h4>
-                <p className="text-xs text-amber-800 mt-1 leading-relaxed">
-                  Se ha detectado la imputación con el código contable <strong className="font-semibold text-amber-950">202 (Adquisición de útiles, herramientas y Equipos de trabajo)</strong>. Deberás remitir este expediente al área de Patrimonio para el correspondiente alta física del bien de uso.
-                </p>
-              </div>
-            </div>
-            <div className="border-t border-amber-200/50 mt-1 pt-3.5">
-              <p className="text-[10px] font-bold text-amber-900 uppercase tracking-wider mb-2.5">Comprobantes identificados con Código 202:</p>
-              <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2.5">
-                {paymentsWith202.map((p, idx) => (
-                  <div key={idx} className="bg-superficie/80 p-3 rounded-lg border border-amber-200/60 flex flex-col shadow-sm">
-                    <span className="text-xs font-semibold text-slate-800">
-                      {p.providerName ? toSentenceCase(p.providerName) : 'Proveedor no identificado'}
-                    </span>
-                    <span className="text-[11px] text-slate-500 mt-1 font-mono">
-                      Factura/PIMyS N°: <span className="font-medium text-slate-700">{p.orderNumber || 'S/N'}</span>
-                    </span>
-                    {p.amount !== undefined && p.amount > 0 && (
-                      <span className="text-[11px] text-slate-600 mt-1 font-medium">
-                        Monto: <span className="font-semibold text-slate-800">{formatCurrency(p.amount)}</span>
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
 
       {/* Alerta de Autorizaciones para Código 226 */}
       {(() => {

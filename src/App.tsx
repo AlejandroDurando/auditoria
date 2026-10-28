@@ -1204,16 +1204,16 @@ export default function App() {
       lines.push(`Por favor, resuelva las observaciones señaladas antes de proceder con el reintegro de la rendición.`);
     }
 
-    // Alerta Patrimonio para Código 202 — solo si V3 indica código 202
+    // Alerta Patrimonio para códigos 200 y 202 — solo si V3 indica alguno
     const paymentsWith202 = (result.payments || []).filter(payment => {
       const v3 = payment?.validations?.find(val => val?.id === 'v3');
-      return v3 ? hasAccountingCode(v3.observations, '202') : false;
+      return v3 ? ['200', '202'].some(c => hasAccountingCode(v3.observations, c)) : false;
     });
 
     if (paymentsWith202.length > 0) {
       lines.push(`\n==================================================`);
       lines.push(`⚠️ ENVIAR EXPEDIENTE A PATRIMONIO PARA ALTA BIEN DE USO`);
-      lines.push(`Se ha detectado imputación con código contable 202 (Adquisición de útiles, herramientas y Equipos de trabajo).`);
+      lines.push(`Se ha detectado imputación con código contable 200 o 202 (alta de bien de uso).`);
       lines.push(`Comprobantes identificados:`);
       paymentsWith202.forEach(p => {
         const provName = p.providerName ? p.providerName.toUpperCase() : 'PROVEEDOR N/D';

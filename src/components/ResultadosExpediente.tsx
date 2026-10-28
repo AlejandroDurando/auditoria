@@ -294,6 +294,84 @@ export function ResultadosExpediente({
         );
       })()}
 
+      {/* Alerta de Autorizaciones para Código 226: arriba, junto a la de Patrimonio */}
+      {(() => {
+        const paymentsWith226 = (result?.payments || []).filter(payment => {
+          const v3 = payment?.validations?.find(val => val?.id === 'v3');
+          return v3 ? hasAccountingCode(v3.observations, '226') : false;
+        });
+
+        if (paymentsWith226.length === 0) return null;
+
+        return (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-[12px] p-5 shadow-none flex flex-col gap-4 mb-8">
+            <div className="flex gap-3.5 items-start">
+              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center shrink-0 border border-yellow-200 text-yellow-700">
+                <AlertTriangle className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-yellow-950 leading-tight">Suma Atención: Control de Aprobación Código 226</h4>
+                <p className="text-xs text-yellow-800 mt-1 leading-relaxed">
+                  Se ha detectado imputación con el código <strong className="font-semibold text-yellow-900">226 (Mantenimiento de maquinarias menores)</strong>. Estas compras deben estar debidamente autorizadas por el Jefe Administrativo de la Sucursal correspondiente:
+                </p>
+                <ul className="text-xs text-yellow-900 mt-2 space-y-1 list-disc pl-4 font-medium">
+                  {ZONAS_226.map(z => (
+                    <li key={z.zona}><strong className="text-yellow-950">{z.zona}</strong> ({z.alcance}) requiere firma de <strong className="text-emerald-900 font-semibold">{z.firmante}</strong></li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="border-t border-yellow-200/80 mt-1 pt-3.5">
+              <p className="text-[10px] font-bold text-yellow-900 uppercase tracking-wider mb-2.5">Facturas/Proveedores con Código 226:</p>
+              <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2.5">
+                {paymentsWith226.map((p, idx) => {
+                  // Identify expected signer
+                  // La zona sale primero de la agencia del expediente y, si no
+                  // la nombra, del texto del pago.
+                  const generalBranchText = result?.agenciaSucursal || "";
+                  const paymentBranchText = (p?.libroDiarioText || "") + " " + (p?.providerName || "");
+                  const zona226 = zonaDe(generalBranchText) || zonaDe(generalBranchText + " " + paymentBranchText);
+                  const expectedSigner = zona226?.firmante || "Jefe Administracion";
+                  const zone = zona226?.zona || "No identificada";
+
+                  // Check if approved in observations
+                  const v4Val = p?.validations?.find(val => (val as any)?.code?.toLowerCase() === 'v4' || val?.id?.toLowerCase() === 'v4' || (val as any)?.code?.toLowerCase() === 'validation_v4');
+                  const v4Obs = (v4Val?.observations || "").toUpperCase();
+                  const cleanSigner = expectedSigner.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                  const hasProperSignature = v4Obs.includes(expectedSigner.toUpperCase()) || 
+                                         v4Obs.includes(cleanSigner) ||
+                                         (v4Val?.status === 'pass' && !v4Obs.includes("FALTA"));
+
+                  return (
+                    <div key={idx} className="bg-superficie/90 p-3 rounded-lg border border-yellow-200 flex flex-col shadow-sm">
+                      <div className="flex justify-between items-start gap-1">
+                        <span className="text-xs font-semibold text-slate-800">
+                          {p.providerName ? toSentenceCase(p.providerName) : 'Proveedor no identificado'}
+                        </span>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${hasProperSignature ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                          {hasProperSignature ? 'Verificado' : 'No Encontrado'}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 mt-1 font-mono">
+                        Factura/PIMyS N°: <span className="font-medium text-slate-700">{p.orderNumber || 'S/N'}</span>
+                      </span>
+                      <div className="text-[11px] text-slate-600 mt-1">
+                        Jurisdicción: <span className="font-semibold text-slate-700">{zone}</span> | Requiere: <strong className="text-amber-950 font-semibold">{expectedSigner}</strong>
+                      </div>
+                      {p.amount !== undefined && p.amount > 0 && (
+                        <span className="text-[11px] text-slate-600 mt-1 font-medium font-mono">
+                          Monto: <span className="font-bold text-slate-800">{formatCurrency(p.amount)}</span>
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {result?.rotacion && <IndiceRotacion rotacion={result.rotacion} />}
 
       {(() => {
@@ -573,84 +651,6 @@ export function ResultadosExpediente({
       {result?.validacionesExpediente && result.validacionesExpediente.length > 0 && (
         <ValidacionesExpediente validaciones={result.validacionesExpediente} />
       )}
-
-      {/* Alerta de Autorizaciones para Código 226 */}
-      {(() => {
-        const paymentsWith226 = (result?.payments || []).filter(payment => {
-          const v3 = payment?.validations?.find(val => val?.id === 'v3');
-          return v3 ? hasAccountingCode(v3.observations, '226') : false;
-        });
-
-        if (paymentsWith226.length === 0) return null;
-
-        return (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-[12px] p-5 shadow-none flex flex-col gap-4 mt-4 mb-2">
-            <div className="flex gap-3.5 items-start">
-              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center shrink-0 border border-yellow-200 text-yellow-700">
-                <AlertTriangle className="w-5 h-5 text-yellow-600" />
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-yellow-950 leading-tight">Suma Atención: Control de Aprobación Código 226</h4>
-                <p className="text-xs text-yellow-800 mt-1 leading-relaxed">
-                  Se ha detectado imputación con el código <strong className="font-semibold text-yellow-900">226 (Mantenimiento de maquinarias menores)</strong>. Estas compras deben estar debidamente autorizadas por el Jefe Administrativo de la Sucursal correspondiente:
-                </p>
-                <ul className="text-xs text-yellow-900 mt-2 space-y-1 list-disc pl-4 font-medium">
-                  {ZONAS_226.map(z => (
-                    <li key={z.zona}><strong className="text-yellow-950">{z.zona}</strong> ({z.alcance}) requiere firma de <strong className="text-emerald-900 font-semibold">{z.firmante}</strong></li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <div className="border-t border-yellow-200/80 mt-1 pt-3.5">
-              <p className="text-[10px] font-bold text-yellow-900 uppercase tracking-wider mb-2.5">Facturas/Proveedores con Código 226:</p>
-              <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2.5">
-                {paymentsWith226.map((p, idx) => {
-                  // Identify expected signer
-                  // La zona sale primero de la agencia del expediente y, si no
-                  // la nombra, del texto del pago.
-                  const generalBranchText = result?.agenciaSucursal || "";
-                  const paymentBranchText = (p?.libroDiarioText || "") + " " + (p?.providerName || "");
-                  const zona226 = zonaDe(generalBranchText) || zonaDe(generalBranchText + " " + paymentBranchText);
-                  const expectedSigner = zona226?.firmante || "Jefe Administracion";
-                  const zone = zona226?.zona || "No identificada";
-
-                  // Check if approved in observations
-                  const v4Val = p?.validations?.find(val => (val as any)?.code?.toLowerCase() === 'v4' || val?.id?.toLowerCase() === 'v4' || (val as any)?.code?.toLowerCase() === 'validation_v4');
-                  const v4Obs = (v4Val?.observations || "").toUpperCase();
-                  const cleanSigner = expectedSigner.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                  const hasProperSignature = v4Obs.includes(expectedSigner.toUpperCase()) || 
-                                         v4Obs.includes(cleanSigner) ||
-                                         (v4Val?.status === 'pass' && !v4Obs.includes("FALTA"));
-
-                  return (
-                    <div key={idx} className="bg-superficie/90 p-3 rounded-lg border border-yellow-200 flex flex-col shadow-sm">
-                      <div className="flex justify-between items-start gap-1">
-                        <span className="text-xs font-semibold text-slate-800">
-                          {p.providerName ? toSentenceCase(p.providerName) : 'Proveedor no identificado'}
-                        </span>
-                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${hasProperSignature ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
-                          {hasProperSignature ? 'Verificado' : 'No Encontrado'}
-                        </span>
-                      </div>
-                      <span className="text-[11px] text-slate-500 mt-1 font-mono">
-                        Factura/PIMyS N°: <span className="font-medium text-slate-700">{p.orderNumber || 'S/N'}</span>
-                      </span>
-                      <div className="text-[11px] text-slate-600 mt-1">
-                        Jurisdicción: <span className="font-semibold text-slate-700">{zone}</span> | Requiere: <strong className="text-amber-950 font-semibold">{expectedSigner}</strong>
-                      </div>
-                      {p.amount !== undefined && p.amount > 0 && (
-                        <span className="text-[11px] text-slate-600 mt-1 font-medium font-mono">
-                          Monto: <span className="font-bold text-slate-800">{formatCurrency(p.amount)}</span>
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
 
       {/* Sección Informe Copiable */}
       {informeTexto !== undefined && (

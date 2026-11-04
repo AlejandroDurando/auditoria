@@ -50,6 +50,8 @@ export interface PaymentData {
   libroDiarioText?: string;
   /** Documentos del pago leidos por OCR (lector de expedientes). */
   leidoPorOcr?: string;
+  /** Codigos de gasto del PIMyS (lector: los que nombra V3). */
+  codigos?: string[];
   vales?: Array<{
     numero: string;
     precioTotal?: string;

@@ -910,12 +910,21 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
     >
       <div 
         onClick={onToggle}
-        className="cabecera grid grid-cols-2 @3xl:grid-cols-[75px_1.5fr_1fr_220px_24px] gap-x-4 gap-y-2 items-center p-[11px_14px] cursor-pointer selection:bg-transparent select-none"
+        className={cn(
+          "cabecera grid grid-cols-2 gap-x-4 gap-y-2 items-center p-[11px_14px] cursor-pointer selection:bg-transparent select-none",
+          payment?.codigos?.length ? "@3xl:grid-cols-[75px_70px_1.5fr_1fr_220px_24px]" : "@3xl:grid-cols-[75px_1.5fr_1fr_220px_24px]"
+        )}
       >
         <div className="flex flex-col">
           <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">PIMyS N°</span>
           <span className="text-[13px] font-medium text-slate-900">{payment?.orderNumber}</span>
         </div>
+        {payment?.codigos?.length ? (
+          <div className="flex flex-col">
+            <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">Código</span>
+            <span className="text-[13px] font-medium text-slate-900 font-mono">{payment.codigos.join(' · ')}</span>
+          </div>
+        ) : null}
         <div className="flex flex-col min-w-0">
           <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">Proveedor</span>
           <span className="text-[13px] font-medium text-slate-900 truncate block" title={payment?.providerName}>

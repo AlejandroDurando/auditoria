@@ -203,6 +203,16 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
       status: estadoAStatus(texto(fila[4])),
       observations: texto(fila[5]),
     };
+    // Pago fuera de la vigencia ARCA: no se observa (decision del usuario,
+    // 03/11/2026). Los bloques exportados antes lo traen en REVISAR.
+    if (id === 'V9' && v.status === 'warning' && /esta fuera de la vigencia/.test(v.observations)) {
+      v.status = 'pass';
+    }
+    // Codigos de gasto del PIMyS, para mostrarlos junto al numero.
+    if (id === 'V3' && pagos.length) {
+      const cods = [...v.observations.matchAll(/C[oó]digo (\d{3})\b/g)].map(m => m[1]);
+      if (cods.length) pagos[pagos.length - 1].codigos = [...new Set(cods)];
+    }
     if (VALIDACIONES_EXPEDIENTE.has(id)) deExpediente[id] = v;
     else if (pagos.length) pagos[pagos.length - 1].validations.push(v);
   }

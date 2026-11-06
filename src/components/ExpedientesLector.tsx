@@ -129,7 +129,8 @@ function EstadoChip({ estado }: { estado: string }) {
 }
 
 const ROTULO_TIPO: Record<string, string> = {
-  caratula: 'Carátula', pago: 'Pago', libro_diario: 'Libro Diario', balance: 'Balance de Inversión', otro: 'Otro',
+  caratula: 'Carátula', pago: 'Pago', libro_diario: 'Libro Diario', balance: 'Balance de Inversión',
+  reporte: 'Reporte de proveedores', otro: 'Otro',
 };
 
 /** Desplegable con los documentos del expediente, en el orden de la carpeta:

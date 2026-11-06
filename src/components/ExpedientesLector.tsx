@@ -128,6 +128,57 @@ function EstadoChip({ estado }: { estado: string }) {
   );
 }
 
+const ROTULO_TIPO: Record<string, string> = {
+  caratula: 'Carátula', pago: 'Pago', libro_diario: 'Libro Diario', balance: 'Balance de Inversión', otro: 'Otro',
+};
+
+/** Desplegable con los documentos del expediente, en el orden de la carpeta:
+ *  carátula, pagos, Libro Diario y Balance (indice del lector). */
+function DocumentosExpediente({ archivos, abierto, onAbrir }: {
+  archivos: ArchivoPdf[]; abierto: ArchivoPdf | null; onAbrir: (a: ArchivoPdf) => void;
+}) {
+  const [desplegado, setDesplegado] = useState(false);
+  let pago = 0;
+  return (
+    <div className="mb-6 bg-superficie border-[0.5px] border-linea rounded-[8px] caja">
+      <button
+        type="button"
+        onClick={() => setDesplegado(d => !d)}
+        className="w-full flex items-center gap-2 px-4 py-2.5 text-left cursor-pointer bg-transparent border-none outline-none"
+        aria-expanded={desplegado}
+      >
+        <FileText className="w-4 h-4 text-tenue shrink-0" />
+        <span className="text-[13px] font-medium text-slate-800 flex-1">Documentos del expediente ({archivos.length})</span>
+        <ChevronRight className={cn("w-4 h-4 text-tenue transition-transform", desplegado && "rotate-90")} />
+      </button>
+      {desplegado && (
+        <ol className="border-t-[0.5px] border-linea py-1 m-0 list-none">
+          {archivos.map(a => {
+            const tipo = a.tipo || 'otro';
+            const rotulo = tipo === 'pago' ? `Pago ${++pago}` : ROTULO_TIPO[tipo] || 'Documento';
+            return (
+              <li key={a.clave}>
+                <button
+                  type="button"
+                  onClick={() => onAbrir(a)}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-4 py-1.5 text-left text-xs cursor-pointer bg-transparent border-none outline-none hover:bg-marca-suave transition-colors",
+                    abierto?.clave === a.clave ? "text-acento font-medium" : "text-slate-700"
+                  )}
+                  title={a.nombre}
+                >
+                  <span className="w-[120px] shrink-0 text-[10px] uppercase tracking-[0.06em] text-tenue">{a.tipo ? rotulo : ''}</span>
+                  <span className="truncate">{a.nombre.replace(/\.pdf$/i, '')}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </div>
+  );
+}
+
 export function ExpedientesLector() {
   const { clave, expedientes, cargando, error } = useExpedientesLector();
   const [busqueda, setBusqueda] = useState('');
@@ -225,25 +276,7 @@ export function ExpedientesLector() {
           Volver a los expedientes del lector
         </button>
         {actual.archivos.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-[10px] font-medium text-tenue uppercase tracking-[0.06em] mb-2 px-1">
-              Documentos del expediente ({actual.archivos.length})
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {actual.archivos.map(a => (
-                <button
-                  key={a.clave}
-                  type="button"
-                  onClick={() => setPdfAbierto(a)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-superficie border-[0.5px] border-linea rounded-[7px] text-xs text-slate-700 hover:text-acento hover:bg-marca-suave transition-all cursor-pointer outline-none"
-                  title={a.nombre}
-                >
-                  <FileText className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate max-w-[260px]">{a.nombre.replace(/\.pdf$/i, '')}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <DocumentosExpediente archivos={actual.archivos} abierto={pdfAbierto} onAbrir={setPdfAbierto} />
         )}
         <ResultadosExpediente
           result={actual.result}

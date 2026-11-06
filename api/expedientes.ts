@@ -25,6 +25,8 @@ export interface ArchivoPdf {
   nombre: string;
   clave: string;
   tamano: number;
+  /** 'caratula' | 'pago' | 'libro_diario' | 'balance' | 'otro', del indice del lector. */
+  tipo?: string;
 }
 
 export interface ExpedienteLector {
@@ -419,11 +421,32 @@ function carpetaDe(e: ExpedienteLector, carpetas: string[]): string | undefined 
   return candidatas.find(c => palabras.some(p => sinAcentos(c).includes(p)));
 }
 
-function asociarPdfs(expedientes: ExpedienteLector[], pdfs: Map<string, ArchivoPdf[]>) {
+/** Orden de los documentos de cada carpeta segun el lector (catalogo/documentos.json):
+ *  carátula, pagos en el orden de la carpeta, Libro Diario y Balance. */
+async function leerIndice(): Promise<Record<string, Array<{ nombre: string; tipo: string }>>> {
+  const cfg = r2();
+  if (!cfg) return {};
+  const r = await cfg.cliente.fetch(`${cfg.base}/${rutaR2('catalogo/documentos.json')}`);
+  return r.ok ? r.json() : {};
+}
+
+/** Los PDF de la carpeta en el orden del indice, con su tipo. Los que el
+ *  indice no nombra (expediente auditado antes del indice) van al final. */
+function ordenar(archivos: ArchivoPdf[], indice?: Array<{ nombre: string; tipo: string }>): ArchivoPdf[] {
+  if (!indice?.length) return archivos;
+  const pos = new Map(indice.map((d, i) => [d.nombre, i] as const));
+  const tipo = new Map(indice.map(d => [d.nombre, d.tipo] as const));
+  return [...archivos]
+    .map(a => ({ ...a, tipo: tipo.get(a.nombre) }))
+    .sort((a, b) => (pos.get(a.nombre) ?? 1e9) - (pos.get(b.nombre) ?? 1e9));
+}
+
+function asociarPdfs(expedientes: ExpedienteLector[], pdfs: Map<string, ArchivoPdf[]>,
+                     indice: Record<string, Array<{ nombre: string; tipo: string }>> = {}) {
   const carpetas = [...pdfs.keys()];
   for (const e of expedientes as Array<ExpedienteLector & { archivoDePago?: Array<string | undefined> }>) {
     const carpeta = carpetaDe(e, carpetas);
-    e.archivos = carpeta ? pdfs.get(carpeta) || [] : [];
+    e.archivos = carpeta ? ordenar(pdfs.get(carpeta) || [], indice[carpeta]) : [];
     e.result.payments.forEach((p, i) => {
       let idx = e.archivos.findIndex(a => a.nombre === e.archivoDePago?.[i]);
       if (idx < 0 && !e.archivoDePago?.[i] && p.providerName) {
@@ -527,12 +550,13 @@ export default async function handler(req: any, res: any) {
   try {
     const t = await token();
     const planillas = REGIONES.filter(r => process.env[r.env]);
-    const [listas, pdfs] = await Promise.all([
+    const [listas, pdfs, indice] = await Promise.all([
       Promise.all(planillas.map(r => leerPlanilla(r.region, process.env[r.env] as string, t))),
       listarPdfs().catch(e => { console.error(e); return new Map<string, ArchivoPdf[]>(); }),
+      leerIndice().catch(e => { console.error(e); return {}; }),
     ]);
     const expedientes = listas.flat();
-    asociarPdfs(expedientes, pdfs);
+    asociarPdfs(expedientes, pdfs, indice);
     res.status(200).json({ expedientes });
   } catch (e) {
     console.error(e);

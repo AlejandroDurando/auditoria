@@ -39,7 +39,6 @@ import {
   Moon,
   Sun,
   Table2,
-  ListChecks,
   FolderCheck,
   FilePlus2,
   BookText
@@ -222,7 +221,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
               setSelectedModel(val);
               localStorage.setItem('epe_selected_model', val);
             }}
-            className="w-full px-3 py-2 text-xs font-medium rounded-[8px] border border-linea bg-superficie text-slate-700 outline-none cursor-pointer hover:border-acento/40 transition-colors"
+            className="w-full px-3 py-2 text-xs font-medium rounded-[0.5rem] border border-linea bg-superficie text-slate-700 outline-none cursor-pointer hover:border-acento/40 transition-colors"
           >
             {MODELS.map(m => (
               <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
@@ -234,7 +233,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
         <div
           {...getRootProps()}
           className={cn(
-            "border-[1.5px] border-dashed rounded-[8px] p-5 text-center cursor-pointer transition-colors mb-3",
+            "border-[1.5px] border-dashed rounded-[0.5rem] p-5 text-center cursor-pointer transition-colors mb-3",
             isDragActive ? "border-acento bg-marca-suave" : "border-linea bg-superficie hover:border-acento/40"
           )}
         >
@@ -244,7 +243,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
             <p className="text-xs text-tenue">
               {files.length ? 'Agregá más comprobantes o hacé clic' : 'Arrastrá los comprobantes o hacé clic'}
             </p>
-            <p className="text-[11px] text-tenue-2">Solo PDF · podés subir varios pagos juntos</p>
+            <p className="text-[0.6875rem] text-tenue-2">Solo PDF · podés subir varios pagos juntos</p>
           </div>
         </div>
 
@@ -252,12 +251,12 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
         {files.length > 0 && (
           <div className="mb-3 space-y-1">
             <div className="flex items-center justify-between px-1 mb-1.5">
-              <span className="text-[11px] font-medium text-tenue">
+              <span className="text-[0.6875rem] font-medium text-tenue">
                 {files.length} {files.length === 1 ? 'archivo' : 'archivos'}
               </span>
               <button
                 onClick={() => { setFiles([]); setResult(null); setActiveFileIdx(0); }}
-                className="text-[11px] font-medium text-tenue hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none outline-none p-0"
+                className="text-[0.6875rem] font-medium text-tenue hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none outline-none p-0"
               >
                 Limpiar todo
               </button>
@@ -267,14 +266,14 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
                 key={idx}
                 onClick={() => setActiveFileIdx(idx)}
                 className={cn(
-                  "flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] cursor-pointer transition-colors border",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-[0.375rem] cursor-pointer transition-colors border",
                   idx === activeFileIdx
                     ? "bg-marca-suave border-acento/30"
                     : "bg-superficie border-linea hover:bg-hundida"
                 )}
               >
                 <FileText className={cn("w-3.5 h-3.5 shrink-0", idx === activeFileIdx ? "text-acento" : "text-tenue")} />
-                <span className="text-[11px] text-tinta truncate flex-1 min-w-0" title={f.name}>{f.name}</span>
+                <span className="text-[0.6875rem] text-tinta truncate flex-1 min-w-0" title={f.name}>{f.name}</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
                   className="text-tenue hover:text-red-500 transition-colors shrink-0 bg-transparent border-none outline-none p-0 cursor-pointer"
@@ -290,7 +289,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
           onClick={handleAnalizar}
           disabled={!files.length || isProcessing}
           className={cn(
-            "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium transition-all mb-5",
+            "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[0.5rem] text-sm font-medium transition-all mb-5",
             files.length && !isProcessing
               ? "bg-marca text-white hover:bg-marca-hover"
               : "bg-linea text-tenue-2 cursor-not-allowed"
@@ -307,17 +306,17 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
         {result && result.payments && result.payments.length > 0 && (
           <div className="space-y-3">
             {/* Resumen del lote */}
-            <div className="bg-marca-suave border border-acento/20 rounded-[8px] p-3.5">
+            <div className="bg-marca-suave border border-acento/20 rounded-[0.5rem] p-3.5">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-semibold text-acento">
+                <span className="text-[0.6875rem] font-semibold text-acento">
                   {result.payments.length} {result.payments.length === 1 ? 'pago analizado' : 'pagos analizados'}
                 </span>
-                <span className="text-[11px] font-semibold text-acento font-mono">
+                <span className="text-[0.6875rem] font-semibold text-acento font-mono">
                   {formatCurrency(result.payments.reduce((a, p) => a + (typeof p?.amount === 'number' && !isNaN(p.amount) ? p.amount : 0), 0))}
                 </span>
               </div>
               {result.overallSummary && (
-                <p className="text-[11px] text-tinta-2 leading-relaxed mt-1.5">{safeText(result.overallSummary)}</p>
+                <p className="text-[0.6875rem] text-tinta-2 leading-relaxed mt-1.5">{safeText(result.overallSummary)}</p>
               )}
             </div>
 
@@ -331,7 +330,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
                 <div
                   key={idx}
                   className={cn(
-                    "bg-superficie border rounded-[8px] overflow-hidden caja",
+                    "bg-superficie border rounded-[0.5rem] overflow-hidden caja",
                     errores > 0 ? "border-l-2 border-l-error-acento border-linea" : "border-linea"
                   )}
                 >
@@ -344,14 +343,14 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
                         <p className="text-sm font-semibold text-tinta leading-tight truncate" title={pago?.providerName}>
                           {pago?.providerName || '—'}
                         </p>
-                        <p className="text-[11px] text-tenue mt-0.5">N° {pago?.orderNumber || '—'}</p>
+                        <p className="text-[0.6875rem] text-tenue mt-0.5">N° {pago?.orderNumber || '—'}</p>
                       </div>
                       <div className="text-right shrink-0 flex items-center gap-2">
                         <div>
                           <p className="text-sm font-semibold text-acento font-mono leading-tight">
                             {formatCurrency(pago?.amount)}
                           </p>
-                          <p className="text-[11px] mt-0.5">
+                          <p className="text-[0.6875rem] mt-0.5">
                             {errores > 0 ? (
                               <span className="text-error font-medium">{errores} {errores === 1 ? 'error' : 'errores'}</span>
                             ) : obs > 0 ? (
@@ -372,8 +371,8 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
                         <div key={v?.id || vi} className="flex items-start gap-2.5 px-4 py-2.5">
                           {statusIcon(v?.status)}
                           <div className="flex-1 min-w-0">
-                            <span className="text-[11px] font-semibold text-tinta mr-1.5">{v?.id}</span>
-                            <p className="text-[11px] text-tinta-2 mt-0.5 leading-relaxed">
+                            <span className="text-[0.6875rem] font-semibold text-tinta mr-1.5">{v?.id}</span>
+                            <p className="text-[0.6875rem] text-tinta-2 mt-0.5 leading-relaxed">
                               {(safeText(v?.observations) || '—').split('\n').map((line, li, arr) => (
                                 <React.Fragment key={li}>
                                   {renderBold(line)}
@@ -393,9 +392,9 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
         )}
 
         {result && (!result.payments || result.payments.length === 0) && (
-          <div className="bg-amber-50 border border-amber-200 rounded-[8px] p-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-[0.5rem] p-4">
             <p className="text-xs font-semibold text-amber-800 mb-1">No se detectaron pagos</p>
-            <p className="text-[11px] text-amber-800 leading-relaxed">
+            <p className="text-[0.6875rem] text-amber-800 leading-relaxed">
               La IA no pudo extraer ningún pago de los archivos cargados. Probá subiendo menos archivos por vez, o verificá que los PDFs sean legibles.
             </p>
           </div>
@@ -405,7 +404,7 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
       {/* Drag handle */}
       <div
         onMouseDown={onDividerMouseDown}
-        className="w-[5px] shrink-0 h-full cursor-col-resize bg-linea hover:bg-marca/40 transition-colors active:bg-marca/60"
+        className="w-[0.3125rem] shrink-0 h-full cursor-col-resize bg-linea hover:bg-marca/40 transition-colors active:bg-marca/60"
       />
 
       {/* Right panel — PDF viewer */}
@@ -456,8 +455,9 @@ export default function App() {
   // La seccion activa vive en la direccion (#/historial, #/lector/<id>…): el
   // "atras" del navegador vuelve a la seccion anterior en vez de salir.
   const ruta = useRuta();
-  const activeTab = TAB_DE_SECCION[ruta.seccion] ?? 'Dashboard';
-  const setActiveTab = useCallback((tab: string) => irA(SECCION_DE_TAB[tab] ?? 'dashboard'), []);
+  // Sin seccion en la direccion, la pagina abre en Expedientes auditados.
+  const activeTab = TAB_DE_SECCION[ruta.seccion] ?? 'Lector';
+  const setActiveTab = useCallback((tab: string) => irA(SECCION_DE_TAB[tab] ?? 'lector'), []);
 
   // ── Autorizaciones PIMyS agregadas por el usuario ──────────────────────────
   const [customCodigos, setCustomCodigos] = useState<AutorizacionCodigo[]>([]);
@@ -573,16 +573,16 @@ export default function App() {
 
   const [pdfWidth, setPdfWidth] = useState(600);
   const [isDragging, setIsDragging] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(232);
+  const [sidebarWidth, setSidebarWidth] = useState(256);
   const [sidebarOculta, setSidebarOculta] = useState(() => {
     try { return localStorage.getItem('sidebarOculta') === '1'; } catch { return false; }
   });
   // En un celular la barra lateral ocupaba casi todo el ancho: ahi arranca
   // oculta, se abre por encima de la pagina y se cierra al elegir una seccion.
-  const [pantallaAngosta, setPantallaAngosta] = useState(() => window.matchMedia('(max-width: 767px)').matches);
+  const [pantallaAngosta, setPantallaAngosta] = useState(() => window.matchMedia('(max-width: 47.9375rem)').matches);
   const [menuMovil, setMenuMovil] = useState(false);
   useEffect(() => {
-    const mql = window.matchMedia('(max-width: 767px)');
+    const mql = window.matchMedia('(max-width: 47.9375rem)');
     const cambio = () => { setPantallaAngosta(mql.matches); setMenuMovil(false); };
     mql.addEventListener('change', cambio);
     return () => mql.removeEventListener('change', cambio);
@@ -607,7 +607,7 @@ export default function App() {
   const [isLargeScreen, setIsLargeScreen] = useState(false);
 
   useEffect(() => {
-    const mql = window.matchMedia('(min-width: 1024px)');
+    const mql = window.matchMedia('(min-width: 64rem)');
     setIsLargeScreen(mql.matches);
     const handler = (e: MediaQueryListEvent) => setIsLargeScreen(e.matches);
     mql.addEventListener('change', handler);
@@ -1280,7 +1280,7 @@ export default function App() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-superficie rounded-[8px] max-w-md w-full border border-linea overflow-hidden caja"
+              className="bg-superficie rounded-[0.5rem] max-w-md w-full border border-linea overflow-hidden caja"
             >
               <div className="p-6">
                 <div className="flex items-start gap-4">
@@ -1306,7 +1306,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setNotification(null)}
-                  className="px-4 py-1.5 bg-marca hover:bg-marca-hover text-white text-xs font-medium rounded-[6px] transition-all cursor-pointer outline-none border-none shadow-none"
+                  className="px-4 py-1.5 bg-marca hover:bg-marca-hover text-white text-xs font-medium rounded-[0.375rem] transition-all cursor-pointer outline-none border-none shadow-none"
                 >
                   Entendido
                 </button>
@@ -1323,7 +1323,7 @@ export default function App() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-superficie rounded-[8px] max-w-md w-full border border-linea overflow-hidden caja"
+              className="bg-superficie rounded-[0.5rem] max-w-md w-full border border-linea overflow-hidden caja"
             >
               <div className="p-6">
                 <div className="flex items-start gap-4">
@@ -1344,7 +1344,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setDeleteConfirmId(null)}
-                  className="px-4 py-1.5 bg-superficie border border-linea-fuerte hover:bg-realce text-slate-700 text-xs font-medium rounded-[6px] transition-all cursor-pointer outline-none shadow-none"
+                  className="px-4 py-1.5 bg-superficie border border-linea-fuerte hover:bg-realce text-slate-700 text-xs font-medium rounded-[0.375rem] transition-all cursor-pointer outline-none shadow-none"
                 >
                   Cancelar
                 </button>
@@ -1356,7 +1356,7 @@ export default function App() {
                       setDeleteConfirmId(null);
                     }
                   }}
-                  className="px-4 py-1.5 bg-peligro hover:bg-peligro-hover text-white text-xs font-medium rounded-[6px] transition-all cursor-pointer outline-none border-none shadow-none"
+                  className="px-4 py-1.5 bg-peligro hover:bg-peligro-hover text-white text-xs font-medium rounded-[0.375rem] transition-all cursor-pointer outline-none border-none shadow-none"
                 >
                   Eliminar
                 </button>
@@ -1383,12 +1383,10 @@ export default function App() {
             setIsSidebarDragging(true);
             sidebarDragRef.current = { startX: e.clientX, startW: sidebarWidth };
           }}
-          className="absolute right-0 top-0 h-full w-[5px] cursor-col-resize z-30 hover:bg-marca/30 transition-colors"
+          className="absolute right-0 top-0 h-full w-[0.3125rem] cursor-col-resize z-30 hover:bg-marca/30 transition-colors"
         />
-        <div className="h-11 shrink-0 pl-[18px] pr-2.5 flex items-center gap-[9px] select-none">
-          <span className="w-5 h-5 rounded-[5px] bg-marca text-white flex items-center justify-center shrink-0">
-            <ListChecks className="w-3 h-3" strokeWidth={2.4} aria-hidden="true" />
-          </span>
+        <div className="h-11 shrink-0 pl-[1.125rem] pr-2.5 flex items-center gap-[0.5625rem] select-none">
+          <Logo className="w-[1.375rem] h-[1.375rem] shrink-0" />
           <span className="text-sm font-semibold text-tinta truncate">Auditor de expedientes</span>
         </div>
 
@@ -1419,7 +1417,7 @@ export default function App() {
             <SidebarSubItem label="Planilla control" active={activeTab === 'Planilla'} onClick={() => setActiveTab('Planilla')} />
           </SidebarGrupo>
 
-          <p className="px-2.5 pt-4 pb-1 text-[11px] font-medium text-tenue select-none">Consulta</p>
+          <p className="px-2.5 pt-4 pb-1 text-[0.6875rem] font-medium text-tenue select-none">Consulta</p>
           <SidebarItem icon={Hash} label="Códigos" active={activeTab === 'Códigos'} onClick={() => setActiveTab('Códigos')} />
           <SidebarItem icon={PackageSearch} label="Matriculador" active={activeTab === 'Matriculador'} onClick={() => setActiveTab('Matriculador')} />
           <SidebarItem icon={BookUser} label="Guía telefónica" active={activeTab === 'Guia'} onClick={() => setActiveTab('Guia')} />
@@ -1431,13 +1429,13 @@ export default function App() {
           <button
             type="button"
             onClick={() => setDarkMode(d => !d)}
-            className="flex-1 min-w-0 flex items-center gap-2 h-[30px] px-2 rounded-[6px] bg-transparent border-none text-sm text-tinta-2 hover:bg-barra-activa/70 hover:text-tinta cursor-pointer transition-colors"
+            className="flex-1 min-w-0 flex items-center gap-2 h-[1.875rem] px-2 rounded-[0.375rem] bg-transparent border-none text-sm text-tinta-2 hover:bg-barra-activa/70 hover:text-tinta cursor-pointer transition-colors"
           >
             {darkMode ? <Sun className="w-4 h-4 shrink-0" aria-hidden="true" /> : <Moon className="w-4 h-4 shrink-0" aria-hidden="true" />}
             <span className="truncate">{darkMode ? 'Modo claro' : 'Modo oscuro'}</span>
           </button>
           <button type="button" onClick={alternarSidebar} title="Ocultar barra lateral" aria-label="Ocultar barra lateral"
-            className="w-[30px] h-[30px] flex items-center justify-center rounded-[6px] bg-transparent border-none text-tinta-2 hover:bg-barra-activa/70 hover:text-tinta cursor-pointer transition-colors shrink-0">
+            className="w-[1.875rem] h-[1.875rem] flex items-center justify-center rounded-[0.375rem] bg-transparent border-none text-tinta-2 hover:bg-barra-activa/70 hover:text-tinta cursor-pointer transition-colors shrink-0">
             <PanelLeft className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
@@ -1449,7 +1447,7 @@ export default function App() {
         <header className="h-11 shrink-0 border-b border-linea flex items-center gap-3 px-4 sm:px-8 bg-lienzo sticky top-0 z-40">
           {barraOculta && (
             <button type="button" onClick={alternarSidebar} title="Mostrar barra lateral" aria-label="Mostrar barra lateral"
-              className="-ml-1 sm:-ml-3 w-[30px] h-[30px] flex items-center justify-center text-tinta-2 hover:text-tinta hover:bg-realce rounded-[6px] bg-transparent border-none cursor-pointer shrink-0">
+              className="-ml-1 sm:-ml-3 w-[1.875rem] h-[1.875rem] flex items-center justify-center text-tinta-2 hover:text-tinta hover:bg-realce rounded-[0.375rem] bg-transparent border-none cursor-pointer shrink-0">
               <PanelLeft className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
@@ -1477,22 +1475,22 @@ export default function App() {
               onClick={() => setDarkMode(d => !d)}
               title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
               aria-label={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              className="shrink-0 w-[30px] h-[30px] rounded-[6px] flex items-center justify-center cursor-pointer border-none bg-transparent text-tinta-2 hover:text-tinta hover:bg-realce transition-colors"
+              className="shrink-0 w-[1.875rem] h-[1.875rem] rounded-[0.375rem] flex items-center justify-center cursor-pointer border-none bg-transparent text-tinta-2 hover:text-tinta hover:bg-realce transition-colors"
             >
               {darkMode ? <Sun className="w-4 h-4" aria-hidden="true" /> : <Moon className="w-4 h-4" aria-hidden="true" />}
             </button>
           )}
         </header>
 
-        <div className={cn(activeTab === 'Rapida' ? "flex-1 flex flex-col overflow-hidden" : "px-4 sm:px-8 pt-6 pb-14 max-w-[1180px] w-full")}>
+        <div className={cn(activeTab === 'Rapida' ? "flex-1 flex flex-col overflow-hidden" : "px-4 sm:px-8 pt-6 pb-14 max-w-[73.75rem] w-full")}>
           {activeTab === 'Dashboard' && (
             <>
-              <div className="flex flex-wrap gap-x-[22px] border-b border-linea mb-5 select-none">
+              <div className="flex flex-wrap gap-x-[1.375rem] border-b border-linea mb-5 select-none">
                 <button
                   type="button"
                   onClick={() => { setDashboardMode('Expedientes'); setSelectedFiles([]); setResult(null); setActiveAuditId(null); setActivePdfViewer(null); }}
                   className={cn(
-                    "-mb-px pb-[9px] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors",
+                    "-mb-px pb-[0.5625rem] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors",
                     dashboardMode === 'Expedientes'
                       ? "border-tinta text-tinta font-medium"
                       : "border-transparent text-tinta-2 hover:text-tinta"
@@ -1505,7 +1503,7 @@ export default function App() {
                   type="button"
                   onClick={() => { setDashboardMode('Viáticos'); setSelectedFiles([]); setResult(null); setActiveAuditId(null); setActivePdfViewer(null); }}
                   className={cn(
-                    "-mb-px pb-[9px] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors",
+                    "-mb-px pb-[0.5625rem] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors",
                     dashboardMode === 'Viáticos'
                       ? "border-tinta text-tinta font-medium"
                       : "border-transparent text-tinta-2 hover:text-tinta"
@@ -1532,7 +1530,7 @@ export default function App() {
                             setSelectedModel(val);
                             localStorage.setItem('epe_selected_model', val);
                           }}
-                          className={cn(campo, 'w-auto max-w-[280px] cursor-pointer')}
+                          className={cn(campo, 'w-auto max-w-[17.5rem] cursor-pointer')}
                         >
                           {MODELS.map(m => (
                             <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
@@ -1545,7 +1543,7 @@ export default function App() {
                   <div
                     {...getRootProps()}
                     className={cn(
-                      "border border-dashed rounded-[8px] h-44 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer",
+                      "border border-dashed rounded-[0.5rem] h-44 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer",
                       isDragActive ? "border-acento bg-marca-suave" : "border-linea-fuerte bg-superficie hover:bg-realce"
                     )}
                   >
@@ -1561,12 +1559,12 @@ export default function App() {
                         <h2 className="text-base font-semibold text-tinta">
                           Archivos <span className="font-normal text-tenue cifras">{selectedFiles.length}</span>
                         </h2>
-                        <button type="button" onClick={() => setSelectedFiles([])} className={cn(boton.fantasma, 'h-[26px] text-xs')}>
+                        <button type="button" onClick={() => setSelectedFiles([])} className={cn(boton.fantasma, 'h-[1.625rem] text-xs')}>
                           Quitar todos
                         </button>
                       </div>
                       <Panel>
-                        <div className="max-h-[320px] overflow-y-auto">
+                        <div className="max-h-[20rem] overflow-y-auto">
                           {selectedFiles.map((file, idx) => {
                             const cat = getFileCategoryInfo(file.name);
                             return (
@@ -1574,7 +1572,7 @@ export default function App() {
                                 <span className="w-5 text-xs text-tenue cifras text-right shrink-0">{idx + 1}</span>
                                 <span className="min-w-0 flex-1 truncate text-sm text-tinta" title={file.name}>{file.name}</span>
                                 <Etiqueta>{cat.label}</Etiqueta>
-                                <span className="w-[70px] text-right text-xs text-tenue cifras shrink-0">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+                                <span className="w-[4.375rem] text-right text-xs text-tenue cifras shrink-0">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
                                 <button
                                   type="button"
                                   onClick={() => setSelectedFiles(prev => prev.filter(f => f.id !== file.id))}
@@ -1602,7 +1600,7 @@ export default function App() {
                   )}
                 </div>
               ) : isProcessing ? (
-                <div className="mt-10 max-w-[520px]">
+                <div className="mt-10 max-w-[32.5rem]">
                   <div className="flex items-baseline justify-between gap-4">
                     <h1 className="text-xl font-semibold tracking-[-0.01em] text-tinta">Auditando el expediente</h1>
                     <span className="font-mono text-sm text-tinta-2 cifras" aria-live="polite">{auditProgress}%</span>
@@ -1610,7 +1608,7 @@ export default function App() {
                   <div className="w-full h-1 bg-hundida-2 rounded-full overflow-hidden mt-3">
                     <div className="h-full bg-marca rounded-full transition-all duration-500 ease-out" style={{ width: `${auditProgress}%` }} />
                   </div>
-                  <p className="text-xs text-tenue mt-2 min-h-[32px]">{auditProgressLabel || 'Preparando…'}</p>
+                  <p className="text-xs text-tenue mt-2 min-h-[2rem]">{auditProgressLabel || 'Preparando…'}</p>
 
                   <Panel className="mt-4">
                     {[
@@ -1715,10 +1713,10 @@ export default function App() {
                   return (
                     <div
                       key={entry.id}
-                      className="flex flex-wrap items-center gap-x-4 gap-y-1 min-h-[52px] pl-3.5 pr-2 py-2 border-b border-linea-suave last:border-b-0 hover:bg-realce transition-colors"
+                      className="flex flex-wrap items-center gap-x-4 gap-y-1 min-h-[3.25rem] pl-3.5 pr-2 py-2 border-b border-linea-suave last:border-b-0 hover:bg-realce transition-colors"
                     >
-                      <div className="w-[72px] shrink-0">{entry.result && <EstadoBadge estado={estadoGeneral(entry.result)} />}</div>
-                      <div className="min-w-0 flex-[1_1_320px]">
+                      <div className="w-[4.5rem] shrink-0">{entry.result && <EstadoBadge estado={estadoGeneral(entry.result)} />}</div>
+                      <div className="min-w-0 flex-[1_1_20rem]">
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                           <button
                             type="button"
@@ -1741,7 +1739,7 @@ export default function App() {
                         {new Date(entry.date).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
                       </span>
                       <div className="flex items-center gap-1 shrink-0">
-                        <button type="button" onClick={() => abrirAuditoria(entry)} className={cn(boton.secundario, 'h-[26px] text-xs')}>
+                        <button type="button" onClick={() => abrirAuditoria(entry)} className={cn(boton.secundario, 'h-[1.625rem] text-xs')}>
                           Abrir
                         </button>
                         <button
@@ -1804,14 +1802,14 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-x-[22px] border-b border-linea mb-5 select-none">
+              <div className="flex flex-wrap gap-x-[1.375rem] border-b border-linea mb-5 select-none">
                 {(Object.keys(PIMYS_CODES) as Array<keyof typeof PIMYS_CODES>).map(cat => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setActiveCodeCategory(cat)}
                     className={cn(
-                      "-mb-px pb-[9px] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors",
+                      "-mb-px pb-[0.5625rem] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors",
                       activeCodeCategory === cat 
                         ? "border-tinta text-tinta font-medium"
                         : "border-transparent text-tinta-2 hover:text-tinta"
@@ -1838,12 +1836,12 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-superficie rounded-[8px] border border-linea overflow-hidden mb-6 caja">
+              <div className="bg-superficie rounded-[0.5rem] border border-linea overflow-hidden mb-6 caja">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left border-collapse">
                     <thead className="text-xs text-tenue">
                       <tr className="border-b border-linea">
-                        <th className="px-3.5 h-8 font-normal" style={{ width: '84px', minWidth: '84px', maxWidth: '84px' }}>Código</th>
+                        <th className="px-3.5 h-8 font-normal" style={{ width: '5.25rem', minWidth: '5.25rem', maxWidth: '5.25rem' }}>Código</th>
                         <th className="px-3.5 h-8 font-normal">Descripción</th>
                       </tr>
                     </thead>
@@ -1857,7 +1855,7 @@ export default function App() {
                         })
                         .map((item, idx) => (
                         <tr key={idx} className="border-b border-linea-suave last:border-b-0 hover:bg-realce transition-colors">
-                          <td className="px-3.5 py-2 font-mono text-xs font-medium text-tinta align-top whitespace-nowrap" style={{ width: '84px', minWidth: '84px', maxWidth: '84px' }}>
+                          <td className="px-3.5 py-2 font-mono text-xs font-medium text-tinta align-top whitespace-nowrap" style={{ width: '5.25rem', minWidth: '5.25rem', maxWidth: '5.25rem' }}>
                             {item.code}
                           </td>
                           <td className="px-3.5 py-2 text-tinta align-top text-sm">
@@ -1902,7 +1900,7 @@ export default function App() {
               </div>
 
               {showFormCodigo && (
-                <div className="bg-superficie rounded-[8px] border border-acento/30 p-5 mb-4 space-y-3 caja">
+                <div className="bg-superficie rounded-[0.5rem] border border-acento/30 p-5 mb-4 space-y-3 caja">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs text-tinta-2 block mb-1">Código(s) *</label>
@@ -1923,7 +1921,7 @@ export default function App() {
                     <div className="flex gap-2">
                       {(['fijo', 'zona'] as const).map(t => (
                         <button key={t} type="button" onClick={() => setFormCodigo({ ...formCodigo, tipo: t })}
-                          className={cn("text-xs py-1.5 px-3 rounded-[6px] border transition-all cursor-pointer outline-none",
+                          className={cn("text-xs py-1.5 px-3 rounded-[0.375rem] border transition-all cursor-pointer outline-none",
                             formCodigo.tipo === t
                               ? "bg-marca text-white border-acento font-medium"
                               : "bg-hundida text-slate-700 border-linea-fuerte")}>
@@ -1961,7 +1959,7 @@ export default function App() {
                   </div>
 
                   <button type="button" onClick={handleAddCodigo}
-                    className="bg-marca hover:bg-marca-hover text-white text-xs font-semibold py-2.5 px-5 rounded-[6px] transition-all cursor-pointer border-none outline-none">
+                    className="bg-marca hover:bg-marca-hover text-white text-xs font-semibold py-2.5 px-5 rounded-[0.375rem] transition-all cursor-pointer border-none outline-none">
                     Guardar autorización
                   </button>
                 </div>
@@ -1971,12 +1969,12 @@ export default function App() {
                 {[...AUTORIZACIONES_POR_CODIGO, ...customCodigos].map((auth, idx) => (
                   <div
                     key={auth.id || idx}
-                    className="bg-superficie rounded-[8px] border border-linea p-5 relative caja"
+                    className="bg-superficie rounded-[0.5rem] border border-linea p-5 relative caja"
                   >
                     {auth.custom && auth.id && (
                       <button type="button" onClick={() => setCustomCodigos(removeCodigo(auth.id!))}
                         title="Eliminar esta autorización"
-                        className="absolute top-4 right-4 p-1.5 text-tenue hover:text-error rounded-[6px] transition-all cursor-pointer border-none bg-transparent outline-none">
+                        className="absolute top-4 right-4 p-1.5 text-tenue hover:text-error rounded-[0.375rem] transition-all cursor-pointer border-none bg-transparent outline-none">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -1984,7 +1982,7 @@ export default function App() {
                       {auth.codigos.map(c => (
                         <span
                           key={c}
-                          className="font-mono text-xs font-medium text-tinta bg-hundida border border-linea px-1.5 py-0.5 rounded-[4px]"
+                          className="font-mono text-xs font-medium text-tinta bg-hundida border border-linea px-1.5 py-0.5 rounded-[0.25rem]"
                         >
                           {c}
                         </span>
@@ -2001,18 +1999,18 @@ export default function App() {
                       <div className="mt-3 overflow-x-auto">
                         <table className="w-full text-left border-collapse text-sm">
                           <thead>
-                            <tr className="bg-hundida border-b-[1.5px] border-linea-fuerte text-[11px] text-tenue">
-                              <th className="p-[8px_12px] font-medium whitespace-nowrap">Sucursal</th>
-                              <th className="p-[8px_12px] font-medium">Alcance</th>
-                              <th className="p-[8px_12px] font-medium whitespace-nowrap">Autoriza</th>
+                            <tr className="bg-hundida border-b-[1.5px] border-linea-fuerte text-[0.6875rem] text-tenue">
+                              <th className="p-[0.5rem_0.75rem] font-medium whitespace-nowrap">Sucursal</th>
+                              <th className="p-[0.5rem_0.75rem] font-medium">Alcance</th>
+                              <th className="p-[0.5rem_0.75rem] font-medium whitespace-nowrap">Autoriza</th>
                             </tr>
                           </thead>
                           <tbody>
                             {(auth.zonas || []).map(z => (
                               <tr key={z.zona} className="border-b border-linea last:border-0">
-                                <td className="p-[8px_12px] font-medium text-slate-800 align-top whitespace-nowrap">{z.zona}</td>
-                                <td className="p-[8px_12px] text-tinta-2 align-top leading-[1.5] text-xs">{z.alcance}</td>
-                                <td className="p-[8px_12px] align-top whitespace-nowrap">
+                                <td className="p-[0.5rem_0.75rem] font-medium text-slate-800 align-top whitespace-nowrap">{z.zona}</td>
+                                <td className="p-[0.5rem_0.75rem] text-tinta-2 align-top leading-[1.5] text-xs">{z.alcance}</td>
+                                <td className="p-[0.5rem_0.75rem] align-top whitespace-nowrap">
                                   <strong className="font-semibold text-slate-900">{z.firmante}</strong>
                                 </td>
                               </tr>
@@ -2023,8 +2021,8 @@ export default function App() {
                     )}
 
                     {auth.excepcion && (
-                      <div className="mt-3 bg-amber-50 border border-amber-200 rounded-[8px] p-3">
-                        <p className="text-[11px] font-semibold text-amber-800 mb-1">
+                      <div className="mt-3 bg-amber-50 border border-amber-200 rounded-[0.5rem] p-3">
+                        <p className="text-[0.6875rem] font-semibold text-amber-800 mb-1">
                           Excepción — {auth.excepcion.motivo}
                         </p>
                         <p className="text-xs text-amber-800 leading-relaxed">
@@ -2060,7 +2058,7 @@ export default function App() {
               </div>
 
               {showFormSector && (
-                <div className="bg-superficie rounded-[8px] border border-acento/30 p-5 mb-4 space-y-3 caja">
+                <div className="bg-superficie rounded-[0.5rem] border border-acento/30 p-5 mb-4 space-y-3 caja">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="text-xs text-tinta-2 block mb-1">Sector *</label>
@@ -2081,9 +2079,9 @@ export default function App() {
                         className={campo} />
                     </div>
                   </div>
-                  <p className="text-[11px] text-tenue">Si hay más de un nombre, separalos con coma: alcanza con la firma de cualquiera de ellos.</p>
+                  <p className="text-[0.6875rem] text-tenue">Si hay más de un nombre, separalos con coma: alcanza con la firma de cualquiera de ellos.</p>
                   <button type="button" onClick={handleAddSector}
-                    className="bg-marca hover:bg-marca-hover text-white text-xs font-semibold py-2.5 px-5 rounded-[6px] transition-all cursor-pointer border-none outline-none">
+                    className="bg-marca hover:bg-marca-hover text-white text-xs font-semibold py-2.5 px-5 rounded-[0.375rem] transition-all cursor-pointer border-none outline-none">
                     Guardar autorización
                   </button>
                 </div>
@@ -2092,32 +2090,32 @@ export default function App() {
                 Si el campo <strong className="font-medium text-slate-700">Solicitante</strong> del PIMyS corresponde a alguno de estos agentes, el formulario debe llevar la firma del jefe autorizante de su sector.
               </p>
 
-              <div className="bg-superficie rounded-[8px] border border-linea overflow-hidden caja">
+              <div className="bg-superficie rounded-[0.5rem] border border-linea overflow-hidden caja">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-sm">
                     <thead>
-                      <tr className="bg-hundida border-b-[1.5px] border-linea-fuerte text-[11px] text-tenue">
-                        <th className="p-[12px_16px] font-medium whitespace-nowrap">Sector</th>
-                        <th className="p-[12px_16px] font-medium">Agente solicitante</th>
-                        <th className="p-[12px_16px] font-medium">Jefe autorizante</th>
-                        <th className="p-[12px_16px] font-medium w-10"></th>
+                      <tr className="bg-hundida border-b-[1.5px] border-linea-fuerte text-[0.6875rem] text-tenue">
+                        <th className="p-[0.75rem_1rem] font-medium whitespace-nowrap">Sector</th>
+                        <th className="p-[0.75rem_1rem] font-medium">Agente solicitante</th>
+                        <th className="p-[0.75rem_1rem] font-medium">Jefe autorizante</th>
+                        <th className="p-[0.75rem_1rem] font-medium w-10"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {[...AUTORIZACIONES_POR_SECTOR, ...customSectores].map((s, idx) => (
                         <tr key={s.id || idx} className="border-b border-linea last:border-0 hover:bg-realce/50 transition-colors">
-                          <td className="p-[12px_16px] font-medium text-slate-800 align-top leading-[1.4]">{s.sector}</td>
-                          <td className="p-[12px_16px] text-tinta align-top leading-[1.6]">
+                          <td className="p-[0.75rem_1rem] font-medium text-slate-800 align-top leading-[1.4]">{s.sector}</td>
+                          <td className="p-[0.75rem_1rem] text-tinta align-top leading-[1.6]">
                             {s.agentes.join(' o ')}
                           </td>
-                          <td className="p-[12px_16px] align-top leading-[1.6]">
+                          <td className="p-[0.75rem_1rem] align-top leading-[1.6]">
                             <strong className="font-semibold text-slate-900">{s.jefes.join(' o ')}</strong>
                           </td>
-                          <td className="p-[12px_16px] align-top text-right">
+                          <td className="p-[0.75rem_1rem] align-top text-right">
                             {s.custom && s.id && (
                               <button type="button" onClick={() => setCustomSectores(removeSector(s.id!))}
                                 title="Eliminar esta autorización"
-                                className="p-1.5 text-tenue hover:text-error rounded-[6px] transition-all cursor-pointer border-none bg-transparent outline-none">
+                                className="p-1.5 text-tenue hover:text-error rounded-[0.375rem] transition-all cursor-pointer border-none bg-transparent outline-none">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             )}
@@ -2154,7 +2152,7 @@ export default function App() {
                   <div className="flex items-center justify-between h-5">
                     <span className="text-xs font-semibold text-slate-500">Parámetros de Entrada</span>
                   </div>
-                  <div className="bg-superficie rounded-[8px] border border-linea p-6 space-y-4 caja">
+                  <div className="bg-superficie rounded-[0.5rem] border border-linea p-6 space-y-4 caja">
                     <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-acento" />
                       <span>Filtro y Autocompletado</span>
@@ -2175,7 +2173,7 @@ export default function App() {
                           setPdfResponsable('');
                           setPdfReparticion('');
                         }}
-                        className="block w-full px-3 py-2 border border-linea-fuerte rounded-[6px] text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium"
+                        className="block w-full px-3 py-2 border border-linea-fuerte rounded-[0.375rem] text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium"
                       >
                         <option value="">Seleccionar...</option>
                         {Object.keys(SECTOR_MAPPING).map(g => (
@@ -2209,7 +2207,7 @@ export default function App() {
                           }
                         }}
                         className={cn(
-                          "block w-full px-3 py-2 border border-linea-fuerte rounded-[6px] text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium",
+                          "block w-full px-3 py-2 border border-linea-fuerte rounded-[0.375rem] text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium",
                           !pdfGciaSuc && "opacity-60 cursor-not-allowed bg-realce"
                         )}
                       >
@@ -2229,14 +2227,14 @@ export default function App() {
                       <div>
                         <label className="block text-xs font-semibold text-acento mb-1.5 flex items-center justify-between">
                           <span>Responsable (Autocompletado)</span>
-                          <span className="text-[11px] text-slate-400 font-normal">Editable</span>
+                          <span className="text-[0.6875rem] text-slate-400 font-normal">Editable</span>
                         </label>
                         <input
                           id="responsable-input"
                           type="text"
                           value={pdfResponsable}
                           onChange={(e) => setPdfResponsable(e.target.value)}
-                          className="block w-full px-3 py-2 border border-linea-fuerte rounded-[6px] text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium"
+                          className="block w-full px-3 py-2 border border-linea-fuerte rounded-[0.375rem] text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium"
                           placeholder="Responsable oficial del sector"
                         />
                       </div>
@@ -2244,14 +2242,14 @@ export default function App() {
                       <div>
                         <label className="block text-xs font-semibold text-slate-500 mb-1.5 flex items-center justify-between">
                           <span>Repartición</span>
-                          <span className="text-[11px] text-slate-400 font-normal">Editable</span>
+                          <span className="text-[0.6875rem] text-slate-400 font-normal">Editable</span>
                         </label>
                         <input
                           id="reparticion-input"
                           type="text"
                           value={pdfReparticion}
                           onChange={(e) => setPdfReparticion(e.target.value)}
-                          className="block w-full px-3 py-2 border border-linea-fuerte rounded-[6px] text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium"
+                          className="block w-full px-3 py-2 border border-linea-fuerte rounded-[0.375rem] text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium"
                           placeholder="Nombre asignado de la repartición"
                         />
                       </div>
@@ -2266,7 +2264,7 @@ export default function App() {
                             type="text"
                             value={pdfFdoFijoNo}
                             onChange={(e) => setPdfFdoFijoNo(e.target.value)}
-                            className="block w-full px-3 py-2 border border-linea-fuerte rounded-[6px] text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium font-mono"
+                            className="block w-full px-3 py-2 border border-linea-fuerte rounded-[0.375rem] text-sm bg-superficie text-slate-900 focus:border-acento outline-none font-medium font-mono"
                             placeholder="Ej. FF-01"
                           />
                         </div>
@@ -2279,7 +2277,7 @@ export default function App() {
                         type="button"
                         id="generate-revisiva-btn"
                         onClick={handleDownloadPdf}
-                        className="w-full py-2.5 bg-marca text-white hover:bg-marca-hover text-xs font-semibold rounded-[6px] transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none"
+                        className="w-full py-2.5 bg-marca text-white hover:bg-marca-hover text-xs font-semibold rounded-[0.375rem] transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none"
                       >
                         <Download className="w-4 h-4" />
                         <span>Generar y descargar PDF</span>
@@ -2293,7 +2291,7 @@ export default function App() {
                           setPdfReparticion('');
                           setPdfFdoFijoNo('');
                         }}
-                        className="w-full py-2 border border-slate-200 bg-superficie hover:bg-realce text-slate-600 text-xs font-semibold rounded-[6px] transition-all cursor-pointer"
+                        className="w-full py-2 border border-slate-200 bg-superficie hover:bg-realce text-slate-600 text-xs font-semibold rounded-[0.375rem] transition-all cursor-pointer"
                       >
                         Limpiar Selección
                       </button>
@@ -2301,27 +2299,27 @@ export default function App() {
                   </div>
 
                   {/* Summary Mapping Lists grouped elegantly */}
-                  <div className="bg-superficie border border-linea rounded-[8px] p-5 text-slate-600 text-xs space-y-3 caja">
-                    <h4 className="font-semibold text-amber-900 flex items-center gap-1.5 text-[11px]">
+                  <div className="bg-superficie border border-linea rounded-[0.5rem] p-5 text-slate-600 text-xs space-y-3 caja">
+                    <h4 className="font-semibold text-amber-900 flex items-center gap-1.5 text-[0.6875rem]">
                       <Info className="w-3.5 h-3.5 text-amber-700" />
                       <span>Grilla de Responsables Registrados</span>
                     </h4>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                    <p className="text-[0.6875rem] text-slate-500 leading-relaxed">
                       Estructura oficial de dependencias y agentes asignados:
                     </p>
-                    <div className="space-y-2 max-h-[220px] overflow-y-auto pr-2 divide-y divide-slate-100">
+                    <div className="space-y-2 max-h-[13.75rem] overflow-y-auto pr-2 divide-y divide-slate-100">
                       {Object.entries(SECTOR_MAPPING).map(([gcia, sectors]) => (
                         <div key={gcia} className="pt-2 first:pt-0">
-                          <span className="font-semibold text-acento text-[11px] block mb-1">
+                          <span className="font-semibold text-acento text-[0.6875rem] block mb-1">
                             {gcia}
                           </span>
                           <div className="grid grid-cols-1 gap-1 pl-1">
                             {sectors.map((s, idx) => (
-                              <div key={idx} className="flex items-center justify-between text-[11px] py-0.5">
-                                <span className="text-slate-600 font-medium truncate max-w-[190px]" title={s.label}>
+                              <div key={idx} className="flex items-center justify-between text-[0.6875rem] py-0.5">
+                                <span className="text-slate-600 font-medium truncate max-w-[11.875rem]" title={s.label}>
                                   {s.label}
                                 </span>
-                                <span className="text-acento font-mono text-[11px] font-semibold shrink-0">
+                                <span className="text-acento font-mono text-[0.6875rem] font-semibold shrink-0">
                                   {s.responsible}
                                 </span>
                               </div>
@@ -2337,65 +2335,65 @@ export default function App() {
                 <div className="lg:col-span-7 space-y-4">
                   <div className="flex items-center justify-between h-5">
                     <span className="text-xs font-semibold text-slate-500">Vista Previa Dinámica de Formulario</span>
-                    <span className="text-[11px] text-slate-400 italic">Formato reglamentario</span>
+                    <span className="text-[0.6875rem] text-slate-400 italic">Formato reglamentario</span>
                   </div>
 
-                  <div className="bg-hundida rounded-[8px] p-6 shadow-inner overflow-x-hidden">
+                  <div className="bg-hundida rounded-[0.5rem] p-6 shadow-inner overflow-x-hidden">
                     {/* Simulated Paper Sheet */}
-                    <div className="papel w-[580px] mx-auto bg-superficie text-black font-sans border-[0.5px] border-slate-300 p-8 space-y-4 shadow-md" style={{ minHeight: '750px' }} id="simulated-paper-page">
+                    <div className="papel w-[36.25rem] mx-auto bg-superficie text-black font-sans border-[0.5px] border-slate-300 p-8 space-y-4 shadow-md" style={{ minHeight: '46.875rem' }} id="simulated-paper-page">
                       {/* Paper Header */}
-                      <div className="border border-black grid grid-cols-12 items-center text-center divide-x divide-black text-[9px]">
+                      <div className="border border-black grid grid-cols-12 items-center text-center divide-x divide-black text-[0.5625rem]">
                         <div className="col-span-4 p-2 flex flex-col items-center justify-center bg-superficie">
                           <div className="flex flex-col items-center justify-center select-none">
                             {/* Official-specification EPE Brand Logo (Uploaded by the user as Base64) */}
                             <img 
                               src={EPE_LOGO_BASE64} 
                               alt="EPE Logo" 
-                              className="w-[96px] h-auto object-contain select-none"
+                              className="w-[6rem] h-auto object-contain select-none"
                               referrerPolicy="no-referrer"
                             />
                           </div>
                         </div>
-                        <div className="col-span-8 p-3 flex items-center justify-center text-center font-bold text-[10px]">
+                        <div className="col-span-8 p-3 flex items-center justify-center text-center font-bold text-[0.625rem]">
                           Empresa Provincial de la Energía de Santa Fe
                         </div>
                       </div>
 
                       {/* Document Title */}
-                      <div className="pt-2 text-[10px]">
+                      <div className="pt-2 text-[0.625rem]">
                         <p className="font-bold uppercase tracking-wide text-black mb-0.5">INFORME REVISIVA PRACTICADA:</p>
                         <div className="w-full h-[0.5px] bg-black" />
                       </div>
 
                       {/* Fields Table */}
-                      <div className="border border-black text-[8px] leading-tight">
+                      <div className="border border-black text-[0.5rem] leading-tight">
                         <div className="grid grid-cols-12 font-bold uppercase tracking-wider border-b border-black text-center divide-x divide-black py-0.5 bg-hundida-2">
                           <div className="col-span-4">Responsable</div>
                           <div className="col-span-2">Fdo.Fijo Nro.</div>
                           <div className="col-span-3">Repartición</div>
                           <div className="col-span-3">Gcia./Suc.</div>
                         </div>
-                        <div className="grid grid-cols-12 uppercase divide-x divide-black text-center min-h-[22px] items-center py-1 font-mono text-[8px]">
+                        <div className="grid grid-cols-12 uppercase divide-x divide-black text-center min-h-[1.375rem] items-center py-1 font-mono text-[0.5rem]">
                           <div className="col-span-4 px-1 truncate font-bold text-acento">
-                            {pdfResponsable || <span className="text-slate-300 italic font-sans text-[7px]">No ingresado</span>}
+                            {pdfResponsable || <span className="text-slate-300 italic font-sans text-[0.4375rem]">No ingresado</span>}
                           </div>
                           <div className="col-span-2 px-1 font-semibold">
-                            {pdfFdoFijoNo || <span className="text-slate-300 italic font-sans text-[7px]">N/D</span>}
+                            {pdfFdoFijoNo || <span className="text-slate-300 italic font-sans text-[0.4375rem]">N/D</span>}
                           </div>
                           <div className="col-span-3 px-1 truncate font-semibold">
-                            {pdfReparticion || <span className="text-slate-300 italic font-sans text-[7px]">No ingresado</span>}
+                            {pdfReparticion || <span className="text-slate-300 italic font-sans text-[0.4375rem]">No ingresado</span>}
                           </div>
                           <div className="col-span-3 px-1 font-bold text-slate-800">
-                            {pdfGciaSuc || <span className="text-slate-300 italic font-sans text-[7px]">N/D</span>}
+                            {pdfGciaSuc || <span className="text-slate-300 italic font-sans text-[0.4375rem]">N/D</span>}
                           </div>
                         </div>
                       </div>
 
                       {/* Body Structure */}
-                      <div className="space-y-3.5 text-[7px]">
+                      <div className="space-y-3.5 text-[0.4375rem]">
                         <div>
-                          <p className="font-bold uppercase text-[8px] mb-0.5">REVISION DE CUENTAS:</p>
-                          <p className="font-bold text-[7.5px]">1-Requisitos legales y formales que deben cumplirse en las Rendiciones de Cuentas</p>
+                          <p className="font-bold uppercase text-[0.5rem] mb-0.5">REVISION DE CUENTAS:</p>
+                          <p className="font-bold text-[0.4688rem]">1-Requisitos legales y formales que deben cumplirse en las Rendiciones de Cuentas</p>
                           <p className="italic text-slate-500 font-medium mb-1">Capítulo II – Resol.008/06 – T.C.P.</p>
                           
                           {/* Main checklist table */}
@@ -2403,37 +2401,37 @@ export default function App() {
                             <div className="divide-y divide-black">
                               <div className="grid grid-cols-10 p-0.5 pl-1.5 items-center">
                                 <span className="col-span-8">Documentación Legítima</span>
-                                <span className="col-span-2 text-center text-[8px] font-bold text-emerald-600">✓</span>
+                                <span className="col-span-2 text-center text-[0.5rem] font-bold text-emerald-600">✓</span>
                               </div>
                               <div className="grid grid-cols-10 p-0.5 pl-1.5 items-center">
                                 <span className="col-span-8">Completados de manera indeleble</span>
-                                <span className="col-span-2 text-center text-[8px] font-bold text-emerald-600">✓</span>
+                                <span className="col-span-2 text-center text-[0.5rem] font-bold text-emerald-600">✓</span>
                               </div>
                               <div className="grid grid-cols-10 p-0.5 pl-1.5 items-center">
                                 <span className="col-span-8">Totalidad de los antecedentes</span>
-                                <span className="col-span-2 text-center text-[8px] font-bold text-emerald-600">✓</span>
+                                <span className="col-span-2 text-center text-[0.5rem] font-bold text-emerald-600">✓</span>
                               </div>
                               <div className="grid grid-cols-10 p-0.5 pl-1.5 items-center">
                                 <span className="col-span-8">Tachaduras o enmiendas no salvadas</span>
-                                <span className="col-span-2 text-center text-[8px] font-bold text-red-600">NO</span>
+                                <span className="col-span-2 text-center text-[0.5rem] font-bold text-red-600">NO</span>
                               </div>
                             </div>
                             <div className="divide-y divide-black">
                               <div className="grid grid-cols-10 p-0.5 pl-1.5 items-center">
                                 <span className="col-span-8">Lugar y Fecha de Emisión</span>
-                                <span className="col-span-2 text-center text-[8px] font-bold text-emerald-600">✓</span>
+                                <span className="col-span-2 text-center text-[0.5rem] font-bold text-emerald-600">✓</span>
                               </div>
                               <div className="grid grid-cols-10 p-0.5 pl-1.5 items-center">
                                 <span className="col-span-8">Organismo Adquirente</span>
-                                <span className="col-span-2 text-center text-[8px] font-bold text-emerald-600">✓</span>
+                                <span className="col-span-2 text-center text-[0.5rem] font-bold text-emerald-600">✓</span>
                               </div>
                               <div className="grid grid-cols-10 p-0.5 pl-1.5 items-center">
                                 <span className="col-span-8">Concepto</span>
-                                <span className="col-span-2 text-center text-[8px] font-bold text-emerald-600">✓</span>
+                                <span className="col-span-2 text-center text-[0.5rem] font-bold text-emerald-600">✓</span>
                               </div>
                               <div className="grid grid-cols-10 p-0.5 pl-1.5 items-center">
                                 <span className="col-span-8">Importe Total en letras y N°</span>
-                                <span className="col-span-2 text-center text-[8px] font-bold text-emerald-600">✓</span>
+                                <span className="col-span-2 text-center text-[0.5rem] font-bold text-emerald-600">✓</span>
                               </div>
                             </div>
                           </div>
@@ -2443,22 +2441,22 @@ export default function App() {
                         <div className="border border-black divide-y divide-black">
                           <div className="grid grid-cols-2 p-1 pl-1.5 items-center">
                             <span>Expresan el carácter provisorio de la documentación</span>
-                            <span className="text-center font-bold text-[8px] text-red-600">NO</span>
+                            <span className="text-center font-bold text-[0.5rem] text-red-600">NO</span>
                           </div>
                           <div className="grid grid-cols-2 p-1 pl-1.5 items-center">
                             <span>Cumplen con las normas impositivas y previsionales</span>
-                            <span className="text-center font-bold text-[8px] text-emerald-600">✓</span>
+                            <span className="text-center font-bold text-[0.5rem] text-emerald-600">✓</span>
                           </div>
                           <div className="grid grid-cols-2 p-1 pl-1.5 items-center">
                             <span>Justificación del pago (Firma aclaración y Nro. de Doc. en Fact./Recibo definitivo)</span>
-                            <span className="text-center font-bold text-[8px] text-emerald-600">✓</span>
+                            <span className="text-center font-bold text-[0.5rem] text-emerald-600">✓</span>
                           </div>
                         </div>
 
                         {/* Chapter I / IV and Legal dispositions */}
                         <div className="grid grid-cols-2 gap-3 mt-1">
                           <div className="space-y-1">
-                            <p className="font-bold text-[7.5px]">2 – Capítulo I – Resolución 008/06 T.C.P.</p>
+                            <p className="font-bold text-[0.4688rem]">2 – Capítulo I – Resolución 008/06 T.C.P.</p>
                             <div className="border border-black divide-y divide-black">
                               <div className="flex justify-between p-1 pl-1.5">
                                 <span>Presentados en término</span>
@@ -2472,7 +2470,7 @@ export default function App() {
                           </div>
                           
                           <div className="space-y-1">
-                            <p className="font-bold text-[7.5px]">3 – Capítulo IV – Resolución 008/06 T.C.P.</p>
+                            <p className="font-bold text-[0.4688rem]">3 – Capítulo IV – Resolución 008/06 T.C.P.</p>
                             <div className="border border-black divide-y divide-black">
                               <div className="flex justify-between p-1 pl-1.5">
                                 <span>Balance de Inversión, relac. gastos</span>
@@ -2492,7 +2490,7 @@ export default function App() {
 
                         {/* Legal Disp of pimys */}
                         <div className="space-y-1">
-                          <p className="font-bold text-[7.5px]">4 – Disp. Legales sobre conceptos y Procedimientos en vigencia.</p>
+                          <p className="font-bold text-[0.4688rem]">4 – Disp. Legales sobre conceptos y Procedimientos en vigencia.</p>
                           <div className="border border-black grid grid-cols-2 divide-x divide-black">
                             <div className="divide-y divide-black">
                               <div className="flex justify-between p-1 pl-1.5">
@@ -2518,7 +2516,7 @@ export default function App() {
                         </div>
 
                         {/* Signature block */}
-                        <div className="grid grid-cols-2 pt-6 text-center font-bold text-[6.5px] tracking-tight">
+                        <div className="grid grid-cols-2 pt-6 text-center font-bold text-[0.4062rem] tracking-tight">
                           <div className="flex flex-col items-center">
                             <div className="w-2/3 h-[0.5px] bg-slate-400 mb-1" />
                             <span>REVISOR</span>
@@ -2530,9 +2528,9 @@ export default function App() {
                         </div>
 
                         {/* Footer date */}
-                        <div className="flex justify-between items-center text-[7px] text-slate-500 font-semibold pt-2 border-t border-dotted border-slate-300">
+                        <div className="flex justify-between items-center text-[0.4375rem] text-slate-500 font-semibold pt-2 border-t border-dotted border-slate-300">
                           <span>FECHA DE REVISIÓN: {new Date().toLocaleDateString('es-AR')}</span>
-                          <span className="uppercase tracking-tighter text-[6.2px]">Gerencia de Administración - Finanzas</span>
+                          <span className="uppercase tracking-tighter text-[0.3875rem]">Gerencia de Administración - Finanzas</span>
                         </div>
                       </div>
                     </div>
@@ -2576,7 +2574,7 @@ export default function App() {
                 {/* Header of the PDF Viewer */}
                 <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-realce">
                   <div className="flex items-center gap-2 overflow-hidden mr-4">
-                    <div className="p-2 bg-marca/10 rounded-[6px] text-acento shrink-0">
+                    <div className="p-2 bg-marca/10 rounded-[0.375rem] text-acento shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div className="overflow-hidden">
@@ -2599,7 +2597,7 @@ export default function App() {
                           showNotification('Descarga inválida', "No se encontró el contenido del archivo original para descargar.", 'error');
                         }
                       }}
-                      className="p-2 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-[6px] transition-colors cursor-pointer outline-none border-none bg-transparent"
+                      className="p-2 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-[0.375rem] transition-colors cursor-pointer outline-none border-none bg-transparent"
                       title="Descargar PDF"
                     >
                       <Download className="w-4 h-4" />
@@ -2608,7 +2606,7 @@ export default function App() {
                     {/* Expand / Open PDF in new tab using handleOpenPdfInNewTab */}
                     <button
                       onClick={() => handleOpenPdfInNewTab(activePdfViewer.fileUrl, activePdfViewer.fileName, activePdfViewer.pageNumber)}
-                      className="p-2 hover:bg-slate-200 text-slate-500 hover:text-acento rounded-[6px] transition-colors cursor-pointer outline-none border-none bg-transparent"
+                      className="p-2 hover:bg-slate-200 text-slate-500 hover:text-acento rounded-[0.375rem] transition-colors cursor-pointer outline-none border-none bg-transparent"
                       title="Abrir en pestaña nueva"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -2617,7 +2615,7 @@ export default function App() {
                     {/* Close Button */}
                     <button
                       onClick={() => setActivePdfViewer(null)}
-                      className="p-2 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-[6px] transition-colors cursor-pointer outline-none border-none bg-transparent"
+                      className="p-2 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-[0.375rem] transition-colors cursor-pointer outline-none border-none bg-transparent"
                       title="Cerrar visor"
                     >
                       <X className="w-4 h-4" />
@@ -2639,7 +2637,7 @@ export default function App() {
                   if (filesList && filesList.length > 1) {
                     return (
                       <div className="px-4 py-2 border-b border-slate-100 bg-realce/50 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap">
-                        <span className="font-semibold text-slate-400 mr-1 text-[11px] shrink-0">Documentos:</span>
+                        <span className="font-semibold text-slate-400 mr-1 text-[0.6875rem] shrink-0">Documentos:</span>
                         {filesList.map((file) => {
                           const isActive = file.objectUrl === activePdfViewer.fileUrl;
                           return (
@@ -2652,7 +2650,7 @@ export default function App() {
                                 fileBase64: file.base64
                               })}
                               className={cn(
-                                "px-2.5 py-1 rounded-[6px] border text-xs font-semibold transition-all cursor-pointer truncate max-w-[120px] outline-none",
+                                "px-2.5 py-1 rounded-[0.375rem] border text-xs font-semibold transition-all cursor-pointer truncate max-w-[7.5rem] outline-none",
                                 isActive 
                                   ? "bg-marca text-white border-acento" 
                                   : "bg-superficie text-slate-600 border-slate-200 hover:bg-hundida-2"
@@ -2684,6 +2682,20 @@ export default function App() {
   );
 }
 
+/** Marca de la app: la tira de validaciones con un hallazgo. Es el mismo
+ *  dibujo que public/favicon.svg; si cambia uno, cambia el otro. */
+function Logo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" fill="none" role="img" aria-label="Auditor de expedientes" className={className}>
+      <rect width="32" height="32" rx="7.5" fill="#004741" />
+      <rect x="6" y="9" width="3.6" height="14" rx="1.1" fill="#FFFFFF" fillOpacity="0.55" />
+      <rect x="11.5" y="9" width="3.6" height="14" rx="1.1" fill="#FFFFFF" fillOpacity="0.55" />
+      <rect x="17" y="9" width="3.6" height="14" rx="1.1" fill="#F2B21B" />
+      <rect x="22.5" y="9" width="3.6" height="14" rx="1.1" fill="#FFFFFF" fillOpacity="0.55" />
+    </svg>
+  );
+}
+
 function SidebarItem({ icon: Icon, label, active = false, onClick }: { icon: any, label: string, active?: boolean, onClick?: () => void }) {
   return (
     <button
@@ -2691,7 +2703,7 @@ function SidebarItem({ icon: Icon, label, active = false, onClick }: { icon: any
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        "w-full flex items-center gap-2.5 h-8 px-2.5 rounded-[6px] border-none text-sm text-left cursor-pointer select-none transition-colors",
+        "w-full flex items-center gap-2.5 h-8 px-2.5 rounded-[0.375rem] border-none text-sm text-left cursor-pointer select-none transition-colors",
         active
           ? "bg-barra-activa text-tinta font-medium"
           : "bg-transparent text-tinta-2 hover:bg-barra-activa/60 hover:text-tinta"
@@ -2714,7 +2726,7 @@ function SidebarGrupo({ icon: Icon, label, abierto, onAlternar, activo, children
         onClick={onAlternar}
         aria-expanded={abierto}
         className={cn(
-          "w-full flex items-center gap-2.5 h-8 px-2.5 rounded-[6px] border-none bg-transparent text-sm text-left cursor-pointer select-none transition-colors hover:bg-barra-activa/60 hover:text-tinta",
+          "w-full flex items-center gap-2.5 h-8 px-2.5 rounded-[0.375rem] border-none bg-transparent text-sm text-left cursor-pointer select-none transition-colors hover:bg-barra-activa/60 hover:text-tinta",
           activo && !abierto ? "text-tinta font-medium" : "text-tinta-2"
         )}
       >
@@ -2734,7 +2746,7 @@ function SidebarSubItem({ label, active = false, onClick }: { label: string; act
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        "w-full flex items-center h-[30px] pl-[36px] pr-2.5 rounded-[6px] border-none text-sm text-left cursor-pointer select-none transition-colors",
+        "w-full flex items-center h-[1.875rem] pl-[2.25rem] pr-2.5 rounded-[0.375rem] border-none text-sm text-left cursor-pointer select-none transition-colors",
         active
           ? "bg-barra-activa text-tinta font-medium"
           : "bg-transparent text-tinta-2 hover:bg-barra-activa/60 hover:text-tinta"
@@ -2747,8 +2759,8 @@ function SidebarSubItem({ label, active = false, onClick }: { label: string; act
 
 function InfoCard({ icon: Icon, iconColor, iconBg, title, description }: { icon: any, iconColor: string, iconBg: string, title: string, description: string }) {
   return (
-    <div className="bg-superficie p-6 rounded-[8px] border border-slate-200 transition-shadow">
-      <div className={cn("w-12 h-12 rounded-[8px] flex items-center justify-center mb-5", iconBg)}>
+    <div className="bg-superficie p-6 rounded-[0.5rem] border border-slate-200 transition-shadow">
+      <div className={cn("w-12 h-12 rounded-[0.5rem] flex items-center justify-center mb-5", iconBg)}>
         <Icon className={cn("w-6 h-6", iconColor)} />
       </div>
       <h3 className="text-base font-semibold text-slate-900 mb-2">{title}</h3>

@@ -21,27 +21,28 @@
    tira-*       celdas de la tira de validaciones
 
    Escala: texto 11 · 12 · 13 · 15 · 20 px; pesos 400, 500 y 600; radios 4
-   (badges), 6 (controles) y 8 (paneles); espaciado en multiplos de 4.
+   (badges), 6 (controles) y 8 (paneles); espaciado en multiplos de 4. Las
+   medidas se escriben en rem y la escala general se ajusta en `html`.
 */
 @theme {
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   /* Escala tipografica: las clases de Tailwind caen en estos cinco tamaños. */
-  --text-xs: 12px;
-  --text-xs--line-height: 16px;
-  --text-sm: 13px;
-  --text-sm--line-height: 20px;
-  --text-base: 15px;
-  --text-base--line-height: 22px;
-  --text-lg: 15px;
-  --text-lg--line-height: 22px;
-  --text-xl: 20px;
-  --text-xl--line-height: 28px;
-  --text-2xl: 20px;
-  --text-2xl--line-height: 28px;
-  --text-3xl: 24px;
-  --text-3xl--line-height: 32px;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.375rem;
+  --text-lg: 0.9375rem;
+  --text-lg--line-height: 1.375rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.25rem;
+  --text-2xl--line-height: 1.75rem;
+  --text-3xl: 1.5rem;
+  --text-3xl--line-height: 2rem;
 
   --color-lienzo: #FCFBF8;
   --color-superficie: #FFFFFF;
@@ -152,6 +153,8 @@
   /* Sombra solo para lo que flota: buscador, menus, dialogos, panel del PDF. */
   --sombra-flotante: 0 0 0 1px rgba(27, 27, 25, 0.04), 0 8px 24px -6px rgba(27, 27, 25, 0.18);
   --foco: color-mix(in srgb, var(--color-acento) 55%, transparent);
+  /* Escala general de la interfaz: 1 = texto de 13 px. */
+  --escala: 1.1;
 }
 
 .dark {
@@ -300,16 +303,23 @@
   --color-slate-800: #1E293B;
   --color-slate-900: #0F172A;
   color: var(--color-tinta);
+  /* La hoja conserva su tamaño real: no sigue la escala de la interfaz. */
+  zoom: calc(1 / var(--escala));
 }
 
 html, body {
   background-color: var(--color-lienzo);
   color: var(--color-tinta);
 }
-/* El tamaño base va en el body: el del html fija el rem del espaciado. */
+/* Escala general de la interfaz: todo (texto, espaciado, alturas, columnas)
+   esta en rem, asi que este porcentaje agranda o achica la pagina entera.
+   100% = texto de 13 px. */
+html {
+  font-size: calc(100% * var(--escala));
+}
 body {
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

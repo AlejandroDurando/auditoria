@@ -26,7 +26,7 @@ export function ClaveAcceso({ titulo, error, onClave }: {
 }) {
   const [escrita, setEscrita] = useState('');
   return (
-    <div className="max-w-[380px]">
+    <div className="max-w-[23.75rem]">
       <h1 className="text-xl font-semibold tracking-[-0.01em] text-tinta">{titulo}</h1>
       <p className="mt-0.5 mb-4 text-sm text-tinta-2">Ingresá la clave de acceso. Queda guardada en este navegador.</p>
       <form

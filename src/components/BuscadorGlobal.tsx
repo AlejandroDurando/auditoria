@@ -189,7 +189,7 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
       onMouseMove={() => setMarcado(indice)}
       onClick={() => elegir(r)}
       className={cn(
-        "w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[6px] text-left bg-transparent border-none cursor-pointer outline-none",
+        "w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[0.375rem] text-left bg-transparent border-none cursor-pointer outline-none",
         indice === marcado && "bg-realce"
       )}
     >
@@ -207,7 +207,7 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
   );
 
   const encabezado = (icono: React.ReactNode, titulo: string, total: number, mostrados: number) => (
-    <div className="flex items-center gap-1.5 px-2.5 pt-2.5 pb-1 text-[11px] font-medium text-tenue">
+    <div className="flex items-center gap-1.5 px-2.5 pt-2.5 pb-1 text-[0.6875rem] font-medium text-tenue">
       {icono}
       <span>{titulo}</span>
       <span className="ml-auto cifras">
@@ -219,7 +219,7 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
   const mostrar = abierto && tokens.length > 0;
 
   return (
-    <div ref={caja} className="relative w-full sm:w-[min(360px,42vw)]">
+    <div ref={caja} className="relative w-full sm:w-[min(22.5rem,42vw)]">
       <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-tenue pointer-events-none" aria-hidden="true" />
       <input
         ref={entrada}
@@ -230,7 +230,7 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
         onKeyDown={alTeclear}
         placeholder="Buscar expediente, proveedor o persona"
         aria-label="Buscar en todos los expedientes"
-        className="w-full h-7 bg-campo border border-linea-fuerte rounded-[6px] pl-8 pr-14 text-sm text-tinta placeholder:text-tenue outline-none transition-colors focus:border-acento [&::-webkit-search-cancel-button]:hidden"
+        className="w-full h-7 bg-campo border border-linea-fuerte rounded-[0.375rem] pl-8 pr-14 text-sm text-tinta placeholder:text-tenue outline-none transition-colors focus:border-acento [&::-webkit-search-cancel-button]:hidden"
       />
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
         {consulta ? (
@@ -239,14 +239,14 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
             <X className="w-3.5 h-3.5" />
           </button>
         ) : (
-          <kbd className="hidden sm:inline-flex items-center px-1 h-[18px] rounded-[4px] border border-linea-fuerte font-mono text-[11px] text-tenue">
+          <kbd className="hidden sm:inline-flex items-center px-1 h-[1.125rem] rounded-[0.25rem] border border-linea-fuerte font-mono text-[0.6875rem] text-tenue">
             {esMac ? '⌘K' : 'Ctrl K'}
           </kbd>
         )}
       </div>
 
       {mostrar && (
-        <div ref={lista} className="absolute z-50 right-0 top-full mt-1.5 w-full sm:w-[min(520px,90vw)] max-h-[min(70vh,560px)] overflow-y-auto bg-superficie border border-linea rounded-[8px] caja-alta p-1.5">
+        <div ref={lista} className="absolute z-50 right-0 top-full mt-1.5 w-full sm:w-[min(32.5rem,90vw)] max-h-[min(70vh,35rem)] overflow-y-auto bg-superficie border border-linea rounded-[0.5rem] caja-alta p-1.5">
           {grupos.lector.length > 0 && (
             <>
               {encabezado(<Table2 className="w-3.5 h-3.5" />, 'Expedientes auditados', grupos.totalLector, grupos.lector.length)}

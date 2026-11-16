@@ -83,7 +83,7 @@ function VisorPdf({ archivo, clave, onCerrar, ancho, onAncho, pagina }: {
           window.addEventListener('mousemove', mover);
           window.addEventListener('mouseup', soltar);
         }}
-        className="hidden lg:block absolute left-0 top-0 h-full w-[6px] -ml-[3px] cursor-col-resize z-10 hover:bg-marca/40 transition-colors"
+        className="hidden lg:block absolute left-0 top-0 h-full w-[0.375rem] -ml-[3px] cursor-col-resize z-10 hover:bg-marca/40 transition-colors"
         title="Arrastrar para cambiar el ancho"
       />
       <div className="h-full w-full bg-superficie flotante flex flex-col">
@@ -168,7 +168,7 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
         <ChevronDown className="w-3.5 h-3.5 text-tenue" aria-hidden="true" />
       </button>
       {desplegado && (
-        <ol role="menu" className="absolute z-30 right-0 top-full mt-1.5 w-[min(420px,86vw)] max-h-[60vh] overflow-y-auto m-0 p-1 list-none bg-superficie border border-linea rounded-[8px] flotante">
+        <ol role="menu" className="absolute z-30 right-0 top-full mt-1.5 w-[min(26.25rem,86vw)] max-h-[60vh] overflow-y-auto m-0 p-1 list-none bg-superficie border border-linea rounded-[0.5rem] flotante">
           {archivos.map(a => {
             const tipo = a.tipo || 'otro';
             const rotulo = tipo === 'pago' ? `Pago ${++pago}` : ROTULO_TIPO[tipo] || 'Documento';
@@ -179,12 +179,12 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
                   role="menuitem"
                   onClick={() => { onAbrir(a); setDesplegado(false); }}
                   className={cn(
-                    "w-full flex items-baseline gap-3 px-2.5 py-1.5 rounded-[6px] text-left text-sm cursor-pointer bg-transparent border-none hover:bg-realce transition-colors",
+                    "w-full flex items-baseline gap-3 px-2.5 py-1.5 rounded-[0.375rem] text-left text-sm cursor-pointer bg-transparent border-none hover:bg-realce transition-colors",
                     abierto?.clave === a.clave ? "text-acento font-medium" : "text-tinta"
                   )}
                   title={a.nombre}
                 >
-                  <span className="w-[112px] shrink-0 text-xs font-normal text-tenue">{a.tipo ? rotulo : ''}</span>
+                  <span className="w-[7rem] shrink-0 text-xs font-normal text-tenue">{a.tipo ? rotulo : ''}</span>
                   <span className="truncate">{a.nombre.replace(/\.pdf$/i, '')}</span>
                 </button>
               </li>
@@ -198,7 +198,7 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
 
 // Columnas de la tabla: estado, rendicion, expediente, fecha, pagos,
 // hallazgos e importe.
-const COLUMNAS = '104px 92px 148px 92px 52px minmax(140px, 1fr) 132px';
+const COLUMNAS = '6.5rem 5.75rem 9.25rem 5.75rem 3.25rem minmax(8.75rem, 1fr) 8.25rem';
 type Filtro = 'todos' | Estado;
 
 export function ExpedientesLector() {
@@ -237,9 +237,11 @@ export function ExpedientesLector() {
       // margen del centrado.
       const contenedor = el.parentElement!.getBoundingClientRect().left;
       const area = (el.closest('main') as HTMLElement | null)?.getBoundingClientRect().left ?? contenedor;
-      const izquierda = area + 32;
+      // padding lateral del area principal (px-8 = 2rem), en px reales
+      const margen = 2 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const izquierda = area + margen;
       setAnchoColumna({
-        ancho: Math.max(320, window.innerWidth - anchoPdf - izquierda - 32),
+        ancho: Math.max(320, window.innerWidth - anchoPdf - izquierda - margen),
         corrimiento: Math.min(0, area - contenedor),
       });
     };
@@ -399,7 +401,7 @@ export function ExpedientesLector() {
               aria-pressed={filtro === f.valor}
               onClick={() => setFiltro(f.valor)}
               className={cn(
-                "inline-flex items-center gap-1.5 h-[26px] px-[9px] rounded-[6px] border text-xs cursor-pointer transition-colors",
+                "inline-flex items-center gap-1.5 h-[1.625rem] px-[0.5625rem] rounded-[0.375rem] border text-xs cursor-pointer transition-colors",
                 filtro === f.valor
                   ? "border-transparent bg-hundida-2 text-tinta font-medium"
                   : "border-linea bg-transparent text-tinta-2 hover:bg-realce"
@@ -411,7 +413,7 @@ export function ExpedientesLector() {
             </button>
           ))}
         </div>
-        <label className="relative flex-[0_1_260px] min-w-[180px]">
+        <label className="relative flex-[0_1_16.25rem] min-w-[11.25rem]">
           <ListFilter className="w-3.5 h-3.5 text-tenue absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
           <input
             type="text"
@@ -419,7 +421,7 @@ export function ExpedientesLector() {
             onChange={e => setBusqueda(e.target.value)}
             placeholder={`Filtrar en ${region}`}
             aria-label={`Filtrar los expedientes de ${region} por número, rendición, fondo, fecha o estado`}
-            className="w-full h-7 bg-campo border border-linea rounded-[6px] pl-8 pr-2.5 text-sm text-tinta placeholder:text-tenue outline-none focus:border-acento transition-colors"
+            className="w-full h-7 bg-campo border border-linea rounded-[0.375rem] pl-8 pr-2.5 text-sm text-tinta placeholder:text-tenue outline-none focus:border-acento transition-colors"
           />
         </label>
       </div>
@@ -429,7 +431,7 @@ export function ExpedientesLector() {
       )}
 
       <Panel className="overflow-x-auto">
-        <div className="min-w-[840px]">
+        <div className="min-w-[52.5rem]">
           <div className="grid items-center gap-x-3 h-8 px-3.5 border-b border-linea text-xs text-tenue" style={{ gridTemplateColumns: COLUMNAS }}>
             <span>Estado</span><span>Rendición</span><span>Expediente</span><span>Fecha</span>
             <span className="text-right">Pagos</span><span>Hallazgos</span><span className="text-right">Importe</span>
@@ -462,7 +464,7 @@ export function ExpedientesLector() {
                   type="button"
                   onClick={() => alternar(g.titulo, abierta)}
                   aria-expanded={abierta}
-                  className="w-full flex items-center gap-2 h-[34px] pl-2.5 pr-3.5 bg-barra border-none border-b border-linea cursor-pointer text-left hover:bg-barra-activa/60 transition-colors"
+                  className="w-full flex items-center gap-2 h-[2.125rem] pl-2.5 pr-3.5 bg-barra border-none border-b border-linea cursor-pointer text-left hover:bg-barra-activa/60 transition-colors"
                   style={{ borderBottom: '1px solid var(--color-linea)' }}
                 >
                   <ChevronRight className={cn("w-3.5 h-3.5 text-tinta-2 transition-transform duration-150", abierta && "rotate-90")} aria-hidden="true" />

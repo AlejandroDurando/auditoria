@@ -33,7 +33,7 @@ export function EstadoBadge({ estado, children, className }: {
 }) {
   return (
     <span className={cn(
-      'inline-flex items-center gap-1.5 h-5 px-[7px] rounded-[4px] text-xs whitespace-nowrap select-none',
+      'inline-flex items-center gap-1.5 h-5 px-[0.4375rem] rounded-[0.25rem] text-xs whitespace-nowrap select-none',
       estado === 'ok' && 'text-tinta-2',
       estado === 'revisar' && 'bg-aviso-fondo text-aviso-tinta font-medium',
       estado === 'error' && 'bg-error-fondo text-error font-medium',
@@ -64,7 +64,7 @@ export function Clave({ children, estado, className }: {
 }) {
   return (
     <span className={cn(
-      'font-mono text-[11px] leading-[18px] px-[5px] rounded-[4px] whitespace-nowrap',
+      'font-mono text-[0.6875rem] leading-[1.125rem] px-[0.3125rem] rounded-[0.25rem] whitespace-nowrap',
       !estado && 'text-tinta-2',
       estado === 'ok' && 'text-tinta-2',
       estado === 'revisar' && 'bg-aviso-fondo text-aviso-tinta',
@@ -82,7 +82,7 @@ export function Etiqueta({ children, title, className }: {
 }) {
   return (
     <span title={title} className={cn(
-      'inline-flex items-center text-[11px] leading-4 px-1 rounded-[4px] border border-linea-fuerte text-tinta-2 whitespace-nowrap',
+      'inline-flex items-center text-[0.6875rem] leading-4 px-1 rounded-[0.25rem] border border-linea-fuerte text-tinta-2 whitespace-nowrap',
       className,
     )}>
       {children}
@@ -112,7 +112,7 @@ export function TiraValidaciones({ validaciones, className }: {
         <span
           key={v.id}
           title={`${v.id} · ${ROTULO_ESTADO[v.estado]}${v.titulo ? ` · ${v.titulo}` : ''}`}
-          className={cn('w-[10px] h-[14px] rounded-[2px]', CELDA[v.estado])}
+          className={cn('w-[0.625rem] h-[0.875rem] rounded-[2px]', CELDA[v.estado])}
         />
       ))}
     </span>
@@ -121,7 +121,7 @@ export function TiraValidaciones({ validaciones, className }: {
 
 // ── Botones y campos ────────────────────────────────────────────────────────
 
-const BASE_BOTON = 'inline-flex items-center justify-center gap-1.5 h-[30px] px-2.5 rounded-[6px] text-sm font-medium whitespace-nowrap cursor-pointer select-none transition-colors disabled:opacity-55 disabled:cursor-not-allowed';
+const BASE_BOTON = 'inline-flex items-center justify-center gap-1.5 h-[1.875rem] px-2.5 rounded-[0.375rem] text-sm font-medium whitespace-nowrap cursor-pointer select-none transition-colors disabled:opacity-55 disabled:cursor-not-allowed';
 
 /** Clases de boton: secundario (borde), primario (marca), fantasma (sin borde)
  *  y peligro. Para usar tambien en <a> y <label>. */
@@ -131,11 +131,11 @@ export const boton = {
   fantasma: cn(BASE_BOTON, 'border border-transparent bg-transparent text-tinta-2 hover:bg-realce hover:text-tinta font-normal'),
   peligro: cn(BASE_BOTON, 'border border-transparent bg-peligro text-white hover:bg-peligro-hover px-3'),
   /** Boton de un solo icono (26 px). Siempre con aria-label. */
-  icono: 'inline-flex items-center justify-center w-[26px] h-[26px] rounded-[6px] border-none bg-transparent text-tenue hover:text-tinta hover:bg-realce cursor-pointer transition-colors shrink-0',
+  icono: 'inline-flex items-center justify-center w-[1.625rem] h-[1.625rem] rounded-[0.375rem] border-none bg-transparent text-tenue hover:text-tinta hover:bg-realce cursor-pointer transition-colors shrink-0',
 };
 
 /** Campo de texto de una linea. */
-export const campo = 'h-[30px] w-full px-2.5 rounded-[6px] border border-linea-fuerte bg-campo text-sm text-tinta placeholder:text-tenue outline-none focus:border-acento transition-colors';
+export const campo = 'h-[1.875rem] w-full px-2.5 rounded-[0.375rem] border border-linea-fuerte bg-campo text-sm text-tinta placeholder:text-tenue outline-none focus:border-acento transition-colors';
 
 /** Boton de copiar con confirmacion: el icono pasa a un tilde dos segundos. */
 export function BotonCopiar({ texto, rotulo, className }: { texto: string; rotulo: string; className?: string }) {
@@ -151,7 +151,7 @@ export function BotonCopiar({ texto, rotulo, className }: { texto: string; rotul
         setCopiado(true);
         setTimeout(() => setCopiado(false), 2000);
       }}
-      className={cn(boton.icono, 'w-[22px] h-[22px]', className)}
+      className={cn(boton.icono, 'w-[1.375rem] h-[1.375rem]', className)}
     >
       {copiado ? <Check className="w-3.5 h-3.5 text-acento" /> : <Copy className="w-3.5 h-3.5" />}
     </button>
@@ -197,7 +197,7 @@ export function TituloSeccion({ children, cantidad, detalle, className }: {
 
 /** Panel con borde: contenedor de tablas y listas. Sin sombra. */
 export function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn('border border-linea rounded-[8px] bg-superficie overflow-hidden', className)}>{children}</div>;
+  return <div className={cn('border border-linea rounded-[0.5rem] bg-superficie overflow-hidden', className)}>{children}</div>;
 }
 
 /** Pestañas subrayadas (regiones, modos). */
@@ -206,7 +206,7 @@ export function Pestanas<T extends string>({ opciones, valor, onCambio, rotulo, 
   valor: T; onCambio: (v: T) => void; rotulo: string; className?: string;
 }) {
   return (
-    <div role="tablist" aria-label={rotulo} className={cn('flex flex-wrap gap-x-[22px] border-b border-linea', className)}>
+    <div role="tablist" aria-label={rotulo} className={cn('flex flex-wrap gap-x-[1.375rem] border-b border-linea', className)}>
       {opciones.map(o => (
         <button
           key={o.valor}
@@ -215,7 +215,7 @@ export function Pestanas<T extends string>({ opciones, valor, onCambio, rotulo, 
           aria-selected={o.valor === valor}
           onClick={() => onCambio(o.valor)}
           className={cn(
-            'inline-flex items-center gap-1.5 pb-[9px] -mb-px border-b-2 bg-transparent text-sm whitespace-nowrap cursor-pointer transition-colors',
+            'inline-flex items-center gap-1.5 pb-[0.5625rem] -mb-px border-b-2 bg-transparent text-sm whitespace-nowrap cursor-pointer transition-colors',
             o.valor === valor
               ? 'border-tinta text-tinta font-medium'
               : 'border-transparent text-tinta-2 hover:text-tinta',
@@ -264,11 +264,11 @@ export function BandaError({ children, onReintentar, className }: {
   children: React.ReactNode; onReintentar?: () => void; className?: string;
 }) {
   return (
-    <div role="alert" className={cn('flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2 rounded-[6px] border border-error-linea bg-error-suave text-sm text-error', className)}>
+    <div role="alert" className={cn('flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2 rounded-[0.375rem] border border-error-linea bg-error-suave text-sm text-error', className)}>
       <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
       <span className="flex-1 min-w-0">{children}</span>
       {onReintentar && (
-        <button type="button" onClick={onReintentar} className={cn(boton.secundario, 'h-[26px] text-xs')}>
+        <button type="button" onClick={onReintentar} className={cn(boton.secundario, 'h-[1.625rem] text-xs')}>
           <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
           Reintentar
         </button>

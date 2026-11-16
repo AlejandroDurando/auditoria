@@ -73,9 +73,9 @@ function ValidacionFila({ v, accion, pie }: {
 }) {
   return (
     <div className="flex items-start gap-3 px-3.5 py-2 border-b border-linea-suave last:border-b-0">
-      <div className="w-[72px] shrink-0 pt-px"><EstadoBadge estado={v.estado} /></div>
+      <div className="w-[4.5rem] shrink-0 pt-px"><EstadoBadge estado={v.estado} /></div>
       <div className="min-w-0 flex-1 @3xl:flex @3xl:items-start @3xl:gap-4">
-        <div className="@3xl:w-[250px] shrink-0 flex items-baseline gap-2 min-w-0">
+        <div className="@3xl:w-[15.625rem] shrink-0 flex items-baseline gap-2 min-w-0">
           <Clave className="px-0 shrink-0">{v.id}</Clave>
           <span className="min-w-0">
             <span className="font-medium text-tinta">{v.titulo}</span>
@@ -84,7 +84,7 @@ function ValidacionFila({ v, accion, pie }: {
         </div>
         <Observacion texto={v.observaciones} className={cn('flex-1 mt-0.5 @3xl:mt-0', v.estado !== 'ok' && 'text-tinta')} />
       </div>
-      {accion ?? <span className="w-[26px] shrink-0" aria-hidden="true" />}
+      {accion ?? <span className="w-[1.625rem] shrink-0" aria-hidden="true" />}
     </div>
   );
 }
@@ -92,9 +92,9 @@ function ValidacionFila({ v, accion, pie }: {
 /** Aviso que pide una accion o un control: borde, punto de estado y texto. */
 function Aviso({ estado, titulo, children }: { estado: Estado; titulo: string; children: React.ReactNode }) {
   return (
-    <div className="border border-linea rounded-[8px] bg-superficie">
+    <div className="border border-linea rounded-[0.5rem] bg-superficie">
       <div className="flex items-start gap-2.5 px-3.5 py-3">
-        <Punto estado={estado} className="mt-[7px]" />
+        <Punto estado={estado} className="mt-[0.4375rem]" />
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-semibold text-tinta">{titulo}</h3>
           {children}
@@ -239,7 +239,7 @@ export function ResultadosExpediente({
       </div>
 
       {/* Resumen */}
-      <div className="mt-5 grid grid-cols-6 @2xl:grid-cols-[1fr_2fr_1fr_1fr_1fr] gap-px border border-linea rounded-[8px] bg-linea overflow-hidden">
+      <div className="mt-5 grid grid-cols-6 @2xl:grid-cols-[1fr_2fr_1fr_1fr_1fr] gap-px border border-linea rounded-[0.5rem] bg-linea overflow-hidden">
         <Cifra rotulo={modo === 'Viáticos' ? 'Viáticos' : 'Pagos'} valor={String(payments.length)} className="col-span-2" />
         <Cifra
           rotulo="Importe total"
@@ -337,9 +337,9 @@ export function ResultadosExpediente({
 
       {/* Planilla revisiva lista (auditoria con IA sin errores) */}
       {payments.length > 0 && !hasErrors && (onIrRevisiva || onIrPlanilla) && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border border-linea rounded-[8px] bg-superficie px-3.5 py-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border border-linea rounded-[0.5rem] bg-superficie px-3.5 py-3">
           <div className="flex items-start gap-2.5 min-w-0">
-            <Punto estado="ok" className="mt-[7px]" />
+            <Punto estado="ok" className="mt-[0.4375rem]" />
             <div className="min-w-0">
               <h3 className="text-sm font-semibold text-tinta">La planilla revisiva está lista</h3>
               <p className="text-sm text-tinta-2 max-w-xl">
@@ -421,7 +421,7 @@ export function ResultadosExpediente({
       {balance && (
         <div className="grid grid-cols-1 @4xl:grid-cols-2 gap-4 items-start">
           <Panel>
-            <div className="flex items-center gap-2 h-[38px] px-3.5 border-b border-linea">
+            <div className="flex items-center gap-2 h-[2.375rem] px-3.5 border-b border-linea">
               <h3 className="flex-1 text-sm font-semibold text-tinta">Balance de inversión</h3>
               {v14 && <><Clave className="px-0">V14</Clave><EstadoBadge estado={v14.estado}>{balance.validacion_v14?.resultado === 'info' ? 'Sin balance' : undefined}</EstadoBadge></>}
             </div>
@@ -451,7 +451,7 @@ export function ResultadosExpediente({
 
           {balance.conciliacion_total && (
             <Panel>
-              <div className="flex items-center gap-2 h-[38px] px-3.5 border-b border-linea">
+              <div className="flex items-center gap-2 h-[2.375rem] px-3.5 border-b border-linea">
                 <h3 className="flex-1 text-sm font-semibold text-tinta">Conciliación del importe a reponer</h3>
                 {v16 && <><Clave className="px-0">V16</Clave><EstadoBadge estado={v16.estado}>{v16.estado === 'ok' ? 'Coinciden' : 'No coinciden'}</EstadoBadge></>}
               </div>
@@ -471,7 +471,7 @@ export function ResultadosExpediente({
 
       {result?.duplicados && result.duplicados.length > 0 && (
         <Panel className="mt-4">
-          <div className="flex items-center gap-2 h-[38px] px-3.5 border-b border-linea">
+          <div className="flex items-center gap-2 h-[2.375rem] px-3.5 border-b border-linea">
             <h3 className="flex-1 text-sm font-semibold text-tinta">Documentación repetida</h3>
             <EstadoBadge estado="error" />
           </div>
@@ -501,14 +501,14 @@ export function ResultadosExpediente({
         <div id="informe-copiable">
           <TituloSeccion detalle="Resumen de los desvíos para copiar y enviar al responsable.">Informe de auditoría</TituloSeccion>
           <Panel>
-            <div className="flex items-center justify-end h-[38px] px-2 border-b border-linea">
-              <button type="button" onClick={copiarInforme} className={cn(boton.fantasma, 'h-[26px] text-xs font-medium')}>
+            <div className="flex items-center justify-end h-[2.375rem] px-2 border-b border-linea">
+              <button type="button" onClick={copiarInforme} className={cn(boton.fantasma, 'h-[1.625rem] text-xs font-medium')}>
                 {copiedInforme
                   ? <><Check className="w-3.5 h-3.5 text-acento" aria-hidden="true" /> Copiado</>
                   : <><Copy className="w-3.5 h-3.5" aria-hidden="true" /> Copiar informe</>}
               </button>
             </div>
-            <pre className="px-3.5 py-3 font-mono text-xs leading-[18px] text-tinta-2 bg-hundida whitespace-pre-wrap overflow-x-auto max-h-[400px]">
+            <pre className="px-3.5 py-3 font-mono text-xs leading-[1.125rem] text-tinta-2 bg-hundida whitespace-pre-wrap overflow-x-auto max-h-[25rem]">
               {informeTexto}
             </pre>
           </Panel>
@@ -520,8 +520,8 @@ export function ResultadosExpediente({
 
 // Columnas de la tabla de pagos. Angosta (con el PDF abierto al lado): N°,
 // proveedor, importe y estado. Mas ancha: suma el codigo y la tira.
-const COLUMNAS_PAGO = 'grid items-center gap-x-3 @lg:gap-x-3.5 grid-cols-[minmax(0,1fr)_auto_74px_16px] @lg:grid-cols-[64px_minmax(0,1fr)_auto_78px_44px] @3xl:grid-cols-[72px_minmax(0,1fr)_124px_150px_78px_44px]';
-const COLUMNAS_PAGO_CODIGO = '@2xl:grid-cols-[64px_44px_minmax(0,1fr)_auto_78px_44px] @3xl:grid-cols-[72px_44px_minmax(0,1fr)_124px_150px_78px_44px]';
+const COLUMNAS_PAGO = 'grid items-center gap-x-3 @lg:gap-x-3.5 grid-cols-[minmax(0,1fr)_auto_4.625rem_1rem] @lg:grid-cols-[4rem_minmax(0,1fr)_auto_4.875rem_2.75rem] @3xl:grid-cols-[4.5rem_minmax(0,1fr)_7.75rem_9.375rem_4.875rem_2.75rem]';
+const COLUMNAS_PAGO_CODIGO = '@2xl:grid-cols-[4rem_2.75rem_minmax(0,1fr)_auto_4.875rem_2.75rem] @3xl:grid-cols-[4.5rem_2.75rem_minmax(0,1fr)_7.75rem_9.375rem_4.875rem_2.75rem]';
 
 function Cifra({ rotulo, valor, tono, accion, className }: {
   rotulo: string; valor: string; tono?: 'error' | 'revisar'; accion?: React.ReactNode; className?: string;
@@ -530,7 +530,7 @@ function Cifra({ rotulo, valor, tono, accion, className }: {
     <div className={cn('px-4 py-3 min-w-0 bg-superficie @2xl:col-span-1', className)}>
       <div className="text-xs text-tenue">{rotulo}</div>
       <div className={cn(
-        'flex items-center gap-1 text-[18px] leading-[26px] font-semibold cifras',
+        'flex items-center gap-1 text-[1.125rem] leading-[1.625rem] font-semibold cifras',
         tono === 'error' ? 'text-error' : tono === 'revisar' ? 'text-aviso-tinta' : 'text-tinta',
       )}>
         <span className="truncate">{valor}</span>
@@ -586,7 +586,7 @@ function IndiceRotacion({ rotacion }: { rotacion: NonNullable<AuditResult['rotac
       <TituloSeccion detalle="Importes para el registro. Sumados dan el total del expediente.">Índice de rotación</TituloSeccion>
       <Panel>
         {rotacion.noAfecta.map(r => (
-          <div key={r.codigo} className="grid grid-cols-[minmax(0,1fr)_auto_26px] @2xl:grid-cols-[minmax(0,1fr)_90px_150px_26px] items-center gap-x-3 min-h-[38px] pl-3.5 pr-2 border-b border-linea-suave">
+          <div key={r.codigo} className="grid grid-cols-[minmax(0,1fr)_auto_1.625rem] @2xl:grid-cols-[minmax(0,1fr)_5.625rem_9.375rem_1.625rem] items-center gap-x-3 min-h-[2.375rem] pl-3.5 pr-2 border-b border-linea-suave">
             <span className="min-w-0 truncate">
               <span className="font-mono text-xs text-tinta-2 mr-2">{r.codigo}</span>
               {r.concepto}
@@ -594,14 +594,14 @@ function IndiceRotacion({ rotacion }: { rotacion: NonNullable<AuditResult['rotac
             </span>
             <span className="hidden @2xl:block text-tinta-2">{pagos(r.pagos)}</span>
             <span className="text-right cifras">{formatCurrency(r.importe)}</span>
-            <BotonCopiar texto={formatCurrency(r.importe)} rotulo={`Copiar importe del código ${r.codigo}`} className="w-[26px] h-[26px]" />
+            <BotonCopiar texto={formatCurrency(r.importe)} rotulo={`Copiar importe del código ${r.codigo}`} className="w-[1.625rem] h-[1.625rem]" />
           </div>
         ))}
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_26px] @2xl:grid-cols-[minmax(0,1fr)_90px_150px_26px] items-center gap-x-3 min-h-[38px] pl-3.5 pr-2">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_1.625rem] @2xl:grid-cols-[minmax(0,1fr)_5.625rem_9.375rem_1.625rem] items-center gap-x-3 min-h-[2.375rem] pl-3.5 pr-2">
           <span className="font-medium">Afectan el índice</span>
           <span className="hidden @2xl:block text-tinta-2">{pagos(rotacion.pagosAfecta)}</span>
           <span className="text-right cifras font-medium">{formatCurrency(rotacion.afecta)}</span>
-          <BotonCopiar texto={formatCurrency(rotacion.afecta)} rotulo="Copiar importe de los pagos que afectan el índice" className="w-[26px] h-[26px]" />
+          <BotonCopiar texto={formatCurrency(rotacion.afecta)} rotulo="Copiar importe de los pagos que afectan el índice" className="w-[1.625rem] h-[1.625rem]" />
         </div>
         {rotacion.aviso && <p className="px-3.5 py-2 text-xs text-error border-t border-linea-suave">{rotacion.aviso}</p>}
       </Panel>
@@ -663,7 +663,7 @@ function PaymentRow({ idx, payment, isExpanded, onToggle, mode, conCodigos, onVi
       </div>
 
       {isExpanded && (
-        <div className="bg-hundida border-t border-linea-suave @3xl:pl-[72px]">
+        <div className="bg-hundida border-t border-linea-suave @3xl:pl-[4.5rem]">
           {payment?.leidoPorOcr && (
             <p className="px-3.5 pt-2 text-xs text-tenue">Leído por OCR: {payment.leidoPorOcr}</p>
           )}
@@ -675,7 +675,7 @@ function PaymentRow({ idx, payment, isExpanded, onToggle, mode, conCodigos, onVi
             />
           ))}
           {conHallazgo.length > 0 && bien.length > 0 && (
-            <div className="flex items-center gap-3 px-3.5 h-[34px] border-b border-linea-suave last:border-b-0">
+            <div className="flex items-center gap-3 px-3.5 h-[2.125rem] border-b border-linea-suave last:border-b-0">
               <EstadoBadge estado="ok">{bien.length} {bien.length === 1 ? 'validación' : 'validaciones'} OK</EstadoBadge>
               <button
                 type="button"
@@ -699,12 +699,12 @@ function PaymentRow({ idx, payment, isExpanded, onToggle, mode, conCodigos, onVi
           {payment.vales && payment.vales.length > 0 && (
             <div className="px-3.5 py-2.5 border-t border-linea-suave">
               <h4 className="text-xs font-medium text-tinta-2 mb-1.5">Vales de provisión <span className="font-normal text-tenue">{payment.vales.length}</span></h4>
-              <div className="border border-linea rounded-[6px] bg-superficie overflow-hidden">
+              <div className="border border-linea rounded-[0.375rem] bg-superficie overflow-hidden">
                 {payment.vales.map((vale, i) => (
                   <div key={i} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-3 py-1.5 border-b border-linea-suave last:border-b-0 text-sm">
-                    <span className="font-mono text-xs font-medium text-tinta w-[92px] shrink-0">Vale {vale.numero}</span>
+                    <span className="font-mono text-xs font-medium text-tinta w-[5.75rem] shrink-0">Vale {vale.numero}</span>
                     <EstadoBadge estado={vale.legible ? 'ok' : 'revisar'}>{vale.legible ? 'Legible' : 'Ilegible'}</EstadoBadge>
-                    {vale.textoExtraido && <span className="flex-1 min-w-[160px] text-xs text-tenue">{vale.textoExtraido}</span>}
+                    {vale.textoExtraido && <span className="flex-1 min-w-[10rem] text-xs text-tenue">{vale.textoExtraido}</span>}
                     <span className={cn('ml-auto cifras', !(vale.legible && vale.precioTotal) && 'text-aviso-tinta text-xs')}>
                       {vale.legible && vale.precioTotal
                         ? formatCurrency(parseFloat(vale.precioTotal))

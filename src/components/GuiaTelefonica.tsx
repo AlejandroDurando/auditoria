@@ -41,7 +41,7 @@ function Numero({ valor, interno, tokens }: { valor: string; interno?: boolean; 
       }}
       title="Copiar"
       className={cn(
-        "inline-flex items-center gap-1 rounded-[4px] px-1.5 py-0.5 -mx-1.5 bg-transparent border-none cursor-pointer outline-none transition-colors hover:bg-hundida-2 whitespace-nowrap font-mono text-xs",
+        "inline-flex items-center gap-1 rounded-[0.25rem] px-1.5 py-0.5 -mx-1.5 bg-transparent border-none cursor-pointer outline-none transition-colors hover:bg-hundida-2 whitespace-nowrap font-mono text-xs",
         interno ? "font-medium text-tinta" : "text-tinta-2"
       )}
     >
@@ -151,12 +151,12 @@ export function GuiaTelefonica() {
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 mb-3">
         <Pestanas
           rotulo="Zona"
-          className="flex-1 min-w-[280px]"
+          className="flex-1 min-w-[17.5rem]"
           valor={zona}
           onCambio={setZona}
           opciones={['', ...ZONAS].map(z => ({ valor: z, rotulo: z || 'Todas', cantidad: guia ? cuenta(z) : undefined }))}
         />
-        <div className="relative flex-[0_1_320px] min-w-[220px]">
+        <div className="relative flex-[0_1_20rem] min-w-[13.75rem]">
           <Search className="w-3.5 h-3.5 text-tenue absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
           <input
             ref={entrada}
@@ -175,7 +175,7 @@ export function GuiaTelefonica() {
                 <X className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
             ) : (
-              <kbd className="hidden md:inline-flex items-center px-1 h-[18px] rounded-[4px] border border-linea-fuerte font-mono text-[11px] text-tenue">/</kbd>
+              <kbd className="hidden md:inline-flex items-center px-1 h-[1.125rem] rounded-[0.25rem] border border-linea-fuerte font-mono text-[0.6875rem] text-tenue">/</kbd>
             )}
           </div>
         </div>
@@ -183,7 +183,7 @@ export function GuiaTelefonica() {
 
       {error && <BandaError className="mb-3" onReintentar={() => cargarGuia(true)}>{error}</BandaError>}
 
-      <Panel className="flex flex-col md:max-h-[calc(100vh-44px-232px)] md:min-h-[320px]">
+      <Panel className="flex flex-col md:max-h-[calc(100vh-2.75rem-14.5rem)] md:min-h-[20rem]">
         <div ref={lista} className="flex-1 min-h-0 overflow-y-auto">
           {/* Cabecera fija */}
           <div className={cn("hidden md:grid sticky top-0 z-10 bg-superficie border-b border-linea text-xs text-tenue", COLUMNAS)}>
@@ -205,7 +205,7 @@ export function GuiaTelefonica() {
             renglones.map(r => {
               if (r.tipo === 'zona') {
                 return (
-                  <div key={`z-${r.zona}`} className="px-3.5 h-[30px] flex items-center bg-barra border-b border-linea text-sm font-semibold text-tinta">
+                  <div key={`z-${r.zona}`} className="px-3.5 h-[1.875rem] flex items-center bg-barra border-b border-linea text-sm font-semibold text-tinta">
                     {r.zona}
                   </div>
                 );
@@ -225,7 +225,7 @@ export function GuiaTelefonica() {
                     {r.sector ? (
                       <>
                         <Resaltado texto={c.sector} tokens={marcas} />
-                        {busqueda && <span className="ml-2 align-middle text-[11px] font-normal text-tinta-2 px-1 py-[1px] rounded-[4px] border border-linea-fuerte">{c.zona}</span>}
+                        {busqueda && <span className="ml-2 align-middle text-[0.6875rem] font-normal text-tinta-2 px-1 py-[1px] rounded-[0.25rem] border border-linea-fuerte">{c.zona}</span>}
                       </>
                     ) : null}
                   </div>

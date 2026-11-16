@@ -44,7 +44,7 @@ function FichaMaterial({ m, grupos }: { m: Material; grupos: Record<string, stri
         ))}
       </dl>
       <div className="flex items-start gap-2.5 px-3.5 py-3 text-sm text-tinta-2">
-        <Punto estado={m.activo_fijo === true ? 'revisar' : m.activo_fijo === false ? 'ok' : 'revisar'} className="mt-[7px]" />
+        <Punto estado={m.activo_fijo === true ? 'revisar' : m.activo_fijo === false ? 'ok' : 'revisar'} className="mt-[0.4375rem]" />
         <p>
           {m.activo_fijo === true && (
             <>
@@ -139,7 +139,7 @@ export function Matriculador() {
   const mostrarLista = abierto && consulta.trim() !== '' && !!catalogo;
 
   return (
-    <div className="max-w-[720px]">
+    <div className="max-w-[45rem]">
       <Encabezado
         titulo="Matriculador"
         detalle={catalogo
@@ -175,7 +175,7 @@ export function Matriculador() {
               id="matriculador-lista"
               role="listbox"
               onMouseDown={e => e.preventDefault()}
-              className="absolute z-20 left-0 right-0 top-full mt-1.5 m-0 p-1 list-none bg-superficie border border-linea rounded-[8px] flotante max-h-[300px] overflow-y-auto"
+              className="absolute z-20 left-0 right-0 top-full mt-1.5 m-0 p-1 list-none bg-superficie border border-linea rounded-[0.5rem] flotante max-h-[18.75rem] overflow-y-auto"
             >
               {materiales.length === 0 && (
                 <li className="px-2.5 py-2 text-sm text-tenue">Sin resultados para «{consulta.trim()}».</li>
@@ -198,11 +198,11 @@ export function Matriculador() {
                   }}
                   onClick={() => elegir(m)}
                   className={cn(
-                    "flex items-center gap-3 px-2.5 h-8 rounded-[6px] cursor-pointer text-sm",
+                    "flex items-center gap-3 px-2.5 h-8 rounded-[0.375rem] cursor-pointer text-sm",
                     i === resaltado && "bg-realce"
                   )}
                 >
-                  <span className="font-mono text-xs text-tinta-2 w-[60px] shrink-0">{m.matricula}</span>
+                  <span className="font-mono text-xs text-tinta-2 w-[3.75rem] shrink-0">{m.matricula}</span>
                   <span className="flex-1 min-w-0 truncate text-tinta">{m.descripcion}</span>
                   <MarcaActivoFijo af={m.activo_fijo} />
                 </li>

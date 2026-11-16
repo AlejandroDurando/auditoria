@@ -239,17 +239,17 @@ export function ResultadosExpediente({
       </div>
 
       {/* Resumen */}
-      <div className="mt-5 flex flex-wrap border border-linea rounded-[8px] bg-superficie overflow-hidden">
-        <Cifra rotulo={modo === 'Viáticos' ? 'Viáticos' : 'Pagos'} valor={String(payments.length)} primera />
+      <div className="mt-5 grid grid-cols-6 @2xl:grid-cols-[1fr_2fr_1fr_1fr_1fr] gap-px border border-linea rounded-[8px] bg-linea overflow-hidden">
+        <Cifra rotulo={modo === 'Viáticos' ? 'Viáticos' : 'Pagos'} valor={String(payments.length)} className="col-span-2" />
         <Cifra
           rotulo="Importe total"
           valor={formatCurrency(totalImporte)}
-          ancha
+          className="col-span-4"
           accion={<BotonCopiar texto={formatCurrency(totalImporte)} rotulo="Copiar importe total" className="w-6 h-6" />}
         />
-        <Cifra rotulo="Error" valor={String(cuenta.error)} tono={cuenta.error ? 'error' : undefined} />
-        <Cifra rotulo="Revisar" valor={String(cuenta.revisar)} tono={cuenta.revisar ? 'revisar' : undefined} />
-        <Cifra rotulo="OK" valor={String(cuenta.ok)} />
+        <Cifra rotulo="Error" valor={String(cuenta.error)} tono={cuenta.error ? 'error' : undefined} className="col-span-2" />
+        <Cifra rotulo="Revisar" valor={String(cuenta.revisar)} tono={cuenta.revisar ? 'revisar' : undefined} className="col-span-2" />
+        <Cifra rotulo="OK" valor={String(cuenta.ok)} className="col-span-2" />
       </div>
 
       {/* Avisos que piden una accion */}
@@ -390,7 +390,7 @@ export function ResultadosExpediente({
       ) : (
         <Panel>
           <div className={cn(COLUMNAS_PAGO, conCodigos && COLUMNAS_PAGO_CODIGO, 'h-8 px-3.5 border-b border-linea text-xs text-tenue')}>
-            <span>{modo === 'Expedientes' ? 'PIMyS' : 'N°'}</span>
+            <span className="hidden @lg:block">{modo === 'Expedientes' ? 'PIMyS' : 'N°'}</span>
             {conCodigos && <span className="hidden @2xl:block">Cód.</span>}
             <span>{modo === 'Viáticos' ? 'Agente' : 'Proveedor'}</span>
             <span className="text-right">Importe</span>
@@ -520,14 +520,14 @@ export function ResultadosExpediente({
 
 // Columnas de la tabla de pagos. Angosta (con el PDF abierto al lado): N°,
 // proveedor, importe y estado. Mas ancha: suma el codigo y la tira.
-const COLUMNAS_PAGO = 'grid items-center gap-x-3.5 grid-cols-[minmax(52px,72px)_minmax(0,1fr)_minmax(96px,auto)_78px_44px] @3xl:grid-cols-[72px_minmax(0,1fr)_124px_150px_78px_44px]';
-const COLUMNAS_PAGO_CODIGO = '@2xl:grid-cols-[minmax(52px,72px)_44px_minmax(0,1fr)_minmax(96px,auto)_78px_44px] @3xl:grid-cols-[72px_44px_minmax(0,1fr)_124px_150px_78px_44px]';
+const COLUMNAS_PAGO = 'grid items-center gap-x-3 @lg:gap-x-3.5 grid-cols-[minmax(0,1fr)_auto_74px_16px] @lg:grid-cols-[64px_minmax(0,1fr)_auto_78px_44px] @3xl:grid-cols-[72px_minmax(0,1fr)_124px_150px_78px_44px]';
+const COLUMNAS_PAGO_CODIGO = '@2xl:grid-cols-[64px_44px_minmax(0,1fr)_auto_78px_44px] @3xl:grid-cols-[72px_44px_minmax(0,1fr)_124px_150px_78px_44px]';
 
-function Cifra({ rotulo, valor, tono, accion, primera, ancha }: {
-  rotulo: string; valor: string; tono?: 'error' | 'revisar'; accion?: React.ReactNode; primera?: boolean; ancha?: boolean;
+function Cifra({ rotulo, valor, tono, accion, className }: {
+  rotulo: string; valor: string; tono?: 'error' | 'revisar'; accion?: React.ReactNode; className?: string;
 }) {
   return (
-    <div className={cn('px-4 py-3 min-w-0', ancha ? 'flex-[2_1_220px]' : 'flex-[1_1_120px]', !primera && 'border-l border-linea', '-ml-px')}>
+    <div className={cn('px-4 py-3 min-w-0 bg-superficie @2xl:col-span-1', className)}>
       <div className="text-xs text-tenue">{rotulo}</div>
       <div className={cn(
         'flex items-center gap-1 text-[18px] leading-[26px] font-semibold cifras',
@@ -642,18 +642,21 @@ function PaymentRow({ idx, payment, isExpanded, onToggle, mode, conCodigos, onVi
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
         className={cn(COLUMNAS_PAGO, conCodigos && COLUMNAS_PAGO_CODIGO, 'min-h-9 px-3.5 cursor-pointer select-none hover:bg-realce transition-colors', isExpanded && 'bg-realce')}
       >
-        <span className="font-mono text-xs font-medium text-tinta truncate" title={payment?.orderNumber}>{payment?.orderNumber}</span>
+        <span className="hidden @lg:block font-mono text-xs font-medium text-tinta truncate" title={payment?.orderNumber}>{payment?.orderNumber}</span>
         {conCodigos && <span className="hidden @2xl:block font-mono text-xs text-tinta-2 truncate">{payment?.codigos?.join(' · ')}</span>}
-        <span className="flex items-center gap-2 min-w-0">
-          <span className="truncate" title={payment?.providerName}>{toSentenceCase(payment?.providerName || '')}</span>
-          {payment?.leidoPorOcr && <Etiqueta title={`Leído por OCR: ${payment.leidoPorOcr}`}>OCR</Etiqueta>}
+        <span className="min-w-0 py-1.5 @lg:py-0">
+          <span className="flex items-center gap-2 min-w-0">
+            <span className="truncate" title={payment?.providerName}>{toSentenceCase(payment?.providerName || '')}</span>
+            {payment?.leidoPorOcr && <Etiqueta title={`Leído por OCR: ${payment.leidoPorOcr}`}>OCR</Etiqueta>}
+          </span>
+          <span className="@lg:hidden block font-mono text-xs text-tenue truncate">{payment?.orderNumber}</span>
         </span>
         <span className="text-right cifras">{formatCurrency(payment?.amount)}</span>
         <span className="hidden @3xl:flex items-center"><TiraValidaciones validaciones={validaciones} /></span>
         <span><EstadoBadge estado={estado} /></span>
         <span className="flex items-center justify-end gap-0.5 text-tenue">
           {payment?.pageNumber && onViewPdf
-            ? <BotonVer rotulo="Ver el PDF del pago" onClick={() => ver()} />
+            ? <span className="hidden @lg:inline-flex"><BotonVer rotulo="Ver el PDF del pago" onClick={() => ver()} /></span>
             : null}
           <ChevronRight className={cn('w-3.5 h-3.5 shrink-0 transition-transform duration-150', isExpanded && 'rotate-90')} aria-hidden="true" />
         </span>

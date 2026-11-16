@@ -70,34 +70,34 @@ export function InteractiveNormativa() {
   return (
     <div className="space-y-6">
       {/* Tab Switcher & Interactive Header */}
-      <div className="bg-superficie border border-linea p-4 rounded-[8px] flex flex-col md:flex-row md:items-center justify-between gap-4 caja">
-        <div className="flex p-[3px] bg-hundida rounded-[8px] gap-[2px] w-fit select-none items-center self-start">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-x-6 gap-y-3 border-b border-linea">
+        <div className="flex gap-x-[22px] select-none self-start">
           <button
             type="button"
             onClick={() => setSubTab('disposiciones')}
-            className={`transition-all duration-200 outline-none cursor-pointer text-xs py-1.5 px-4 whitespace-nowrap border-none leading-none ${
+            className={`-mb-px pb-[9px] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors ${
               subTab === 'disposiciones' 
-                ? "bg-superficie border border-linea rounded-[6px] text-acento font-medium shadow-none"
-                : "bg-transparent text-tinta-2 font-normal hover:text-slate-800"
+                ? "border-tinta text-tinta font-medium"
+                : "border-transparent text-tinta-2 hover:text-tinta"
             }`}
           >
             <span className="flex items-center gap-1.5">
               <Scale className="w-3.5 h-3.5" />
-              Disposiciones Oficiales
+              Disposiciones
             </span>
           </button>
           <button
             type="button"
             onClick={() => setSubTab('fondos')}
-            className={`transition-all duration-200 outline-none cursor-pointer text-xs py-1.5 px-4 whitespace-nowrap border-none leading-none ${
+            className={`-mb-px pb-[9px] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors ${
               subTab === 'fondos' 
-                ? "bg-superficie border border-linea rounded-[6px] text-acento font-medium shadow-none"
-                : "bg-transparent text-tinta-2 font-normal hover:text-slate-800"
+                ? "border-tinta text-tinta font-medium"
+                : "border-transparent text-tinta-2 hover:text-tinta"
             }`}
           >
             <span className="flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5" />
-              Responsables y Cajas
+              Responsables y cajas
             </span>
           </button>
         </div>
@@ -229,25 +229,9 @@ export function InteractiveNormativa() {
               ) : (
                 /* Original Document Mock View (Vibe of real paper Disposición) */
                 <div className="bg-superficie border border-linea-fuerte rounded-[8px] p-8 md:p-12 max-w-2xl mx-auto space-y-8 text-slate-800 font-sans relative overflow-hidden">
-                  <div className="absolute right-0 top-0 w-24 h-24 overflow-hidden pointer-events-none select-none opacity-10">
-                    <div className="bg-marca text-white text-center text-[11px] font-semibold py-1.5 transform rotate-45 translate-x-7 translate-y-4">
-                      EPE OFICIAL
-                    </div>
-                  </div>
-                  
                   {/* Document Header */}
                   <div className="flex flex-col items-center border-b border-slate-200 pb-6 text-center space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-10 h-10 rounded-[6px] bg-marca text-white font-mono font-semibold flex items-center justify-center text-lg shadow-inner">
-                        EPE
-                      </div>
-                      <div className="text-left">
-                        <h4 className="text-xs font-semibold text-slate-900 leading-none">E.P.E. Santa Fe</h4>
-                        <span className="text-[11px] text-slate-500 font-medium mt-1 inline-block">Empresa Provincial de la Energía</span>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-4 space-y-1">
+                    <div className="space-y-1">
                       <h2 className="text-sm font-semibold text-slate-900">
                         {selectedDisp.titulo}
                       </h2>
@@ -318,12 +302,6 @@ export function InteractiveNormativa() {
                     </div>
 
                     <div className="w-60 p-4 border border-yellow-200 bg-yellow-50/60 rounded-[8px] relative overflow-hidden self-end">
-                      <div className="absolute right-0 bottom-0 w-16 h-16 pointer-events-none opacity-10">
-                        <svg viewBox="0 0 100 100" className="w-full h-full text-slate-900 fill-current">
-                          <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="2" fill="none" />
-                          <text x="50" y="55" textAnchor="middle" fontSize="12" fontWeight="bold">EPE</text>
-                        </svg>
-                      </div>
                       <div className="space-y-1 relative z-10">
                         <span className="text-[11px] font-semibold text-yellow-600 block">Firma Digital Registrada</span>
                         <p className="text-[11px] font-semibold text-slate-800 leading-tight">

@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'motion/react';
-import { AlertCircle, Loader2, PackageSearch, RefreshCw, Search } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { buscarMateriales, type CatalogoMatriculas, type Material } from '../lib/matriculas';
 import { ClaveAcceso, guardarClave, leerClave } from './ClaveAcceso';
+import { BandaError, Encabezado, EstadoBadge, Etiqueta, Panel, Punto, boton, campo } from './ui';
 
 // Matriculador: busca materiales de SAP por matrícula o descripción y dice si
-// son activo fijo, como la página interna de Búsqueda de Materiales de la EPE.
+// son activo fijo, como la página interna de Búsqueda de Materiales.
 // El catálogo (unos 270 KB) se pide una vez a /api/expedientes?catalogo=1 y la
 // búsqueda se hace en el navegador.
 
@@ -15,18 +15,8 @@ let catalogoEnMemoria: CatalogoMatriculas | null = null;
 const etiqueta = (m: Material) => `${m.matricula} - ${m.descripcion}`;
 
 function MarcaActivoFijo({ af }: { af: boolean | null }) {
-  if (af) {
-    return (
-      <span className="shrink-0 text-[11px] font-semibold text-aviso-tinta bg-aviso-fondo border border-aviso-linea rounded-full px-2.5 py-0.5 whitespace-nowrap">
-        Activo Fijo
-      </span>
-    );
-  }
-  return (
-    <span className="shrink-0 text-[11px] font-medium text-tinta-2 bg-hundida border border-linea-fuerte rounded-full px-2.5 py-0.5 whitespace-nowrap">
-      {af === false ? 'No activo fijo' : 'Sin clase'}
-    </span>
-  );
+  if (af) return <EstadoBadge estado="revisar" className="shrink-0">Activo fijo</EstadoBadge>;
+  return <Etiqueta className="shrink-0">{af === false ? 'No es activo fijo' : 'Sin clase'}</Etiqueta>;
 }
 
 function FichaMaterial({ m, grupos }: { m: Material; grupos: Record<string, string> }) {
@@ -37,46 +27,41 @@ function FichaMaterial({ m, grupos }: { m: Material; grupos: Record<string, stri
     ['Categoría de valoración', m.categoria || '—'],
   ];
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mt-6 bg-superficie border border-linea rounded-[8px] p-5 caja"
-    >
-      <div className="flex items-start justify-between gap-3">
+    <Panel className="mt-5">
+      <div className="flex items-start justify-between gap-3 px-3.5 py-3 border-b border-linea">
         <div className="min-w-0">
-          <span className="text-[11px] font-medium text-tenue">Matrícula</span>
-          <p className="text-lg font-semibold text-acento tabular-nums">{m.matricula}</p>
-          <p className="text-sm text-slate-800 break-words">{m.descripcion}</p>
+          <p className="font-mono text-xs text-tinta-2">{m.matricula}</p>
+          <p className="text-base font-semibold text-tinta break-words">{m.descripcion}</p>
         </div>
         <MarcaActivoFijo af={m.activo_fijo} />
       </div>
-      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mt-4">
+      <dl className="m-0">
         {datos.map(([rotulo, valor]) => (
-          <div key={rotulo} className="min-w-0">
-            <dt className="text-[11px] font-medium text-tenue">{rotulo}</dt>
-            <dd className="text-sm text-slate-800 break-words">{valor}</dd>
+          <div key={rotulo} className="flex items-baseline justify-between gap-3 px-3.5 py-2 border-b border-linea-suave text-sm">
+            <dt className="text-tinta-2">{rotulo}</dt>
+            <dd className="m-0 text-tinta text-right break-words">{valor}</dd>
           </div>
         ))}
       </dl>
-      <div className={cn(
-        "mt-4 rounded-[8px] px-3.5 py-3 text-sm leading-relaxed border",
-        m.activo_fijo ? "bg-aviso-fondo border-aviso-linea/70 text-aviso-tinta" : "bg-marca-suave border-acento/15 text-ok-tinta"
-      )}>
-        {m.activo_fijo === true && (
-          <>
-            <strong className="font-semibold">Corresponde alta de bien de uso en Patrimonio</strong>, con el formulario 4500:
-            código 200 si es un bien mueble (mobiliario, ventiladores, artefactos) o 202 si es una herramienta o equipo de
-            trabajo. Va al 227 solo si Patrimonio verificó que no es inventariable (mail o constancia en el PIMyS).
-          </>
-        )}
-        {m.activo_fijo === false && (
-          <>No es activo fijo (clase {m.clase}): no corresponde alta de bien de uso.</>
-        )}
-        {m.activo_fijo === null && (
-          <>El catálogo no trae la clase de AFIJO de esta matrícula: consultar con Patrimonio.</>
-        )}
+      <div className="flex items-start gap-2.5 px-3.5 py-3 text-sm text-tinta-2">
+        <Punto estado={m.activo_fijo === true ? 'revisar' : m.activo_fijo === false ? 'ok' : 'revisar'} className="mt-[7px]" />
+        <p>
+          {m.activo_fijo === true && (
+            <>
+              <strong className="font-semibold text-tinta">Corresponde alta de bien de uso en Patrimonio</strong>, con el formulario 4500:
+              código 200 si es un bien mueble (mobiliario, ventiladores, artefactos) o 202 si es una herramienta o equipo de
+              trabajo. Va al 227 solo si Patrimonio verificó que no es inventariable (mail o constancia en el PIMyS).
+            </>
+          )}
+          {m.activo_fijo === false && (
+            <>No es activo fijo (clase {m.clase}): no corresponde alta de bien de uso.</>
+          )}
+          {m.activo_fijo === null && (
+            <>El catálogo no trae la clase de AFIJO de esta matrícula: consultar con Patrimonio.</>
+          )}
+        </p>
       </div>
-    </motion.div>
+    </Panel>
   );
 }
 
@@ -154,23 +139,20 @@ export function Matriculador() {
   const mostrarLista = abierto && consulta.trim() !== '' && !!catalogo;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-3xl mx-auto pt-2 pb-10">
-      <div className="text-center mb-7">
-        <div className="w-11 h-11 mx-auto mb-3 bg-marca-suave rounded-[8px] border border-acento/15 flex items-center justify-center">
-          <PackageSearch className="w-5 h-5 text-acento" />
-        </div>
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Búsqueda de Materiales</h2>
-        <p className="text-sm text-tinta-2 mt-2 max-w-xl mx-auto leading-relaxed">
-          Buscá por matrícula o por descripción para saber si un material es activo fijo y
-          corresponde darlo de alta en Patrimonio.
-        </p>
-      </div>
+    <div className="max-w-[720px]">
+      <Encabezado
+        titulo="Matriculador"
+        detalle={catalogo
+          ? `${catalogo.materiales.length.toLocaleString('es-AR')} matrículas · ${catalogo.materiales.filter(m => m.activo_fijo).length.toLocaleString('es-AR')} de activo fijo · catálogo del ${catalogo.generado.split('-').reverse().join('/')}${catalogo.fuente ? ` (${catalogo.fuente})` : ''}`
+          : 'Buscá un material para saber si es activo fijo y corresponde darlo de alta en Patrimonio.'}
+      />
 
       <form
         onSubmit={e => { e.preventDefault(); elegir(materiales[resaltado] || materiales[0]); if (!materiales.length) setAbierto(true); }}
         className="flex gap-2 items-start"
       >
         <div className="relative flex-1 min-w-0">
+          <Search className="w-3.5 h-3.5 text-tenue absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
           <input
             type="text"
             value={consulta}
@@ -179,23 +161,24 @@ export function Matriculador() {
             onBlur={() => setAbierto(false)}
             onKeyDown={teclas}
             disabled={!catalogo}
-            placeholder={catalogo ? 'Matrícula o descripción (ej. 100895, ventilador de pie)' : 'Cargando catálogo…'}
+            placeholder={catalogo ? 'Matrícula o descripción (ej. 100895, ventilador de pie)' : 'Cargando el catálogo…'}
+            aria-label="Matrícula o descripción del material"
             role="combobox"
             aria-expanded={mostrarLista}
             aria-controls="matriculador-lista"
             aria-activedescendant={mostrarLista && materiales[resaltado] ? `material-${materiales[resaltado].matricula}` : undefined}
             autoComplete="off"
-            className="w-full h-11 bg-campo border border-linea-fuerte rounded-[8px] px-3.5 text-sm text-slate-900 outline-none focus:border-acento focus:ring-2 focus:ring-acento/10 transition-all disabled:opacity-60"
+            className={cn(campo, 'h-9 pl-9 disabled:opacity-60')}
           />
           {mostrarLista && (
             <ul
               id="matriculador-lista"
               role="listbox"
               onMouseDown={e => e.preventDefault()}
-              className="absolute z-20 left-0 right-0 top-full mt-1 bg-campo border border-linea rounded-[8px] flotante max-h-[296px] overflow-y-auto py-1"
+              className="absolute z-20 left-0 right-0 top-full mt-1.5 m-0 p-1 list-none bg-superficie border border-linea rounded-[8px] flotante max-h-[300px] overflow-y-auto"
             >
               {materiales.length === 0 && (
-                <li className="px-3.5 py-3 text-sm text-tenue">Sin resultados para «{consulta.trim()}».</li>
+                <li className="px-2.5 py-2 text-sm text-tenue">Sin resultados para «{consulta.trim()}».</li>
               )}
               {materiales.map((m, i) => (
                 <li
@@ -215,61 +198,36 @@ export function Matriculador() {
                   }}
                   onClick={() => elegir(m)}
                   className={cn(
-                    "flex items-center gap-3 px-3.5 py-2.5 cursor-pointer text-sm",
-                    i === resaltado ? "bg-marca-suave" : "bg-campo"
+                    "flex items-center gap-3 px-2.5 h-8 rounded-[6px] cursor-pointer text-sm",
+                    i === resaltado && "bg-realce"
                   )}
                 >
-                  <span className="flex-1 min-w-0 truncate">
-                    <span className="font-semibold text-acento tabular-nums">{m.matricula}</span>
-                    <span className="text-tenue"> — </span>
-                    <span className="text-slate-800">{m.descripcion}</span>
-                  </span>
+                  <span className="font-mono text-xs text-tinta-2 w-[60px] shrink-0">{m.matricula}</span>
+                  <span className="flex-1 min-w-0 truncate text-tinta">{m.descripcion}</span>
                   <MarcaActivoFijo af={m.activo_fijo} />
                 </li>
               ))}
               {total > materiales.length && (
-                <li className="px-3.5 py-2 text-[11px] text-tenue border-t border-linea">
+                <li className="px-2.5 py-1.5 text-xs text-tenue border-t border-linea-suave mt-1">
                   Se muestran {materiales.length} de {total}: escribí algo más para acotar.
                 </li>
               )}
             </ul>
           )}
         </div>
-        <button
-          type="submit"
-          disabled={!catalogo}
-          title="Buscar"
-          className="h-11 w-11 shrink-0 bg-marca hover:bg-marca-hover text-white rounded-[8px] flex items-center justify-center transition-all cursor-pointer border-none outline-none disabled:opacity-60"
-        >
-          <Search className="w-[18px] h-[18px]" />
-        </button>
+        <button type="submit" disabled={!catalogo} className={cn(boton.primario, 'h-9')}>Buscar</button>
       </form>
 
       {cargando && (
-        <p className="flex items-center justify-center gap-2 text-sm text-tenue mt-6">
-          <Loader2 className="w-4 h-4 animate-spin" /> Cargando catálogo de matrículas…
+        <p className="flex items-center gap-2 text-sm text-tenue mt-4" role="status">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> Cargando el catálogo de matrículas…
         </p>
       )}
       {error && !cargando && (
-        <div className="mt-6 flex items-start gap-3 bg-error-fondo border border-error-acento/30 rounded-[8px] p-4 text-sm text-error">
-          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-          <span className="flex-1">{error}</span>
-          <button type="button" onClick={() => cargar(clave)} className="flex items-center gap-1 text-xs font-medium text-error bg-transparent border-none cursor-pointer outline-none">
-            <RefreshCw className="w-3.5 h-3.5" /> Reintentar
-          </button>
-        </div>
+        <BandaError className="mt-4" onReintentar={() => cargar(clave)}>{error}</BandaError>
       )}
 
       {elegido && catalogo && <FichaMaterial m={elegido} grupos={catalogo.grupos} />}
-
-      {catalogo && (
-        <p className="text-center text-[11px] text-tenue mt-8">
-          {catalogo.materiales.length.toLocaleString('es-AR')} matrículas ·{' '}
-          {catalogo.materiales.filter(m => m.activo_fijo).length.toLocaleString('es-AR')} activo fijo ·
-          catálogo del {catalogo.generado.split('-').reverse().join('/')}
-          {catalogo.fuente ? ` (${catalogo.fuente})` : ''}
-        </p>
-      )}
-    </motion.div>
+    </div>
   );
 }

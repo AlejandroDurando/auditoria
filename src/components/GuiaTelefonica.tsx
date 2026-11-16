@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'motion/react';
-import { BookUser, Check, Loader2, Phone, PhoneOff, RefreshCw, Search, X } from 'lucide-react';
+import { Check, Loader2, Phone, PhoneOff, RefreshCw, Search, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { ClaveAcceso } from './ClaveAcceso';
 import { fijarClave, useExpedientesLector } from '../lib/expedientesLector';
 import { buscarEnGuia, cargarGuia, tokensDe, tramosResaltados, useGuia, type Contacto } from '../lib/guia';
 import { irA, useRuta } from '../lib/navegacion';
+import { BandaError, Encabezado, Panel, Pestanas, Vacio, boton, campo } from './ui';
 
 // Guia telefonica: un listado (Sector / Agente / Interno / Directo), como la
 // guia original, con la cabecera fija y el buscador arriba.
@@ -41,8 +41,8 @@ function Numero({ valor, interno, tokens }: { valor: string; interno?: boolean; 
       }}
       title="Copiar"
       className={cn(
-        "inline-flex items-center gap-1 rounded-[6px] px-1.5 py-0.5 -mx-1.5 bg-transparent border-none cursor-pointer outline-none transition-colors hover:bg-marca-suave hover:text-acento whitespace-nowrap",
-        interno ? "text-[14.5px] font-semibold text-tinta" : "text-[13.5px] text-tinta-2"
+        "inline-flex items-center gap-1 rounded-[4px] px-1.5 py-0.5 -mx-1.5 bg-transparent border-none cursor-pointer outline-none transition-colors hover:bg-hundida-2 whitespace-nowrap font-mono text-xs",
+        interno ? "font-medium text-tinta" : "text-tinta-2"
       )}
     >
       <Resaltado texto={valor} tokens={tokens} />
@@ -130,124 +130,106 @@ export function GuiaTelefonica() {
 
   const cuenta = (z: string) => (guia?.contactos || []).filter(c => !z || c.zona === z).length;
   const marcas = busqueda && !busqueda.aproximada ? tokens : [];
-  let par = false;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-6xl">
-      <div className="relative bg-superficie border border-linea rounded-[8px] caja overflow-hidden flex flex-col md:h-[calc(100vh-56px-64px)] md:min-h-[520px]">
-        {/* Franja de color arriba, como la guia original. */}
-        <div className="h-[5px] shrink-0 bg-linear-to-r from-marca to-marca-claro" />
+    <div>
+      <Encabezado
+        titulo="Guía telefónica"
+        detalle={busqueda
+          ? busqueda.aproximada
+            ? `Sin coincidencias exactas: ${busqueda.resultados.length} ${busqueda.resultados.length === 1 ? 'parecido' : 'parecidos'}`
+            : `${busqueda.resultados.length} ${busqueda.resultados.length === 1 ? 'resultado' : 'resultados'}`
+          : guia ? `${cuenta(zona)} contactos · un clic en un número lo copia` : 'Contactos internos'}
+        acciones={
+          <button type="button" onClick={() => cargarGuia(true)} disabled={cargando} className={boton.secundario} title="Volver a leer la guía">
+            {cargando ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />}
+            Actualizar
+          </button>
+        }
+      />
 
-        <div className="shrink-0 px-5 md:px-7 pt-5 pb-4 border-b border-linea">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h2 className="flex items-center gap-3 text-[22px] font-semibold tracking-tight text-tinta">
-              <BookUser className="w-6 h-6 text-acento shrink-0" />
-              Guía telefónica
-            </h2>
-            <div className="relative w-full md:max-w-[400px]">
-              <Search className="w-4 h-4 text-tenue absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                ref={entrada}
-                type="search"
-                value={consulta}
-                onChange={e => setConsulta(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Escape') setConsulta(''); }}
-                placeholder="Buscar por sector, agente o interno…"
-                aria-label="Buscar en la guía telefónica"
-                className="w-full h-11 bg-campo border border-linea-fuerte rounded-[8px] pl-10 pr-10 text-[14.5px] text-tinta placeholder:text-tenue outline-none transition-all focus:border-acento focus:ring-[3px] focus:ring-acento/15 [&::-webkit-search-cancel-button]:hidden"
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                {consulta ? (
-                  <button type="button" onClick={() => { setConsulta(''); entrada.current?.focus(); }} title="Borrar"
-                    className="p-1 text-tenue hover:text-tinta bg-transparent border-none cursor-pointer outline-none flex">
-                    <X className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <kbd className="hidden md:inline-flex items-center px-1.5 h-5 rounded-[5px] border border-linea-fuerte bg-superficie text-[11px] text-tenue">/</kbd>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-2 mt-3">
-            <div className="flex max-w-full overflow-x-auto p-[3px] bg-hundida rounded-[8px] gap-[2px] items-center select-none">
-              {['', ...ZONAS].map(z => (
-                <button
-                  key={z || 'todas'}
-                  type="button"
-                  onClick={() => setZona(z)}
-                  className={cn(
-                    "whitespace-nowrap transition-all duration-200 outline-none cursor-pointer text-xs py-[4px] px-[12px] border-none rounded-[6px]",
-                    zona === z ? "bg-superficie text-acento font-medium caja" : "bg-transparent text-tinta-2"
-                  )}
-                >
-                  {z || 'Todas'}{guia ? <span className="text-tenue ml-1">{cuenta(z)}</span> : null}
-                </button>
-              ))}
-            </div>
-            <span className="text-xs text-tenue">
-              {busqueda
-                ? busqueda.aproximada
-                  ? `Sin coincidencias exactas: ${busqueda.resultados.length} ${busqueda.resultados.length === 1 ? 'parecido' : 'parecidos'}`
-                  : `${busqueda.resultados.length} ${busqueda.resultados.length === 1 ? 'resultado' : 'resultados'}`
-                : guia ? `${cuenta(zona)} contactos` : ''}
-            </span>
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 mb-3">
+        <Pestanas
+          rotulo="Zona"
+          className="flex-1 min-w-[280px]"
+          valor={zona}
+          onCambio={setZona}
+          opciones={['', ...ZONAS].map(z => ({ valor: z, rotulo: z || 'Todas', cantidad: guia ? cuenta(z) : undefined }))}
+        />
+        <div className="relative flex-[0_1_320px] min-w-[220px]">
+          <Search className="w-3.5 h-3.5 text-tenue absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+          <input
+            ref={entrada}
+            type="search"
+            value={consulta}
+            onChange={e => setConsulta(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Escape') setConsulta(''); }}
+            placeholder="Buscar por sector, agente o interno"
+            aria-label="Buscar en la guía telefónica"
+            className={cn(campo, 'pl-8 pr-9 [&::-webkit-search-cancel-button]:hidden')}
+          />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+            {consulta ? (
+              <button type="button" onClick={() => { setConsulta(''); entrada.current?.focus(); }} title="Borrar" aria-label="Borrar la búsqueda"
+                className="p-0.5 text-tenue hover:text-tinta bg-transparent border-none cursor-pointer flex">
+                <X className="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+            ) : (
+              <kbd className="hidden md:inline-flex items-center px-1 h-[18px] rounded-[4px] border border-linea-fuerte font-mono text-[11px] text-tenue">/</kbd>
+            )}
           </div>
         </div>
+      </div>
 
-        {error && <div className="shrink-0 px-7 py-3 text-xs text-error bg-error-suave border-b border-error-linea">{error}</div>}
+      {error && <BandaError className="mb-3" onReintentar={() => cargarGuia(true)}>{error}</BandaError>}
 
+      <Panel className="flex flex-col md:max-h-[calc(100vh-44px-232px)] md:min-h-[320px]">
         <div ref={lista} className="flex-1 min-h-0 overflow-y-auto">
           {/* Cabecera fija */}
-          <div className={cn("hidden md:grid sticky top-0 z-10 bg-hundida border-b-2 border-linea-fuerte text-xs font-semibold text-tinta-2", COLUMNAS)}>
-            <div className="px-7 py-3">Sector</div>
-            <div className="px-7 py-3">Agente</div>
-            <div className="px-4 py-3 text-center">Interno</div>
-            <div className="px-4 py-3 text-center">Directo</div>
+          <div className={cn("hidden md:grid sticky top-0 z-10 bg-superficie border-b border-linea text-xs text-tenue", COLUMNAS)}>
+            <div className="px-3.5 h-8 flex items-center">Sector</div>
+            <div className="px-3.5 h-8 flex items-center">Agente</div>
+            <div className="px-3.5 h-8 flex items-center">Interno</div>
+            <div className="px-3.5 h-8 flex items-center">Directo</div>
           </div>
 
           {!guia ? (
-            cargando && (
-              <div className="p-16 text-center text-tenue text-sm flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" /> Leyendo la guía…
-              </div>
-            )
+            cargando
+              ? <p className="px-3.5 py-6 text-sm text-tenue flex items-center gap-2" role="status"><Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> Leyendo la guía…</p>
+              : <Vacio>No se pudo leer la guía.</Vacio>
           ) : busqueda && !busqueda.resultados.length ? (
-            <div className="p-14 text-center">
-              <p className="text-sm font-medium text-tinta">Nada para "{consulta}"{zona ? ` en ${zona}` : ''}.</p>
-              <p className="text-xs text-tenue mt-1">Probá con parte del apellido, el sector o el número de interno.</p>
-            </div>
+            <Vacio>
+              Nada para «{consulta}»{zona ? ` en ${zona}` : ''}. Probá con parte del apellido, el sector o el número de interno.
+            </Vacio>
           ) : (
             renglones.map(r => {
               if (r.tipo === 'zona') {
-                par = false;
                 return (
-                  <div key={`z-${r.zona}`} className="px-5 md:px-7 py-2 bg-marca-suave border-b border-linea text-[11.5px] font-semibold text-acento">
+                  <div key={`z-${r.zona}`} className="px-3.5 h-[30px] flex items-center bg-barra border-b border-linea text-sm font-semibold text-tinta">
                     {r.zona}
                   </div>
                 );
               }
               const { c } = r;
-              par = !par;
               return (
                 <div
                   key={r.clave}
                   className={cn(
-                    "grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 items-center border-b border-linea transition-colors hover:bg-marca-suave/70",
+                    "grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 items-center border-b border-linea-suave last:border-b-0 transition-colors hover:bg-realce",
                     COLUMNAS,
-                    !par && "bg-hundida/45"
                   )}
                 >
                   {/* Sector (en el celular va arriba del nombre) */}
-                  <div className={cn("col-span-2 md:col-span-1 px-5 md:px-7 pt-2.5 md:py-3.5 text-xs md:text-[14.5px] md:font-semibold text-tenue md:text-tinta truncate", !r.sector && "hidden md:block")}
+                  <div className={cn("col-span-2 md:col-span-1 px-3.5 pt-2 md:py-2 text-xs md:text-sm md:font-medium text-tenue md:text-tinta truncate", !r.sector && "hidden md:block")}
                     title={c.sector}>
                     {r.sector ? (
                       <>
                         <Resaltado texto={c.sector} tokens={marcas} />
-                        {busqueda && <span className="ml-2 align-middle text-[11px] font-normal text-tinta-2 px-1.5 py-[1px] rounded-[5px] bg-hundida">{c.zona}</span>}
+                        {busqueda && <span className="ml-2 align-middle text-[11px] font-normal text-tinta-2 px-1 py-[1px] rounded-[4px] border border-linea-fuerte">{c.zona}</span>}
                       </>
                     ) : null}
                   </div>
-                  <div className={cn("px-5 md:px-7 py-2.5 md:py-3.5 text-[14.5px] text-tinta min-w-0", r.sector ? "pt-0.5 md:pt-3.5" : "")}>
+                  <div className={cn("px-3.5 py-2 text-sm text-tinta min-w-0", r.sector ? "pt-0.5 md:pt-2" : "")}>
                     {c.agentes.length ? (
                       c.agentes.map((a, i) => (
                         <React.Fragment key={i}>
@@ -256,14 +238,14 @@ export function GuiaTelefonica() {
                         </React.Fragment>
                       ))
                     ) : null}
-                    {c.nota && <span className={cn("text-tinta-2", c.agentes.length && "block text-xs")}><Resaltado texto={c.nota} tokens={marcas} /></span>}
+                    {c.nota && <span className={cn("text-tenue", c.agentes.length && "block text-xs")}><Resaltado texto={c.nota} tokens={marcas} /></span>}
                   </div>
                   {/* Numeros: columnas propias en pantalla ancha, a la derecha en el celular */}
-                  <div className="md:contents flex flex-col items-end gap-0.5 pr-5 md:pr-0 py-2.5 md:py-0">
-                    <div className="md:px-4 md:py-3.5 md:text-center">
+                  <div className="md:contents flex flex-col items-end gap-0.5 pr-3.5 md:pr-0 py-2 md:py-0">
+                    <div className="md:px-3.5 md:py-2">
                       <Numero valor={c.interno} interno tokens={marcas} />
                     </div>
-                    <div className="md:px-4 md:py-3.5 md:text-center">
+                    <div className="md:px-3.5 md:py-2">
                       <Numero valor={c.directo} tokens={marcas} />
                     </div>
                   </div>
@@ -273,29 +255,19 @@ export function GuiaTelefonica() {
           )}
         </div>
 
-        <div className="shrink-0 px-5 md:px-7 py-4 border-t border-linea flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-tenue">
-          <div className="flex items-center gap-2">
-            EPE · Guía de contactos internos
-            <button
-              type="button"
-              onClick={() => cargarGuia(true)}
-              disabled={cargando}
-              title="Volver a leer la guía"
-              className="p-1 text-tenue hover:text-acento bg-transparent border-none cursor-pointer outline-none disabled:opacity-60 flex"
-            >
-              {cargando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2.5">
+        {(guia?.comandos || []).length > 0 && (
+          <div className="shrink-0 px-3.5 py-2 border-t border-linea flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-tinta-2">
             {(guia?.comandos || []).map(cmd => (
-              <span key={cmd.codigo} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[8px] bg-marca-suave border border-acento/25 text-acento text-xs font-semibold">
-                {/desactiv/i.test(cmd.detalle) ? <PhoneOff className="w-3.5 h-3.5" /> : <Phone className="w-3.5 h-3.5" />}
-                {cmd.detalle}: {cmd.codigo}
+              <span key={cmd.codigo} className="inline-flex items-center gap-1.5">
+                {/desactiv/i.test(cmd.detalle)
+                  ? <PhoneOff className="w-3.5 h-3.5 text-tenue" aria-hidden="true" />
+                  : <Phone className="w-3.5 h-3.5 text-tenue" aria-hidden="true" />}
+                {cmd.detalle}: <span className="font-mono font-medium text-tinta">{cmd.codigo}</span>
               </span>
             ))}
           </div>
-        </div>
-      </div>
-    </motion.div>
+        )}
+      </Panel>
+    </div>
   );
 }

@@ -51,6 +51,8 @@ import { BuscadorGlobal, type EntradaHistorial } from './components/BuscadorGlob
 import { GuiaTelefonica } from './components/GuiaTelefonica';
 import { irA, useRuta } from './lib/navegacion';
 import { useExpedientesLector } from './lib/expedientesLector';
+import { estadoGeneral } from './lib/hallazgos';
+import { Encabezado, EstadoBadge, Etiqueta, Panel, Vacio, boton, campo } from './components/ui';
 import type { ExpedienteLector } from '../api/expedientes';
 import { Matriculador } from './components/Matriculador';
 import { formatHistoryTitle, hasAccountingCode, renderBold, safeText, toSentenceCase } from './lib/formato';
@@ -205,12 +207,9 @@ function RapidaTab({ selectedModel, setSelectedModel, showNotification, saveToHi
       {/* Left panel — form + results */}
       <div style={{ width: leftWidth }} className="shrink-0 flex flex-col h-full overflow-y-auto bg-hundida p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-9 h-9 bg-superficie rounded-[8px] border border-linea flex items-center justify-center caja">
-            <Zap className="w-4 h-4 text-acento" />
-          </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-base font-semibold text-tinta tracking-tight leading-none">Auditoría Rápida</h1>
-            <p className="text-[11px] text-tenue mt-0.5">Pagos sueltos, sin carátula ni Libro Diario.</p>
+            <h1 className="text-xl font-semibold tracking-[-0.01em] text-tinta">Auditoría rápida</h1>
+            <p className="text-xs text-tenue mt-0.5">Pagos sueltos, sin carátula ni Libro Diario.</p>
           </div>
         </div>
 
@@ -1115,7 +1114,7 @@ export default function App() {
           <!DOCTYPE html>
           <html>
             <head>
-              <title>${fileName} - Auditoría EPE (Pág ${pageNum || 1})</title>
+              <title>${fileName} - Auditoría (Pág ${pageNum || 1})</title>
               <style>
                 body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #334155; }
                 iframe, embed { border: none; width: 100%; height: 100%; }
@@ -1488,15 +1487,15 @@ export default function App() {
         <div className={cn(activeTab === 'Rapida' ? "flex-1 flex flex-col overflow-hidden" : "px-4 sm:px-8 pt-6 pb-14 max-w-[1180px] w-full")}>
           {activeTab === 'Dashboard' && (
             <>
-              <div className="flex w-fit p-[3px] bg-hundida rounded-[8px] mb-8 gap-[2px] items-center select-none">
+              <div className="flex flex-wrap gap-x-[22px] border-b border-linea mb-5 select-none">
                 <button
                   type="button"
                   onClick={() => { setDashboardMode('Expedientes'); setSelectedFiles([]); setResult(null); setActiveAuditId(null); setActivePdfViewer(null); }}
                   className={cn(
-                    "transition-all duration-200 outline-none cursor-pointer text-sm py-[5px] px-[16px] border-none",
+                    "-mb-px pb-[9px] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors",
                     dashboardMode === 'Expedientes'
-                      ? "bg-superficie border border-linea rounded-[6px] text-acento font-medium shadow-none"
-                      : "bg-transparent text-tinta-2 font-normal"
+                      ? "border-tinta text-tinta font-medium"
+                      : "border-transparent text-tinta-2 hover:text-tinta"
                   )}
                 >
                   Expedientes
@@ -1506,10 +1505,10 @@ export default function App() {
                   type="button"
                   onClick={() => { setDashboardMode('Viáticos'); setSelectedFiles([]); setResult(null); setActiveAuditId(null); setActivePdfViewer(null); }}
                   className={cn(
-                    "transition-all duration-200 outline-none cursor-pointer text-sm py-[5px] px-[16px] border-none",
+                    "-mb-px pb-[9px] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors",
                     dashboardMode === 'Viáticos'
-                      ? "bg-superficie border border-linea rounded-[6px] text-acento font-medium shadow-none"
-                      : "bg-transparent text-tinta-2 font-normal"
+                      ? "border-tinta text-tinta font-medium"
+                      : "border-transparent text-tinta-2 hover:text-tinta"
                   )}
                 >
                   Viáticos
@@ -1517,34 +1516,15 @@ export default function App() {
               </div>
 
               {!result && !isProcessing ? (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-8"
-                >
-                  <div className="mb-8">
-                    <h2 className="text-xl font-medium tracking-tight text-slate-900 mb-2">Nuevo {dashboardMode === 'Expedientes' ? 'Expediente' : 'Viático'}</h2>
-                    <p className="text-sm text-slate-500 max-w-2xl">
-                      {dashboardMode === 'Expedientes' 
-                        ? 'Sube uno o más archivos PDF del expediente para iniciar la auditoría automática integrada.'
-                        : 'Sube uno o más archivos PDF para iniciar el control de viáticos.'}
-                    </p>
-                  </div>
-
-                  {/* Model Selector Card */}
-                  <div className="mb-8 bg-superficie rounded-[8px] border border-linea p-5 caja">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="space-y-0.5">
-                        <h4 className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
-                          <Sparkles className="w-4 h-4 text-acento" />
-                          <span>Motor de Inteligencia Artificial (IA)</span>
-                        </h4>
-                        <p className="text-xs text-slate-500 max-w-md leading-relaxed">
-                          Selecciona el modelo de IA de acuerdo a la cantidad y peso de tus comprobantes.
-                        </p>
-                      </div>
-                      
-                      <div className="shrink-0">
+                <div>
+                  <Encabezado
+                    titulo={dashboardMode === 'Expedientes' ? 'Auditar un expediente completo' : 'Controlar viáticos'}
+                    detalle={dashboardMode === 'Expedientes'
+                      ? 'Subí los PDF del expediente: carátula, pagos, Libro Diario y Balance de Inversión.'
+                      : 'Subí los PDF de las planillas de viáticos.'}
+                    acciones={
+                      <label className="flex items-center gap-2 text-xs text-tinta-2">
+                        Modelo
                         <select
                           value={selectedModel}
                           onChange={(e) => {
@@ -1552,233 +1532,115 @@ export default function App() {
                             setSelectedModel(val);
                             localStorage.setItem('epe_selected_model', val);
                           }}
-                          className="px-3 py-2 text-xs font-medium rounded-[8px] border border-linea bg-superficie text-slate-700 outline-none cursor-pointer hover:border-acento/40 transition-colors"
+                          className={cn(campo, 'w-auto max-w-[280px] cursor-pointer')}
                         >
                           {MODELS.map(m => (
                             <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
                           ))}
                         </select>
-                      </div>
-                    </div>
-                  </div>
+                      </label>
+                    }
+                  />
 
-                  <div 
-                    {...getRootProps()} 
+                  <div
+                    {...getRootProps()}
                     className={cn(
-                      "border-[2px] border-dashed rounded-[8px] h-64 flex flex-col items-center justify-center transition-all cursor-pointer bg-superficie group caja",
-                      isDragActive ? "border-acento bg-marca-suave" : "border-linea hover:border-acento/40 hover:bg-hundida"
+                      "border border-dashed rounded-[8px] h-44 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer",
+                      isDragActive ? "border-acento bg-marca-suave" : "border-linea-fuerte bg-superficie hover:bg-realce"
                     )}
                   >
                     <input {...getInputProps()} />
-                    <div className={cn(
-                      "w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-105",
-                      isDragActive ? "bg-marca-suave text-acento" : "bg-hundida-2 text-slate-400"
-                    )}>
-                      <Upload className="w-6 h-6" />
-                    </div>
-                    <p className="text-base font-medium text-slate-700 mb-0.5">Arrastra uno o más archivos PDF aquí</p>
-                    <p className="text-xs text-slate-400">O haz clic para explorar tus archivos</p>
-                    <div className="mt-4">
-                      <div className="px-3 py-1 bg-hundida-2 text-tenue text-[11px] font-medium rounded">Múltiples archivos permitidos</div>
-                    </div>
+                    <Upload className={cn("w-5 h-5 mb-1", isDragActive ? "text-acento" : "text-tenue")} aria-hidden="true" />
+                    <p className="text-sm font-medium text-tinta">Arrastrá los PDF acá</p>
+                    <p className="text-xs text-tenue">o hacé clic para elegirlos · podés subir varios juntos</p>
                   </div>
 
-                  {/* List of files with clean, premium design */}
                   {selectedFiles.length > 0 && (
-                    <div className="mt-8 bg-superficie rounded-[8px] border border-linea p-6 caja">
-                      <div className="flex items-center justify-between mb-4 pb-3 border-b border-linea">
-                        <div className="flex items-center gap-2">
-                          <Paperclip className="w-5 h-5 text-acento" />
-                          <h3 className="text-sm font-medium text-slate-800">Archivos para Auditar ({selectedFiles.length})</h3>
-                        </div>
-                        <button
-                          onClick={() => setSelectedFiles([])}
-                          className="text-xs font-medium text-rose-600 hover:text-rose-800 hover:underline transition-colors cursor-pointer outline-none bg-transparent border-none"
-                        >
-                          Limpiar todos
+                    <>
+                      <div className="flex items-center justify-between mt-6 mb-2">
+                        <h2 className="text-base font-semibold text-tinta">
+                          Archivos <span className="font-normal text-tenue cifras">{selectedFiles.length}</span>
+                        </h2>
+                        <button type="button" onClick={() => setSelectedFiles([])} className={cn(boton.fantasma, 'h-[26px] text-xs')}>
+                          Quitar todos
                         </button>
                       </div>
-
-                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                        {selectedFiles.map((file, idx) => {
-                          const cat = getFileCategoryInfo(file.name);
-                          return (
-                            <div 
-                              key={file.id} 
-                              className="flex items-center justify-between p-3 bg-realce border border-linea rounded-[8px] transition-all hover:bg-hundida-2/50"
-                            >
-                              <div className="flex items-center gap-3 overflow-hidden">
-                                <div className="w-9 h-9 bg-rose-50 rounded-[8px] flex items-center justify-center text-rose-500 shrink-0 border border-rose-100 font-normal text-[11px] font-semibold">
-                                  #{idx + 1}
-                                </div>
-                                <div className="truncate">
-                                  <div className="flex flex-wrap items-center gap-1.5 truncate">
-                                    <p className="text-xs font-medium text-slate-700 truncate max-w-[200px] sm:max-w-xs">{file.name}</p>
-                                    <span className={cn("text-[11px] font-semibold px-1.5 py-0.5 rounded border leading-none shrink-0", cat.color)}>
-                                      {cat.label}
-                                    </span>
-                                  </div>
-                                  <p className="text-[11px] text-slate-400 mt-0.5">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
-                                </div>
+                      <Panel>
+                        <div className="max-h-[320px] overflow-y-auto">
+                          {selectedFiles.map((file, idx) => {
+                            const cat = getFileCategoryInfo(file.name);
+                            return (
+                              <div key={file.id} className="flex items-center gap-3 min-h-9 pl-3.5 pr-2 border-b border-linea-suave last:border-b-0">
+                                <span className="w-5 text-xs text-tenue cifras text-right shrink-0">{idx + 1}</span>
+                                <span className="min-w-0 flex-1 truncate text-sm text-tinta" title={file.name}>{file.name}</span>
+                                <Etiqueta>{cat.label}</Etiqueta>
+                                <span className="w-[70px] text-right text-xs text-tenue cifras shrink-0">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedFiles(prev => prev.filter(f => f.id !== file.id))}
+                                  title="Quitar archivo"
+                                  aria-label={`Quitar ${file.name}`}
+                                  className={boton.icono}
+                                >
+                                  <X className="w-3.5 h-3.5" aria-hidden="true" />
+                                </button>
                               </div>
-                              <button
-                                onClick={() => setSelectedFiles(prev => prev.filter(f => f.id !== file.id))}
-                                className="w-8 h-8 rounded-[6px] flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer outline-none border-none bg-transparent"
-                                title="Eliminar archivo"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-end items-center border-t border-linea pt-6">
-                        <p className="text-xs text-tenue sm:mr-auto">
-                          Se analizarán {selectedFiles.length} documento{selectedFiles.length > 1 ? 's' : ''} de forma consolidada por la IA.
+                            );
+                          })}
+                        </div>
+                      </Panel>
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                        <p className="text-xs text-tenue">
+                          {selectedFiles.length === 1 ? 'Se analiza 1 documento.' : `Se analizan los ${selectedFiles.length} documentos juntos.`}
                         </p>
-                        <button
-                          onClick={handleStartAudit}
-                          className="w-full sm:w-auto px-4 py-2 bg-marca text-white text-xs font-medium rounded-[6px] hover:bg-marca-hover transition-all shadow-none flex items-center justify-center gap-1.5 cursor-pointer outline-none border-none"
-                        >
-                          <Sparkles className="w-4 h-4" />
-                          <span>Iniciar Auditoría Combinada</span>
+                        <button type="button" onClick={handleStartAudit} className={boton.primario}>
+                          <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                          Iniciar auditoría
                         </button>
                       </div>
-                    </div>
+                    </>
                   )}
-                </motion.div>
+                </div>
               ) : isProcessing ? (
-                <div className="mt-16 max-w-xl mx-auto flex flex-col items-center justify-center px-4">
-                  <div className="w-full bg-superficie rounded-[8px] border border-linea p-8 flex flex-col relative overflow-hidden caja">
-                    {/* Visual gradient accent */}
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-marca" />
-                    
-                    {/* Live Percentage Circle or Big Display */}
-                    <div className="flex items-baseline justify-between mb-2">
-                      <div className="flex flex-col">
-                        <span className="text-[11px] font-medium text-tenue">Procesamiento de IA</span>
-                        <h3 className="text-sm font-medium text-slate-900 mt-0.5">Auditoría EPE Digital</h3>
-                      </div>
-                      <div className="flex items-baseline font-mono text-3xl font-medium text-acento select-none">
-                        <span>{auditProgress}</span>
-                        <span className="text-xs text-tenue font-normal">%</span>
-                      </div>
-                    </div>
-
-                    {/* Progress Bar Container */}
-                    <div className="w-full h-1.5 bg-hundida rounded-full overflow-hidden mt-3 relative">
-                      <div 
-                        className="h-full bg-marca rounded-full transition-all duration-500 ease-out" 
-                        style={{ width: `${auditProgress}%` }}
-                      />
-                    </div>
-
-                    {/* Live label description */}
-                    <p className="text-xs font-normal text-slate-600 mt-5 min-h-[40px] leading-relaxed transition-all duration-300">
-                      {auditProgressLabel || "Inicializando módulos..."}
-                    </p>
-
-                    {/* Divider */}
-                    <div className="h-px bg-linea my-6 w-full" />
-
-                    {/* Interactive workflow checklist */}
-                    <div className="space-y-4">
-                      <h4 className="text-[11px] font-medium text-tenue">Fases del análisis consolidado</h4>
-                      
-                      {/* Phase 1 */}
-                      <div className="flex items-center gap-3.5">
-                        {auditProgress >= 30 ? (
-                           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                        ) : (
-                          <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-acento animate-spin" />
-                          </div>
-                      )}
-                        <span className={cn(
-                          "text-xs transition-colors duration-200",
-                          auditProgress >= 30 ? "text-slate-400 line-through font-normal" : "text-slate-800 font-medium text-sm"
-                        )}>
-                          Carga de archivos de soporte y carátula del expediente
-                        </span>
-                      </div>
-
-                      {/* Phase 2 */}
-                      <div className="flex items-center gap-3.5">
-                        {auditProgress >= 60 ? (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                        ) : auditProgress >= 30 ? (
-                          <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-acento animate-spin" />
-                          </div>
-                        ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-superficie shrink-0" />
-                        )}
-                        <span className={cn(
-                          "text-xs transition-colors duration-200",
-                          auditProgress >= 60 ? "text-slate-400 line-through font-normal" : 
-                          auditProgress >= 30 ? "text-slate-700 font-medium" : "text-slate-400"
-                        )}>
-                          Lectura del Balance de Inversión y cuadre matemático
-                        </span>
-                      </div>
-
-                      {/* Phase 3 */}
-                      <div className="flex items-center gap-3.5">
-                        {auditProgress >= 85 ? (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                        ) : auditProgress >= 60 ? (
-                          <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-acento animate-spin" />
-                          </div>
-                        ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-superficie shrink-0" />
-                        )}
-                        <span className={cn(
-                          "text-xs transition-colors duration-200",
-                          auditProgress >= 85 ? "text-slate-400 line-through font-normal" : 
-                          auditProgress >= 60 ? "text-slate-700 font-medium" : "text-slate-400"
-                        )}>
-                          Rastreo de Códigos Múltiples de imputación en Libro Diario
-                        </span>
-                      </div>
-
-                      {/* Phase 4 */}
-                      <div className="flex items-center gap-3.5">
-                        {auditProgress >= 100 ? (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                        ) : auditProgress >= 85 ? (
-                          <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                            <Loader2 className="w-4 h-4 text-acento animate-spin" />
-                          </div>
-                        ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-slate-200 bg-superficie shrink-0" />
-                        )}
-                        <span className={cn(
-                          "text-xs transition-colors duration-200",
-                          auditProgress >= 100 ? "text-slate-400 line-through font-normal" : 
-                          auditProgress >= 85 ? "text-slate-700 font-medium" : "text-slate-400"
-                        )}>
-                          Cruce y validación de Proveedores, Aprobadores, CUIT y ARCA
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="h-px bg-linea my-5 w-full" />
-
-                    {/* Cancel button */}
-                    <button
-                      onClick={handleCancelAudit}
-                      className="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-medium rounded-[6px] transition-all border border-rose-100 hover:border-rose-200 cursor-pointer outline-none flex items-center justify-center gap-1.5"
-                    >
-                      <XCircle className="w-4 h-4 text-rose-500" />
-                      <span>Cancelar Auditoría</span>
-                    </button>
+                <div className="mt-10 max-w-[520px]">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <h1 className="text-xl font-semibold tracking-[-0.01em] text-tinta">Auditando el expediente</h1>
+                    <span className="font-mono text-sm text-tinta-2 cifras" aria-live="polite">{auditProgress}%</span>
                   </div>
-                  <div className="mt-4 flex items-center gap-2 text-slate-400 text-xs text-center leading-relaxed max-w-sm">
-                    <Info className="w-4 h-4 shrink-0" />
-                    <span>Nuestra IA compara de forma cruzada toda la información sin necesidad de servidores intermedios.</span>
+                  <div className="w-full h-1 bg-hundida-2 rounded-full overflow-hidden mt-3">
+                    <div className="h-full bg-marca rounded-full transition-all duration-500 ease-out" style={{ width: `${auditProgress}%` }} />
+                  </div>
+                  <p className="text-xs text-tenue mt-2 min-h-[32px]">{auditProgressLabel || 'Preparando…'}</p>
+
+                  <Panel className="mt-4">
+                    {[
+                      { desde: 0, hasta: 30, texto: 'Carga de los archivos y la carátula' },
+                      { desde: 30, hasta: 60, texto: 'Lectura del Balance de Inversión y su cuadre' },
+                      { desde: 60, hasta: 85, texto: 'Códigos de imputación en el Libro Diario' },
+                      { desde: 85, hasta: 100, texto: 'Cruce de proveedores, aprobadores, CUIT y ARCA' },
+                    ].map(fase => {
+                      const hecha = auditProgress >= fase.hasta;
+                      const enCurso = !hecha && auditProgress >= fase.desde;
+                      return (
+                        <div key={fase.hasta} className="flex items-center gap-3 h-9 px-3.5 border-b border-linea-suave last:border-b-0">
+                          <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                            {hecha
+                              ? <Check className="w-3.5 h-3.5 text-ok" aria-hidden="true" />
+                              : enCurso
+                                ? <Loader2 className="w-3.5 h-3.5 text-acento animate-spin" aria-hidden="true" />
+                                : <span className="w-1.5 h-1.5 rounded-full bg-linea-fuerte" aria-hidden="true" />}
+                          </span>
+                          <span className={cn("text-sm", hecha ? "text-tenue" : enCurso ? "text-tinta font-medium" : "text-tinta-2")}>
+                            {fase.texto}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </Panel>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-tenue">Los PDF se envían directo al modelo, sin servidores intermedios.</p>
+                    <button type="button" onClick={handleCancelAudit} className={boton.secundario}>Cancelar</button>
                   </div>
                 </div>
               ) : (
@@ -1807,160 +1669,110 @@ export default function App() {
           {activeTab === 'Guia' && <GuiaTelefonica />}
 
           {activeTab === 'Historial' && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-4xl"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-superficie rounded-[8px] border border-linea flex items-center justify-center caja">
-                    <FileText className="w-6 h-6 text-tenue" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-medium tracking-tight text-slate-900">Historial</h2>
-                    <p className="text-xs text-tenue mt-0.5">Auditorías previas completadas — {history.length} en total.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={exportHistory}
-                    className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-superficie border border-linea-fuerte text-slate-700 text-xs font-medium rounded-[6px] hover:bg-realce hover:text-slate-900 transition-all cursor-pointer shadow-none outline-none select-none"
-                    title="Exportar respaldo de historial en formato JSON"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Exportar Copia</span>
+            <div>
+              <Encabezado
+                titulo="Historial"
+                detalle={`${history.length} ${history.length === 1 ? 'auditoría guardada' : 'auditorías guardadas'} en este navegador`}
+                acciones={<>
+                  <button type="button" onClick={exportHistory} className={boton.secundario} title="Exportar un respaldo del historial en formato JSON">
+                    <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                    Exportar copia
                   </button>
-                  <label
-                    className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-ok-fondo border border-ok-linea text-ok-tinta text-xs font-medium rounded-[6px] hover:bg-marca-suave transition-all cursor-pointer shadow-none outline-none select-none"
-                    title="Importar un archivo de respaldo JSON"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Importar Copia</span>
-                    <input
-                      type="file"
-                      accept=".json"
-                      onChange={importHistory}
-                      className="hidden"
-                    />
+                  <label className={boton.secundario} title="Importar un archivo de respaldo JSON">
+                    <Upload className="w-3.5 h-3.5" aria-hidden="true" />
+                    Importar copia
+                    <input type="file" accept=".json" onChange={importHistory} className="hidden" />
                   </label>
-                </div>
-              </div>
+                </>}
+              />
 
-              {history.length === 0 ? (
-                <div className="p-16 text-center border border-dashed border-linea rounded-[8px] bg-superficie/50">
-                  <FileText className="w-12 h-12 text-tenue/40 mx-auto mb-4" />
-                  <p className="text-tenue font-medium text-sm">No hay auditorías registradas todavía.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {history.map(entry => (
-                    <div 
-                      key={entry.id} 
-                      className="bg-superficie border border-linea p-6 rounded-[8px] flex flex-col sm:flex-row gap-6 sm:items-center justify-between group animate-fade-in caja elevable"
+              <Panel>
+                {history.length === 0 ? (
+                  <Vacio>Todavía no hay auditorías guardadas. Las que hagas en «Auditar expediente» quedan acá.</Vacio>
+                ) : history.map(entry => {
+                  const modo = entry.result?.mode === 'Viáticos' ? 'Viáticos' : entry.result?.mode === 'Rapida' ? 'Rápida' : 'Expediente';
+                  const agencia = (() => {
+                    const val = entry.result?.agenciaSucursal || '';
+                    if (!val) return '';
+                    const lower = val.toLowerCase();
+                    if (
+                      lower.includes('agencia') ||
+                      lower.includes('delegación') ||
+                      lower.includes('delegacion') ||
+                      lower.includes('unidad') ||
+                      lower.includes('sucursal') ||
+                      lower.includes('sector')
+                    ) {
+                      return formatHistoryTitle(val);
+                    }
+                    return `Agencia ${formatHistoryTitle(val)}`;
+                  })();
+                  const titulo = entry.result?.agenciaSucursal || entry.result?.fondoFijoNumero
+                    ? `${agencia}${entry.result.agenciaSucursal && entry.result.fondoFijoNumero ? ' — ' : ''}${entry.result.fondoFijoNumero ? formatHistoryTitle(entry.result.fondoFijoNumero) : ''}`
+                    : entry.result?.mode === 'Rapida'
+                      ? `${(entry.result.payments || []).length} ${(entry.result.payments || []).length === 1 ? 'pago suelto' : 'pagos sueltos'}`
+                      : `FF-${entry.FF || 'Sin ID'}`;
+                  return (
+                    <div
+                      key={entry.id}
+                      className="flex flex-wrap items-center gap-x-4 gap-y-1 min-h-[52px] pl-3.5 pr-2 py-2 border-b border-linea-suave last:border-b-0 hover:bg-realce transition-colors"
                     >
-                      <div className="flex-1 space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          {entry.result?.mode === 'Viáticos' ? (
-                            <span className="px-[10px] py-[3px] bg-purple-100/60 text-purple-700 rounded-[4px] text-[11px] font-medium leading-none">
-                              Viáticos
-                            </span>
-                          ) : entry.result?.mode === 'Rapida' ? (
-                            <span className="px-[10px] py-[3px] bg-amber-100/70 text-amber-800 rounded-[4px] text-[11px] font-medium leading-none inline-flex items-center gap-1">
-                              <Zap className="w-3 h-3" />
-                              Rápida
-                            </span>
-                          ) : (
-                            <span className="px-[10px] py-[3px] bg-ok-fondo text-ok-tinta rounded-[4px] text-[11px] font-medium leading-none">
-                              Expediente
-                            </span>
-                          )}
-
-                          {entry.result?.agenciaSucursal || entry.result?.fondoFijoNumero ? (
-                            <h3 className="text-sm font-medium text-slate-800">
-                              {(() => {
-                                const val = entry.result?.agenciaSucursal || '';
-                                if (!val) return '';
-                                const lower = val.toLowerCase();
-                                if (
-                                  lower.includes('agencia') || 
-                                  lower.includes('delegación') || 
-                                  lower.includes('delegacion') || 
-                                  lower.includes('unidad') || 
-                                  lower.includes('sucursal') || 
-                                  lower.includes('sector')
-                                ) {
-                                  return formatHistoryTitle(val);
-                                }
-                                return `Agencia ${formatHistoryTitle(val)}`;
-                              })()}
-                              {entry.result.agenciaSucursal && entry.result.fondoFijoNumero ? ' — ' : ''}
-                              {entry.result.fondoFijoNumero ? formatHistoryTitle(entry.result.fondoFijoNumero) : ''}
-                            </h3>
-                          ) : entry.result?.mode === 'Rapida' ? (
-                            <h3 className="text-sm font-medium text-slate-800">
-                              {(entry.result.payments || []).length}{' '}
-                              {(entry.result.payments || []).length === 1 ? 'pago suelto' : 'pagos sueltos'}
-                            </h3>
-                          ) : (
-                            <span className="text-xs font-medium bg-hundida text-slate-600 px-2.5 py-1 rounded-[6px]">
-                              FF-{entry.FF || 'Sin ID'}
-                            </span>
-                          )}
-
+                      <div className="w-[72px] shrink-0">{entry.result && <EstadoBadge estado={estadoGeneral(entry.result)} />}</div>
+                      <div className="min-w-0 flex-[1_1_320px]">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                          <button
+                            type="button"
+                            onClick={() => abrirAuditoria(entry)}
+                            className="text-sm font-medium text-tinta hover:text-acento bg-transparent border-none p-0 cursor-pointer text-left"
+                          >
+                            {titulo}
+                          </button>
+                          <Etiqueta>{modo}</Etiqueta>
                           {entry.result?.expedienteNumero && (
-                            <span className="text-xs font-medium bg-hundida text-slate-500 border border-linea px-2 py-0.5 rounded-[6px] font-mono">
+                            <span className="font-mono text-xs text-tinta-2">
                               Exp. {entry.result.expedienteNumero}
                               {entry.result.expedienteFecha ? ` (${entry.result.expedienteFecha})` : ''}
                             </span>
                           )}
-
-                          <span className="text-xs text-tenue ml-auto sm:ml-2">
-                            {new Date(entry.date).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
-                          </span>
                         </div>
-                        <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">{safeText(entry.summary)}</p>
+                        <p className="text-xs text-tenue line-clamp-1">{safeText(entry.summary)}</p>
                       </div>
-                      <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
-                        <button 
-                          onClick={() => abrirAuditoria(entry)}
-                          className="py-[6px] px-[14px] bg-superficie border border-linea-fuerte text-acento text-sm font-medium rounded-[6px] hover:bg-marca-suave transition-all shadow-none cursor-pointer select-none outline-none"
-                        >
-                          Ver Reporte
+                      <span className="text-xs text-tenue cifras whitespace-nowrap">
+                        {new Date(entry.date).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button type="button" onClick={() => abrirAuditoria(entry)} className={cn(boton.secundario, 'h-[26px] text-xs')}>
+                          Abrir
                         </button>
-                        <button 
+                        <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             setDeleteConfirmId(entry.id);
                           }}
-                          title="Eliminar auditoría"
-                          className="p-2 text-tenue hover:text-red-600 hover:bg-red-50 rounded-[6px] transition-all cursor-pointer outline-none border border-transparent hover:border-red-100"
+                          title="Eliminar del historial"
+                          aria-label="Eliminar del historial"
+                          className={cn(boton.icono, 'hover:text-error')}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </motion.div>
+                  );
+                })}
+              </Panel>
+            </div>
           )}
 
           {activeTab === 'Normativa' && (
             <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={false}
               className="max-w-5xl"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-superficie rounded-[8px] border border-linea flex items-center justify-center caja">
-                  <ShieldCheck className="w-6 h-6 text-acento" />
-                </div>
                 <div>
-                  <h2 className="text-xl font-medium tracking-tight text-slate-900">Marco Normativo</h2>
-                  <p className="text-xs text-tenue mt-0.5">Reglas, límites y responsables vigentes para Fondos Fijos.</p>
+                  <h2 className="text-xl font-semibold tracking-[-0.01em] text-tinta">Normativa</h2>
+                  <p className="text-xs text-tenue mt-0.5">Reglas, límites y responsables vigentes de los fondos fijos.</p>
                 </div>
               </div>
 
@@ -1970,8 +1782,7 @@ export default function App() {
 
           {activeTab === 'Planilla' && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={false}
             >
               <PlanillaControlFF initialData={planillaInitialData} />
             </motion.div>
@@ -1983,31 +1794,27 @@ export default function App() {
 
           {activeTab === 'Códigos' && (
             <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={false}
               className="max-w-5xl"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-superficie rounded-[8px] border border-linea flex items-center justify-center caja">
-                  <FileCheck2 className="w-6 h-6 text-acento" />
-                </div>
                 <div>
-                  <h2 className="text-xl font-medium tracking-tight text-slate-900">Códigos PIMyS</h2>
-                  <p className="text-xs text-tenue mt-0.5">Diccionario completo de conceptos y códigos autorizados.</p>
+                  <h2 className="text-xl font-semibold tracking-[-0.01em] text-tinta">Códigos PIMyS</h2>
+                  <p className="text-xs text-tenue mt-0.5">Conceptos y códigos de gasto, por tipo de fondo.</p>
                 </div>
               </div>
 
-              <div className="flex p-[3px] bg-hundida rounded-[8px] mb-6 gap-[2px] w-fit select-none items-center">
+              <div className="flex flex-wrap gap-x-[22px] border-b border-linea mb-5 select-none">
                 {(Object.keys(PIMYS_CODES) as Array<keyof typeof PIMYS_CODES>).map(cat => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setActiveCodeCategory(cat)}
                     className={cn(
-                      "transition-all duration-200 outline-none cursor-pointer text-sm py-[5px] px-[16px] whitespace-nowrap border-none leading-none",
+                      "-mb-px pb-[9px] px-0 bg-transparent border-0 border-b-2 border-solid outline-none cursor-pointer text-sm whitespace-nowrap transition-colors",
                       activeCodeCategory === cat 
-                        ? "bg-superficie border border-linea rounded-[6px] text-acento font-medium shadow-none"
-                        : "bg-transparent text-tinta-2 font-normal"
+                        ? "border-tinta text-tinta font-medium"
+                        : "border-transparent text-tinta-2 hover:text-tinta"
                     )}
                   >
                     {cat}
@@ -2024,8 +1831,9 @@ export default function App() {
                     type="text"
                     value={codeSearchQuery}
                     onChange={(e) => setCodeSearchQuery(e.target.value)}
-                    className="block w-full pl-[36px] pr-[12px] py-[8px] border border-linea-fuerte rounded-[8px] bg-superficie text-sm text-tinta placeholder-tenue focus:border-acento focus:ring-0 outline-none"
-                    placeholder="Buscar por código o palabra..."
+                    className={cn(campo, 'pl-9')}
+                    aria-label="Buscar por código o palabra"
+                    placeholder="Buscar por código o palabra"
                   />
                 </div>
               </div>
@@ -2033,10 +1841,10 @@ export default function App() {
               <div className="bg-superficie rounded-[8px] border border-linea overflow-hidden mb-6 caja">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left border-collapse">
-                    <thead className="bg-hundida/50 text-[11px] text-tenue font-medium">
-                      <tr className="bg-hundida border-b-[1.5px] border-linea-fuerte">
-                        <th className="p-[12px_16px] border-r border-linea" style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}>Código</th>
-                        <th className="p-[12px_16px]">Descripción Completa</th>
+                    <thead className="text-xs text-tenue">
+                      <tr className="border-b border-linea">
+                        <th className="px-3.5 h-8 font-normal" style={{ width: '84px', minWidth: '84px', maxWidth: '84px' }}>Código</th>
+                        <th className="px-3.5 h-8 font-normal">Descripción</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2048,11 +1856,11 @@ export default function App() {
                           return item.code.toString().includes(query) || normalizeStr(item.descripcion).includes(query);
                         })
                         .map((item, idx) => (
-                        <tr key={idx} className="border-b border-linea hover:bg-realce/50 transition-colors">
-                          <td className="p-[12px_16px] font-mono font-medium text-acento border-r border-linea align-top text-base whitespace-nowrap" style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}>
+                        <tr key={idx} className="border-b border-linea-suave last:border-b-0 hover:bg-realce transition-colors">
+                          <td className="px-3.5 py-2 font-mono text-xs font-medium text-tinta align-top whitespace-nowrap" style={{ width: '84px', minWidth: '84px', maxWidth: '84px' }}>
                             {item.code}
                           </td>
-                          <td className="p-[12px_16px] text-tinta leading-[1.5] font-normal align-top text-sm">
+                          <td className="px-3.5 py-2 text-tinta align-top text-sm">
                             {item.descripcion}
                           </td>
                         </tr>
@@ -2066,16 +1874,12 @@ export default function App() {
 
           {activeTab === 'Autorizaciones' && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={false}
               className="max-w-5xl"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-superficie rounded-[8px] border border-linea flex items-center justify-center caja">
-                  <Stamp className="w-6 h-6 text-acento" />
-                </div>
                 <div>
-                  <h2 className="text-xl font-medium tracking-tight text-slate-900">Autorizaciones PIMyS</h2>
+                  <h2 className="text-xl font-semibold tracking-[-0.01em] text-tinta">Autorizaciones PIMyS</h2>
                   <p className="text-xs text-tenue mt-0.5">Firmas obligatorias según el código de gasto o el agente solicitante.</p>
                 </div>
               </div>
@@ -2083,15 +1887,14 @@ export default function App() {
               {/* ── Por código de gasto ───────────────────────────────── */}
               <div className="flex items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-marca rounded-full" />
-                  <h3 className="text-[11px] font-medium text-acento">
+                  <h3 className="text-base font-semibold text-tinta">
                     Según código de gasto
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowFormCodigo(v => !v)}
-                  className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-marca hover:bg-marca-hover text-white text-xs font-semibold rounded-[6px] transition-all cursor-pointer border-none outline-none shadow-none"
+                  className={boton.secundario}
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>{showFormCodigo ? 'Cancelar' : 'Agregar código'}</span>
@@ -2102,21 +1905,21 @@ export default function App() {
                 <div className="bg-superficie rounded-[8px] border border-acento/30 p-5 mb-4 space-y-3 caja">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[11px] font-medium text-tenue block mb-1">Código(s) *</label>
+                      <label className="text-xs text-tinta-2 block mb-1">Código(s) *</label>
                       <input type="text" value={formCodigo.codigos} placeholder="Ej: 610 o 610, 611"
                         onChange={e => setFormCodigo({ ...formCodigo, codigos: e.target.value })}
-                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-sm outline-none focus:border-acento" />
+                        className={campo} />
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium text-tenue block mb-1">Concepto *</label>
+                      <label className="text-xs text-tinta-2 block mb-1">Concepto *</label>
                       <input type="text" value={formCodigo.concepto} placeholder="Descripción del gasto"
                         onChange={e => setFormCodigo({ ...formCodigo, concepto: e.target.value })}
-                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-sm outline-none focus:border-acento" />
+                        className={campo} />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-medium text-tenue block mb-1.5">Tipo de autorización</label>
+                    <label className="text-xs text-tinta-2 block mb-1">Tipo de autorización</label>
                     <div className="flex gap-2">
                       {(['fijo', 'zona'] as const).map(t => (
                         <button key={t} type="button" onClick={() => setFormCodigo({ ...formCodigo, tipo: t })}
@@ -2132,29 +1935,29 @@ export default function App() {
 
                   {formCodigo.tipo === 'fijo' ? (
                     <div>
-                      <label className="text-[11px] font-medium text-tenue block mb-1">Autorizante(s) *</label>
+                      <label className="text-xs text-tinta-2 block mb-1">Autorizante(s) *</label>
                       <input type="text" value={formCodigo.firmantes} placeholder="Ej: Sergio Cenci, Gustavo Fernández (separá con coma si vale cualquiera)"
                         onChange={e => setFormCodigo({ ...formCodigo, firmantes: e.target.value })}
-                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-sm outline-none focus:border-acento" />
+                        className={campo} />
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {ZONAS.map(z => (
                         <div key={z}>
-                          <label className="text-[11px] font-medium text-tenue block mb-1">{z}</label>
+                          <label className="text-xs text-tinta-2 block mb-1">{z}</label>
                           <input type="text" value={formCodigo[z]} placeholder="Nombre del jefe"
                             onChange={e => setFormCodigo({ ...formCodigo, [z]: e.target.value })}
-                            className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-sm outline-none focus:border-acento" />
+                            className={campo} />
                         </div>
                       ))}
                     </div>
                   )}
 
                   <div>
-                    <label className="text-[11px] font-medium text-tenue block mb-1">Nota aclaratoria (opcional)</label>
+                    <label className="text-xs text-tinta-2 block mb-1">Nota aclaratoria (opcional)</label>
                     <input type="text" value={formCodigo.nota} placeholder="Ej: la autorización llega por correo"
                       onChange={e => setFormCodigo({ ...formCodigo, nota: e.target.value })}
-                      className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-sm outline-none focus:border-acento" />
+                      className={campo} />
                   </div>
 
                   <button type="button" onClick={handleAddCodigo}
@@ -2181,7 +1984,7 @@ export default function App() {
                       {auth.codigos.map(c => (
                         <span
                           key={c}
-                          className="font-mono text-sm font-medium text-acento bg-ok-fondo border border-ok-linea px-2 py-0.5 rounded-[6px]"
+                          className="font-mono text-xs font-medium text-tinta bg-hundida border border-linea px-1.5 py-0.5 rounded-[4px]"
                         >
                           {c}
                         </span>
@@ -2242,15 +2045,14 @@ export default function App() {
               {/* ── Por sector / agente solicitante ───────────────────── */}
               <div className="flex items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-marca rounded-full" />
-                  <h3 className="text-[11px] font-medium text-acento">
+                  <h3 className="text-base font-semibold text-tinta">
                     Según el agente solicitante del PIMyS
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowFormSector(v => !v)}
-                  className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-marca hover:bg-marca-hover text-white text-xs font-semibold rounded-[6px] transition-all cursor-pointer border-none outline-none shadow-none"
+                  className={boton.secundario}
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>{showFormSector ? 'Cancelar' : 'Agregar sector'}</span>
@@ -2261,22 +2063,22 @@ export default function App() {
                 <div className="bg-superficie rounded-[8px] border border-acento/30 p-5 mb-4 space-y-3 caja">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="text-[11px] font-medium text-tenue block mb-1">Sector *</label>
+                      <label className="text-xs text-tinta-2 block mb-1">Sector *</label>
                       <input type="text" value={formSector.sector} placeholder="Ej: Laboratorio"
                         onChange={e => setFormSector({ ...formSector, sector: e.target.value })}
-                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-sm outline-none focus:border-acento" />
+                        className={campo} />
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium text-tenue block mb-1">Agente(s) solicitante(s) *</label>
+                      <label className="text-xs text-tinta-2 block mb-1">Agente(s) solicitante(s) *</label>
                       <input type="text" value={formSector.agentes} placeholder="Ej: Juan Pérez, Ana Gómez"
                         onChange={e => setFormSector({ ...formSector, agentes: e.target.value })}
-                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-sm outline-none focus:border-acento" />
+                        className={campo} />
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium text-tenue block mb-1">Jefe(s) autorizante(s) *</label>
+                      <label className="text-xs text-tinta-2 block mb-1">Jefe(s) autorizante(s) *</label>
                       <input type="text" value={formSector.jefes} placeholder="Ej: Carlos Ruiz"
                         onChange={e => setFormSector({ ...formSector, jefes: e.target.value })}
-                        className="w-full px-3 py-2 border border-linea-fuerte rounded-[8px] bg-campo text-sm outline-none focus:border-acento" />
+                        className={campo} />
                     </div>
                   </div>
                   <p className="text-[11px] text-tenue">Si hay más de un nombre, separalos con coma: alcanza con la firma de cualquiera de ellos.</p>
@@ -2335,18 +2137,14 @@ export default function App() {
 
           {activeTab === 'Revisiva' && (
             <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={false}
               className="max-w-7xl mx-auto space-y-6"
               id="revisiva-tab-container"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-superficie rounded-[8px] border border-linea flex items-center justify-center text-acento caja">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
                 <div>
-                  <h2 className="text-xl font-medium tracking-tight text-slate-900">Planilla Revisiva</h2>
-                  <p className="text-xs text-tenue mt-0.5">Asistente de autocompletado y emisión del informe revisivo oficial de la EPE.</p>
+                  <h2 className="text-xl font-semibold tracking-[-0.01em] text-tinta">Planilla revisiva</h2>
+                  <p className="text-xs text-tenue mt-0.5">Completá los datos y descargá el informe de revisión de cuentas.</p>
                 </div>
               </div>
 

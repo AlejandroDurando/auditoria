@@ -1,6 +1,6 @@
 {
-  "name": "Auditor FF EPE",
-  "description": "Sistema de auditoría digital para Fondos Fijos de la EPE Santa Fe. Validación automática de expedientes TIMBÓ mediante IA.",
+  "name": "Auditor de expedientes",
+  "description": "Auditoría de expedientes de fondo fijo: lectura de los expedientes auditados y validación con IA.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

@@ -27,6 +27,9 @@ export interface ArchivoPdf {
   tamano: number;
   /** 'caratula' | 'pago' | 'libro_diario' | 'balance' | 'otro', del indice del lector. */
   tipo?: string;
+  /** Pagos: primera hoja de cada documento ({pimys: 1, factura: 3, arca: 4, ...}),
+   *  para abrir el PDF en la hoja que usa cada validacion. */
+  hojas?: Record<string, number>;
 }
 
 export interface ExpedienteLector {
@@ -423,7 +426,9 @@ function carpetaDe(e: ExpedienteLector, carpetas: string[]): string | undefined 
 
 /** Orden de los documentos de cada carpeta segun el lector (catalogo/documentos.json):
  *  carátula, pagos en el orden de la carpeta, Libro Diario y Balance. */
-async function leerIndice(): Promise<Record<string, Array<{ nombre: string; tipo: string }>>> {
+type DocIndice = { nombre: string; tipo: string; hojas?: Record<string, number> };
+
+async function leerIndice(): Promise<Record<string, DocIndice[]>> {
   const cfg = r2();
   if (!cfg) return {};
   const r = await cfg.cliente.fetch(`${cfg.base}/${rutaR2('catalogo/documentos.json')}`);
@@ -432,17 +437,17 @@ async function leerIndice(): Promise<Record<string, Array<{ nombre: string; tipo
 
 /** Los PDF de la carpeta en el orden del indice, con su tipo. Los que el
  *  indice no nombra (expediente auditado antes del indice) van al final. */
-function ordenar(archivos: ArchivoPdf[], indice?: Array<{ nombre: string; tipo: string }>): ArchivoPdf[] {
+function ordenar(archivos: ArchivoPdf[], indice?: DocIndice[]): ArchivoPdf[] {
   if (!indice?.length) return archivos;
   const pos = new Map(indice.map((d, i) => [d.nombre, i] as const));
-  const tipo = new Map(indice.map(d => [d.nombre, d.tipo] as const));
+  const doc = new Map(indice.map(d => [d.nombre, d] as const));
   return [...archivos]
-    .map(a => ({ ...a, tipo: tipo.get(a.nombre) }))
+    .map(a => ({ ...a, tipo: doc.get(a.nombre)?.tipo, hojas: doc.get(a.nombre)?.hojas }))
     .sort((a, b) => (pos.get(a.nombre) ?? 1e9) - (pos.get(b.nombre) ?? 1e9));
 }
 
 function asociarPdfs(expedientes: ExpedienteLector[], pdfs: Map<string, ArchivoPdf[]>,
-                     indice: Record<string, Array<{ nombre: string; tipo: string }>> = {}) {
+                     indice: Record<string, DocIndice[]> = {}) {
   const carpetas = [...pdfs.keys()];
   for (const e of expedientes as Array<ExpedienteLector & { archivoDePago?: Array<string | undefined> }>) {
     const carpeta = carpetaDe(e, carpetas);

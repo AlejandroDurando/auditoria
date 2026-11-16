@@ -39,7 +39,7 @@ export interface ResultadosExpedienteProps {
   setExpandedPayment: (idx: number | null) => void;
   etiqueta?: string;
   onNuevaAuditoria?: () => void;
-  onViewPdf?: (fileIdx: number, pageNum?: number) => void;
+  onViewPdf?: (fileIdx: number, pageNum?: number, validacion?: string) => void;
   onIrRevisiva?: () => void;
   /** Descarga la planilla revisiva ya completa con los datos de la auditoria. */
   onDescargarRevisiva?: () => void;
@@ -784,7 +784,7 @@ interface PaymentRowProps {
   isExpanded: boolean;
   onToggle: () => void;
   mode: 'Expedientes' | 'Viáticos' | 'Rapida';
-  onViewPdf?: (fileIdx: number, pageNum?: number) => void;
+  onViewPdf?: (fileIdx: number, pageNum?: number, validacion?: string) => void;
   key?: React.Key | number | string;
 }
 
@@ -988,7 +988,7 @@ function PaymentRow({ payment, isExpanded, onToggle, mode, onViewPdf }: PaymentR
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onViewPdf?.(payment.sourceFileIdx || 0, payment.pageNumber);
+                            onViewPdf?.(payment.sourceFileIdx || 0, payment.pageNumber, v.id);
                           }}
                           className="self-start @2xl:self-auto p-1.5 text-slate-500 hover:text-acento hover:bg-marca-suave rounded-lg border-[0.5px] border-linea transition-all cursor-pointer outline-none flex items-center justify-center shrink-0"
                           title="ver pdf"

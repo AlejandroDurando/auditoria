@@ -28,8 +28,9 @@ function aBase64(buffer: ArrayBuffer): string {
 
 // Visor del PDF guardado en R2: la API devuelve una URL firmada que vence en
 // minutos y el PDF se descarga directo del bucket.
-function VisorPdf({ archivo, clave, onCerrar, ancho, onAncho }: {
+function VisorPdf({ archivo, clave, onCerrar, ancho, onAncho, pagina }: {
   archivo: ArchivoPdf; clave: string; onCerrar: () => void; ancho: number; onAncho: (px: number) => void;
+  pagina?: { n: number; vez: number };
 }) {
   const [base64, setBase64] = useState<string | null>(null);
   const [url, setUrl] = useState<string | null>(null);
@@ -101,7 +102,7 @@ function VisorPdf({ archivo, clave, onCerrar, ancho, onAncho }: {
           {error ? (
             <div className="p-6 text-sm text-error">{error}</div>
           ) : base64 ? (
-            <PdfScrollViewer base64={base64} fileName={archivo.nombre} />
+            <PdfScrollViewer base64={base64} fileName={archivo.nombre} pagina={pagina} />
           ) : (
             <div className="p-6 text-sm text-tenue flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin" /> Abriendo el PDF…
@@ -126,6 +127,23 @@ function EstadoChip({ estado }: { estado: string }) {
       {e === 'OK' ? 'OK' : e === 'ERROR' ? 'Con errores' : 'A revisar'}
     </span>
   );
+}
+
+// Documento que usa cada validacion, en orden de preferencia: el ojo abre el
+// PDF del pago en esa hoja (indice del lector). Sin la hoja, la 1.
+const DOCUMENTO_DE: Record<string, string[]> = {
+  V1: ['factura', 'pimys'], V2: ['pimys'], V3: ['pimys'], V4: ['pimys'], V11: ['pimys'],
+  V6: ['factura', 'sap'], V7: ['factura', 'sap'], V13: ['factura', 'pimys'],
+  V8: ['transferencia', 'recibo', 'arca', 'factura'], V9: ['arca'],
+  V10: ['transferencia', 'recibo', 'sap', 'nota'], V12: ['orden_sap', 'vale'],
+};
+
+function hojaDe(archivo: ArchivoPdf | undefined, validacion?: string): number {
+  const hojas = archivo?.hojas || {};
+  for (const tipo of DOCUMENTO_DE[(validacion || '').toUpperCase()] || []) {
+    if (hojas[tipo]) return hojas[tipo];
+  }
+  return 1;
 }
 
 const ROTULO_TIPO: Record<string, string> = {
@@ -188,7 +206,12 @@ export function ExpedientesLector() {
   const ruta = useRuta();
   const seleccionado = ruta.seccion === 'lector' ? ruta.detalle : null;
   const [expandedPayment, setExpandedPayment] = useState<number | null>(null);
-  const [pdfAbierto, setPdfAbierto] = useState<ArchivoPdf | null>(null);
+  const [pdfAbierto, setPdfAbiertoCrudo] = useState<ArchivoPdf | null>(null);
+  const [paginaPdf, setPaginaPdf] = useState<{ n: number; vez: number } | undefined>(undefined);
+  const setPdfAbierto = (a: ArchivoPdf | null, n = 1) => {
+    setPdfAbiertoCrudo(a);
+    setPaginaPdf(a ? { n, vez: Date.now() } : undefined);
+  };
   // Con el PDF abierto, la auditoria se angosta hasta el borde del panel
   // (48% derecho de la pantalla) para seguir viendose y scrolleando.
   const columnaRef = useRef<HTMLDivElement>(null);
@@ -284,7 +307,8 @@ export function ExpedientesLector() {
           expandedPayment={expandedPayment}
           setExpandedPayment={setExpandedPayment}
           etiqueta={`Lector de expedientes${actual.auditado ? ` · ${actual.auditado}` : ''}`}
-          onViewPdf={actual.archivos.length ? (idx) => setPdfAbierto(actual.archivos[idx] || null) : undefined}
+          onViewPdf={actual.archivos.length ? (idx, _pag, validacion) =>
+            setPdfAbierto(actual.archivos[idx] || null, hojaDe(actual.archivos[idx], validacion)) : undefined}
         />
         <div className="flex justify-end pt-2">
           <button
@@ -297,7 +321,7 @@ export function ExpedientesLector() {
             Descargar planilla revisiva
           </button>
         </div>
-        {pdfAbierto && <VisorPdf archivo={pdfAbierto} clave={clave} onCerrar={() => setPdfAbierto(null)} ancho={anchoPdf} onAncho={setAnchoPdf} />}
+        {pdfAbierto && <VisorPdf archivo={pdfAbierto} clave={clave} onCerrar={() => setPdfAbierto(null)} ancho={anchoPdf} onAncho={setAnchoPdf} pagina={paginaPdf} />}
       </div>
     );
   }

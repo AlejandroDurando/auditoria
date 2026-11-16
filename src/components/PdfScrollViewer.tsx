@@ -10,9 +10,14 @@ declare global {
 interface Props {
   base64: string;
   fileName: string;
+  /** Hoja en la que se abre (1, 2, ...). 'vez' cambia en cada pedido, para
+   *  volver a ella aunque sea la misma hoja del mismo PDF. */
+  pagina?: { n: number; vez: number };
 }
 
-function PageCanvas({ pdf, pageNum, scale }: { key?: number; pdf: any; pageNum: number; scale: number }) {
+function PageCanvas({ pdf, pageNum, scale, onRendered }: {
+  key?: number; pdf: any; pageNum: number; scale: number; onRendered?: (n: number) => void;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const renderTaskRef = useRef<any>(null);
 
@@ -40,7 +45,7 @@ function PageCanvas({ pdf, pageNum, scale }: { key?: number; pdf: any; pageNum: 
       const task = page.render({ canvasContext: ctx, viewport });
       renderTaskRef.current = task;
       task.promise.then(
-        () => { renderTaskRef.current = null; },
+        () => { renderTaskRef.current = null; onRendered?.(pageNum); },
         (err: any) => { if (err.name !== 'RenderingCancelledException') console.error(err); }
       );
     });
@@ -55,14 +60,33 @@ function PageCanvas({ pdf, pageNum, scale }: { key?: number; pdf: any; pageNum: 
   }, [pdf, pageNum, scale]);
 
   return (
-    <div className="bg-superficie rounded-lg shadow-md border border-slate-200 overflow-hidden shrink-0">
+    <div data-pagina={pageNum} className="bg-superficie rounded-lg shadow-md border border-slate-200 overflow-hidden shrink-0">
       <canvas ref={canvasRef} className="block" />
     </div>
   );
 }
 
-export function PdfScrollViewer({ base64, fileName }: Props) {
+export function PdfScrollViewer({ base64, fileName, pagina }: Props) {
   const [pdf, setPdf] = useState<any>(null);
+  // Ir a la hoja pedida. Las hojas se dibujan de a una y cambian de alto al
+  // dibujarse: se vuelve a ubicar cada vez que termina una anterior o la
+  // misma, hasta que el usuario scrollea por su cuenta.
+  const contenedorRef = useRef<HTMLDivElement>(null);
+  const objetivoRef = useRef<number | null>(null);
+  const irAHoja = (n: number) => {
+    const el = contenedorRef.current?.querySelector<HTMLElement>(`[data-pagina="${n}"]`);
+    const cont = contenedorRef.current;
+    if (el && cont) cont.scrollTop = el.offsetTop - 16;   // el contenedor es relative
+  };
+  useEffect(() => {
+    objetivoRef.current = pagina && pagina.n > 1 ? pagina.n : null;
+    if (pagina) irAHoja(pagina.n);
+  }, [pagina?.vez]);
+  const alDibujar = (n: number) => {
+    const objetivo = objetivoRef.current;
+    if (objetivo && n <= objetivo) irAHoja(objetivo);
+  };
+  const soltar = () => { objetivoRef.current = null; };
   const [totalPages, setTotalPages] = useState(0);
   const [scale, setScale] = useState(1.2);
   const [libLoaded, setLibLoaded] = useState(false);
@@ -139,7 +163,8 @@ export function PdfScrollViewer({ base64, fileName }: Props) {
       </div>
 
       {/* Scrollable pages */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center gap-4">
+      <div ref={contenedorRef} onWheel={soltar} onTouchMove={soltar} onMouseDown={soltar}
+        className="relative flex-1 overflow-y-auto p-4 flex flex-col items-center gap-4">
         {loading && (
           <div className="flex flex-col items-center justify-center gap-3 mt-20">
             <Loader2 className="w-8 h-8 text-acento animate-spin" />
@@ -153,7 +178,7 @@ export function PdfScrollViewer({ base64, fileName }: Props) {
           </div>
         )}
         {pdf && Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-          <PageCanvas key={pageNum} pdf={pdf} pageNum={pageNum} scale={scale} />
+          <PageCanvas key={pageNum} pdf={pdf} pageNum={pageNum} scale={scale} onRendered={alDibujar} />
         ))}
       </div>
     </div>

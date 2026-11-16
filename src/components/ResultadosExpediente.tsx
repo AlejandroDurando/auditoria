@@ -5,8 +5,7 @@ import { cn, formatCurrency } from '../lib/utils';
 import type { AuditResult, PaymentData } from '../lib/gemini';
 import { formatHistoryTitle, hasAccountingCode, renderBold, safeText, toSentenceCase } from '../lib/formato';
 import {
-  estadoGeneral, hallazgosDe, peorEstado, validacionesDeExpediente, validacionesDePago,
-  type Hallazgo, type ValidacionVista,
+  estadoGeneral, peorEstado, validacionesDeExpediente, validacionesDePago, type ValidacionVista,
 } from '../lib/hallazgos';
 import {
   BotonCopiar, Clave, EstadoBadge, Etiqueta, Panel, Punto, TiraValidaciones, TituloSeccion, boton,
@@ -15,8 +14,8 @@ import {
 
 // Pantalla de un expediente auditado. La usan la auditoria con IA (resultado
 // de Gemini) y "Expedientes auditados" (resultado leido del Google Sheet).
-// Orden: identidad y estado, resumen, hallazgos (lo que no dio OK), pagos y
-// controles del expediente. Las acciones propias de la auditoria con IA
+// Orden: identidad y estado, resumen, avisos, pagos y controles del
+// expediente. Las acciones propias de la auditoria con IA
 // (nueva auditoria, planillas, informe) son opcionales.
 export interface ResultadosExpedienteProps {
   result: AuditResult | null;
@@ -144,7 +143,6 @@ export function ResultadosExpediente({
 
   const payments = result?.payments || [];
   const modo = result?.mode || 'Expedientes';
-  const hallazgos = useMemo(() => hallazgosDe(result, estadoExpediente), [result, estadoExpediente]);
   const delExpediente = useMemo(() => validacionesDeExpediente(result, estadoExpediente), [result, estadoExpediente]);
   const estado = estadoGeneral(result, estadoExpediente);
 
@@ -174,11 +172,6 @@ export function ResultadosExpediente({
     || (result?.fondoFijoNumero
       ? (/^ff\b/i.test(result.fondoFijoNumero) ? result.fondoFijoNumero : `Fondo fijo ${result.fondoFijoNumero}`)
       : modo === 'Viáticos' ? 'Control de viáticos' : 'Resultado de la auditoría');
-
-  const irAlPago = (idx: number) => {
-    setExpandedPayment(idx);
-    requestAnimationFrame(() => document.getElementById(`pago-${idx}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
-  };
 
   const codigoPatrimonio = (payment: PaymentData) => {
     const v3 = payment?.validations?.find(val => val?.id === 'v3');
@@ -382,18 +375,6 @@ export function ResultadosExpediente({
         </div>
       )}
 
-      {/* Hallazgos: lo que no dio OK, de pagos y de expediente */}
-      {hallazgos.length > 0 && (
-        <>
-          <TituloSeccion cantidad={hallazgos.length}>Hallazgos</TituloSeccion>
-          <Panel>
-            {hallazgos.map((h, i) => (
-              <HallazgoFila key={i} h={h} onIrAlPago={irAlPago} onViewPdf={onViewPdf} />
-            ))}
-          </Panel>
-        </>
-      )}
-
       {/* Pagos */}
       <TituloSeccion cantidad={payments.length}>{modo === 'Viáticos' ? 'Viáticos' : 'Pagos'}</TituloSeccion>
       {payments.length === 0 ? (
@@ -555,33 +536,6 @@ function Dato({ rotulo, valor, fuerte }: { rotulo: string; valor: string; fuerte
       <span className="text-tinta-2">{rotulo}</span>
       <span className={cn('cifras text-tinta', fuerte && 'font-medium')}>{valor}</span>
     </div>
-  );
-}
-
-function HallazgoFila({ h, onIrAlPago, onViewPdf }: {
-  h: Hallazgo;
-  onIrAlPago: (idx: number) => void;
-  onViewPdf?: (fileIdx: number, pageNum?: number, validacion?: string) => void;
-  key?: React.Key;
-}) {
-  const p = h.pago;
-  return (
-    <ValidacionFila
-      v={h}
-      pie={p && h.pagoIdx !== undefined ? (
-        <button
-          type="button"
-          onClick={() => onIrAlPago(h.pagoIdx!)}
-          title="Ir al pago"
-          className="block text-left text-xs text-tenue hover:text-acento bg-transparent border-none p-0 cursor-pointer"
-        >
-          {toSentenceCase(p.providerName || '') || 'Proveedor no identificado'}{p.orderNumber ? ` · ${p.orderNumber}` : ''}
-        </button>
-      ) : !p ? <span className="block text-xs text-tenue">Expediente</span> : null}
-      accion={p?.pageNumber && onViewPdf ? (
-        <BotonVer rotulo={`Ver el PDF del pago (${h.id})`} onClick={() => onViewPdf(p.sourceFileIdx || 0, p.pageNumber, h.id.toLowerCase())} />
-      ) : undefined}
-    />
   );
 }
 

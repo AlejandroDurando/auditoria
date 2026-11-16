@@ -189,16 +189,16 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
       onMouseMove={() => setMarcado(indice)}
       onClick={() => elegir(r)}
       className={cn(
-        "w-full flex items-start gap-3 px-3 py-2.5 rounded-[8px] text-left bg-transparent border-none cursor-pointer outline-none",
-        indice === marcado && "bg-marca-suave"
+        "w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[6px] text-left bg-transparent border-none cursor-pointer outline-none",
+        indice === marcado && "bg-realce"
       )}
     >
       <span className="mt-0.5"><Icono estado={r.estado} tipo={r.tipo} /></span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[13px] font-medium text-tinta truncate">{r.titulo}</span>
-        <span className="block text-[11.5px] text-tenue truncate">{r.detalle}</span>
+        <span className="block text-sm font-medium text-tinta truncate">{r.titulo}</span>
+        <span className="block text-xs text-tenue truncate">{r.detalle}</span>
         {r.pago && (
-          <span className="block text-[11.5px] text-acento truncate mt-0.5">
+          <span className="block text-xs text-acento truncate mt-0.5">
             Pago: {r.pago.providerName}{r.pago.orderNumber ? ` · PIMyS ${r.pago.orderNumber}` : ''}
           </span>
         )}
@@ -207,10 +207,10 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
   );
 
   const encabezado = (icono: React.ReactNode, titulo: string, total: number, mostrados: number) => (
-    <div className="flex items-center gap-1.5 px-3 pt-3 pb-1.5 text-[10.5px] font-medium uppercase tracking-[0.06em] text-tenue">
+    <div className="flex items-center gap-1.5 px-2.5 pt-2.5 pb-1 text-[11px] font-medium text-tenue">
       {icono}
       <span>{titulo}</span>
-      <span className="ml-auto normal-case tracking-normal">
+      <span className="ml-auto cifras">
         {total > mostrados ? `${mostrados} de ${total}` : total}
       </span>
     </div>
@@ -219,8 +219,8 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
   const mostrar = abierto && tokens.length > 0;
 
   return (
-    <div ref={caja} className="relative w-full sm:w-[min(440px,42vw)]">
-      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-tenue pointer-events-none" />
+    <div ref={caja} className="relative w-full sm:w-[min(360px,42vw)]">
+      <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-tenue pointer-events-none" aria-hidden="true" />
       <input
         ref={entrada}
         type="search"
@@ -228,9 +228,9 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
         onChange={e => { setConsulta(e.target.value); setAbierto(true); }}
         onFocus={() => { setAbierto(true); if (clave) { cargarExpedientes(); cargarGuia(); } }}
         onKeyDown={alTeclear}
-        placeholder="Buscar expediente, FF, proveedor, PIMyS o persona"
+        placeholder="Buscar expediente, proveedor o persona"
         aria-label="Buscar en todos los expedientes"
-        className="w-full h-9 bg-hundida border border-linea-fuerte rounded-[9px] pl-9 pr-16 text-[13px] text-tinta placeholder:text-tenue outline-none transition-all focus:bg-campo focus:border-acento focus:ring-[3px] focus:ring-acento/15 [&::-webkit-search-cancel-button]:hidden"
+        className="w-full h-7 bg-campo border border-linea-fuerte rounded-[6px] pl-8 pr-14 text-sm text-tinta placeholder:text-tenue outline-none transition-colors focus:border-acento [&::-webkit-search-cancel-button]:hidden"
       />
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
         {consulta ? (
@@ -239,23 +239,23 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
             <X className="w-3.5 h-3.5" />
           </button>
         ) : (
-          <kbd className="hidden sm:inline-flex items-center px-1.5 h-5 rounded-[5px] border border-linea-fuerte bg-superficie text-[10.5px] text-tenue">
+          <kbd className="hidden sm:inline-flex items-center px-1 h-[18px] rounded-[4px] border border-linea-fuerte font-mono text-[11px] text-tenue">
             {esMac ? '⌘K' : 'Ctrl K'}
           </kbd>
         )}
       </div>
 
       {mostrar && (
-        <div ref={lista} className="absolute z-50 right-0 top-full mt-2 w-full sm:w-[min(520px,90vw)] max-h-[min(70vh,560px)] overflow-y-auto bg-superficie border border-linea rounded-[12px] caja-alta p-1.5">
+        <div ref={lista} className="absolute z-50 right-0 top-full mt-1.5 w-full sm:w-[min(520px,90vw)] max-h-[min(70vh,560px)] overflow-y-auto bg-superficie border border-linea rounded-[8px] caja-alta p-1.5">
           {grupos.lector.length > 0 && (
             <>
-              {encabezado(<Table2 className="w-3.5 h-3.5" />, 'Expedientes del lector', grupos.totalLector, grupos.lector.length)}
+              {encabezado(<Table2 className="w-3.5 h-3.5" />, 'Expedientes auditados', grupos.totalLector, grupos.lector.length)}
               {grupos.lector.map((r, i) => fila(r, i))}
             </>
           )}
           {grupos.historial.length > 0 && (
             <>
-              {encabezado(<Clock className="w-3.5 h-3.5" />, 'Historial del dashboard', grupos.totalHistorial, grupos.historial.length)}
+              {encabezado(<Clock className="w-3.5 h-3.5" />, 'Historial', grupos.totalHistorial, grupos.historial.length)}
               {grupos.historial.map((r, i) => fila(r, grupos.lector.length + i))}
             </>
           )}
@@ -266,16 +266,16 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
             </>
           )}
           {!todos.length && !cargando && (
-            <p className="px-3 py-6 text-center text-[13px] text-tenue">No hay resultados para "{consulta}".</p>
+            <p className="px-3 py-6 text-center text-sm text-tenue">No hay resultados para "{consulta}".</p>
           )}
           {cargando && (
-            <p className="px-3 py-2 text-[12px] text-tenue flex items-center gap-2">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Leyendo los expedientes del lector…
+            <p className="px-3 py-2 text-xs text-tenue flex items-center gap-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Leyendo los expedientes auditados…
             </p>
           )}
           {!clave && (
-            <p className="px-3 py-2 text-[11.5px] text-tenue border-t border-linea mt-1">
-              Para buscar también en los expedientes del lector y en la guía telefónica, ingresá la clave en "Expedientes del lector".
+            <p className="px-3 py-2 text-xs text-tenue border-t border-linea mt-1">
+              Para buscar también en los expedientes auditados y en la guía telefónica, ingresá la clave en "Expedientes auditados".
             </p>
           )}
         </div>

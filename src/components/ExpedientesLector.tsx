@@ -1,6 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'motion/react';
-import { AlertCircle, ArrowLeft, CheckCircle2, ChevronRight, ExternalLink, FileText, Loader2, RefreshCw, Download, Search, Table2, X, XCircle } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, ExternalLink, ListFilter, Loader2, RefreshCw, X } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 import type { ArchivoPdf, ExpedienteLector } from '../../api/expedientes';
 import { ResultadosExpediente } from './ResultadosExpediente';
@@ -9,6 +8,11 @@ import { datosRevisivaLector, descargarRevisiva } from '../lib/revisiva';
 import { ClaveAcceso } from './ClaveAcceso';
 import { cargarExpedientes, fijarClave, useExpedientesLector } from '../lib/expedientesLector';
 import { irA, useRuta, volverA } from '../lib/navegacion';
+import { clavesDeHallazgos, hallazgosDe } from '../lib/hallazgos';
+import {
+  BandaError, Clave, Contador, Encabezado, EstadoBadge, FilasEsqueleto, Panel, Pestanas, Punto, Vacio,
+  boton, estadoDe, ROTULO_ESTADO, type Estado,
+} from './ui';
 
 // Expedientes auditados por el lector de expedientes, leidos del Google Sheet
 // a traves de /api/expedientes, con la clave de acceso (ClaveAcceso).
@@ -61,7 +65,7 @@ function VisorPdf({ archivo, clave, onCerrar, ancho, onAncho, pagina }: {
   return (
     // Panel fijo a la derecha, sin fondo que bloquee: la auditoria sigue
     // visible y con scroll a la izquierda.
-    <div className="fixed top-0 right-0 bottom-0 z-50 w-full lg:w-[var(--ancho-pdf)] border-l-[0.5px] border-linea"
+    <div className="fixed top-0 right-0 bottom-0 z-50 w-full lg:w-[var(--ancho-pdf)] border-l border-linea"
       style={{ '--ancho-pdf': `${ancho}px` } as React.CSSProperties}>
       {/* Borde izquierdo arrastrable para cambiar el ancho del PDF. */}
       <div
@@ -82,19 +86,18 @@ function VisorPdf({ archivo, clave, onCerrar, ancho, onAncho, pagina }: {
         className="hidden lg:block absolute left-0 top-0 h-full w-[6px] -ml-[3px] cursor-col-resize z-10 hover:bg-marca/40 transition-colors"
         title="Arrastrar para cambiar el ancho"
       />
-      <div className="h-full w-full bg-superficie shadow-xl flex flex-col">
-        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b-[0.5px] border-linea">
-          <span className="text-sm font-medium text-slate-800 truncate">{archivo.nombre}</span>
-          <div className="flex items-center gap-1 shrink-0">
+      <div className="h-full w-full bg-superficie flotante flex flex-col">
+        <div className="flex items-center justify-between gap-3 h-11 pl-3.5 pr-2 border-b border-linea shrink-0">
+          <span className="text-sm font-medium text-tinta truncate">{archivo.nombre.replace(/\.pdf$/i, '')}</span>
+          <div className="flex items-center gap-0.5 shrink-0">
             {url && (
-              <a href={url} target="_blank" rel="noopener noreferrer" title="Abrir en una pestaña nueva"
-                className="p-1.5 text-slate-500 hover:text-acento hover:bg-marca-suave rounded-[6px]">
-                <ExternalLink className="w-4 h-4" />
+              <a href={url} target="_blank" rel="noopener noreferrer" title="Abrir en una pestaña nueva" aria-label="Abrir en una pestaña nueva"
+                className={boton.icono}>
+                <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
               </a>
             )}
-            <button type="button" onClick={onCerrar} title="Cerrar"
-              className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-realce rounded-[6px] bg-transparent border-none cursor-pointer outline-none">
-              <X className="w-4 h-4" />
+            <button type="button" onClick={onCerrar} title="Cerrar" aria-label="Cerrar el PDF" className={boton.icono}>
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -111,21 +114,6 @@ function VisorPdf({ archivo, clave, onCerrar, ancho, onAncho, pagina }: {
         </div>
       </div>
     </div>
-  );
-}
-
-function EstadoChip({ estado }: { estado: string }) {
-  const e = estado.toUpperCase();
-  return (
-    <span className={cn(
-      "px-[10px] py-[3px] rounded-[20px] text-[11px] font-medium leading-none inline-flex items-center gap-1",
-      e === 'OK' ? "bg-ok-fondo text-ok-tinta" :
-      e === 'ERROR' ? "bg-error-fondo text-error" :
-      "bg-amber-50 text-amber-800"
-    )}>
-      {e === 'OK' ? <CheckCircle2 className="w-3 h-3" /> : e === 'ERROR' ? <XCircle className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-      {e === 'OK' ? 'OK' : e === 'ERROR' ? 'Con errores' : 'A revisar'}
-    </span>
   );
 }
 
@@ -151,27 +139,36 @@ const ROTULO_TIPO: Record<string, string> = {
   reporte: 'Reporte de proveedores', otro: 'Otro',
 };
 
-/** Desplegable con los documentos del expediente, en el orden de la carpeta:
+/** Menu con los documentos del expediente, en el orden de la carpeta:
  *  carátula, pagos, Libro Diario y Balance (indice del lector). */
 function DocumentosExpediente({ archivos, abierto, onAbrir }: {
   archivos: ArchivoPdf[]; abierto: ArchivoPdf | null; onAbrir: (a: ArchivoPdf) => void;
 }) {
   const [desplegado, setDesplegado] = useState(false);
+  const caja = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!desplegado) return;
+    const afuera = (e: MouseEvent) => { if (!caja.current?.contains(e.target as Node)) setDesplegado(false); };
+    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') setDesplegado(false); };
+    document.addEventListener('mousedown', afuera);
+    document.addEventListener('keydown', tecla);
+    return () => { document.removeEventListener('mousedown', afuera); document.removeEventListener('keydown', tecla); };
+  }, [desplegado]);
   let pago = 0;
   return (
-    <div className="mb-6 bg-superficie border-[0.5px] border-linea rounded-[8px] caja">
+    <div ref={caja} className="relative">
       <button
         type="button"
         onClick={() => setDesplegado(d => !d)}
-        className="w-full flex items-center gap-2 px-4 py-2.5 text-left cursor-pointer bg-transparent border-none outline-none"
+        aria-haspopup="menu"
         aria-expanded={desplegado}
+        className={boton.secundario}
       >
-        <FileText className="w-4 h-4 text-tenue shrink-0" />
-        <span className="text-[13px] font-medium text-slate-800 flex-1">Documentos del expediente ({archivos.length})</span>
-        <ChevronRight className={cn("w-4 h-4 text-tenue transition-transform", desplegado && "rotate-90")} />
+        Documentos <span className="font-normal text-tenue cifras">{archivos.length}</span>
+        <ChevronDown className="w-3.5 h-3.5 text-tenue" aria-hidden="true" />
       </button>
       {desplegado && (
-        <ol className="border-t-[0.5px] border-linea py-1 m-0 list-none">
+        <ol role="menu" className="absolute z-30 right-0 top-full mt-1.5 w-[min(420px,86vw)] max-h-[60vh] overflow-y-auto m-0 p-1 list-none bg-superficie border border-linea rounded-[8px] flotante">
           {archivos.map(a => {
             const tipo = a.tipo || 'otro';
             const rotulo = tipo === 'pago' ? `Pago ${++pago}` : ROTULO_TIPO[tipo] || 'Documento';
@@ -179,14 +176,15 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
               <li key={a.clave}>
                 <button
                   type="button"
-                  onClick={() => onAbrir(a)}
+                  role="menuitem"
+                  onClick={() => { onAbrir(a); setDesplegado(false); }}
                   className={cn(
-                    "w-full flex items-center gap-3 px-4 py-1.5 text-left text-xs cursor-pointer bg-transparent border-none outline-none hover:bg-marca-suave transition-colors",
-                    abierto?.clave === a.clave ? "text-acento font-medium" : "text-slate-700"
+                    "w-full flex items-baseline gap-3 px-2.5 py-1.5 rounded-[6px] text-left text-sm cursor-pointer bg-transparent border-none hover:bg-realce transition-colors",
+                    abierto?.clave === a.clave ? "text-acento font-medium" : "text-tinta"
                   )}
                   title={a.nombre}
                 >
-                  <span className="w-[120px] shrink-0 text-[10px] uppercase tracking-[0.06em] text-tenue">{a.tipo ? rotulo : ''}</span>
+                  <span className="w-[112px] shrink-0 text-xs font-normal text-tenue">{a.tipo ? rotulo : ''}</span>
                   <span className="truncate">{a.nombre.replace(/\.pdf$/i, '')}</span>
                 </button>
               </li>
@@ -197,6 +195,11 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
     </div>
   );
 }
+
+// Columnas de la tabla: estado, rendicion, expediente, fecha, pagos,
+// hallazgos e importe.
+const COLUMNAS = '104px 92px 148px 92px 52px minmax(140px, 1fr) 132px';
+type Filtro = 'todos' | Estado;
 
 export function ExpedientesLector() {
   const { clave, expedientes, cargando, error } = useExpedientesLector();
@@ -245,7 +248,10 @@ export function ExpedientesLector() {
     return () => window.removeEventListener('resize', medir);
   }, [pdfAbierto, anchoPdf]);
   const [region, setRegion] = useState<Region>('Rafaela');
-  const [abiertas, setAbiertas] = useState<Set<string>>(new Set());
+  const [filtro, setFiltro] = useState<Filtro>('todos');
+  // Carpetas que el usuario abrio o cerro a mano. Las demas arrancan abiertas
+  // si tienen algo que no dio OK.
+  const [alternadas, setAlternadas] = useState<Record<string, boolean>>({});
 
   useEffect(() => { if (clave) cargarExpedientes(); }, [clave]);
 
@@ -257,23 +263,40 @@ export function ExpedientesLector() {
       .some(x => (x || '').toLowerCase().includes(q)));
   }, [expedientes, busqueda]);
 
-  // La region elegida, agrupada por agencia (pestaña del Sheet) y, dentro de
-  // cada una, de la rendicion mas nueva a la mas vieja.
+  const deRegion = useMemo(() => filtrados.filter(x => x.region === region), [filtrados, region]);
+  const cuentaRegion = useMemo(() => ({
+    todos: deRegion.length,
+    error: deRegion.filter(e => estadoDe(e.estado) === 'error').length,
+    revisar: deRegion.filter(e => estadoDe(e.estado) === 'revisar').length,
+    ok: deRegion.filter(e => estadoDe(e.estado) === 'ok').length,
+  }), [deRegion]);
+
+  // La region elegida, agrupada por carpeta (pestaña del Sheet) y, dentro de
+  // cada una, de la rendicion mas nueva a la mas vieja. Los contadores de la
+  // carpeta son de toda la carpeta, no solo de lo que deja pasar el filtro.
   const grupos = useMemo(() => {
-    const salida: Array<{ titulo: string; items: ExpedienteLector[] }> = [];
-    for (const e of filtrados.filter(x => x.region === region)) {
-      const grupo = salida.find(g => g.titulo === e.hoja);
-      if (grupo) grupo.items.push(e); else salida.push({ titulo: e.hoja, items: [e] });
+    const salida: Array<{ titulo: string; items: ExpedienteLector[]; total: number; errores: number; revisar: number }> = [];
+    for (const e of deRegion) {
+      let grupo = salida.find(g => g.titulo === e.hoja);
+      if (!grupo) { grupo = { titulo: e.hoja, items: [], total: 0, errores: 0, revisar: 0 }; salida.push(grupo); }
+      const estado = estadoDe(e.estado);
+      grupo.total++;
+      if (estado === 'error') grupo.errores++;
+      if (estado === 'revisar') grupo.revisar++;
+      if (filtro === 'todos' || filtro === estado) grupo.items.push(e);
     }
     salida.forEach(g => g.items.sort((a, b) => nroRendicion(b) - nroRendicion(a)));
-    return salida;
-  }, [filtrados, region]);
+    return salida.filter(g => g.items.length > 0);
+  }, [deRegion, filtro]);
 
-  const alternar = (titulo: string) => setAbiertas(prev => {
-    const nuevo = new Set(prev);
-    if (nuevo.has(titulo)) nuevo.delete(titulo); else nuevo.add(titulo);
-    return nuevo;
-  });
+  // Claves de lo que no dio OK en cada expediente (columna Hallazgos).
+  const hallazgosPorId = useMemo(() => {
+    const mapa = new Map<string, ReturnType<typeof clavesDeHallazgos>>();
+    for (const e of deRegion) mapa.set(e.id, clavesDeHallazgos(hallazgosDe(e.result, e.estado)));
+    return mapa;
+  }, [deRegion]);
+
+  const alternar = (titulo: string, abierta: boolean) => setAlternadas(prev => ({ ...prev, [titulo]: !abierta }));
 
   const actual = (expedientes || []).find(e => e.id === seleccionado) || null;
   useEffect(() => {
@@ -285,182 +308,205 @@ export function ExpedientesLector() {
   }, [actual?.id]);
 
   if (!clave) {
-    return <ClaveAcceso titulo="Expedientes del lector" error={error} onClave={fijarClave} />;
+    return <ClaveAcceso titulo="Expedientes auditados" error={error} onClave={fijarClave} />;
   }
 
   if (actual) {
     return (
       <div ref={columnaRef} style={anchoColumna ? { width: anchoColumna.ancho, maxWidth: 'none', marginLeft: anchoColumna.corrimiento } : undefined}>
+        {/* En pantallas angostas no se ve la ruta de la barra superior. */}
         <button
           type="button"
           onClick={() => volverA('lector')}
-          className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-acento transition-colors cursor-pointer bg-transparent border-none outline-none"
+          className="md:hidden mb-4 inline-flex items-center gap-1.5 text-xs text-tinta-2 hover:text-tinta cursor-pointer bg-transparent border-none p-0"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Volver a los expedientes del lector
+          <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+          Expedientes auditados
         </button>
-        {actual.archivos.length > 0 && (
-          <DocumentosExpediente archivos={actual.archivos} abierto={pdfAbierto} onAbrir={setPdfAbierto} />
-        )}
         <ResultadosExpediente
           result={actual.result}
           expandedPayment={expandedPayment}
           setExpandedPayment={setExpandedPayment}
-          etiqueta={`Lector de expedientes${actual.auditado ? ` · ${actual.auditado}` : ''}`}
+          titulo={`FF N° ${actual.rendicion || '—'}`}
+          estadoExpediente={actual.estado}
+          etiqueta={actual.auditado ? `Auditado el ${actual.auditado}` : ''}
+          acciones={<>
+            {actual.archivos.length > 0 && (
+              <DocumentosExpediente archivos={actual.archivos} abierto={pdfAbierto} onAbrir={setPdfAbierto} />
+            )}
+            <button
+              type="button"
+              onClick={() => descargarRevisiva(datosRevisivaLector(actual),
+                `Planilla revisiva ${actual.carpeta || `FF N ${actual.rendicion} ${actual.hoja}`}.pdf`.replace(/°/g, ''))}
+              className={boton.primario}
+            >
+              <Download className="w-3.5 h-3.5" aria-hidden="true" />
+              Planilla revisiva
+            </button>
+          </>}
           onViewPdf={actual.archivos.length ? (idx, _pag, validacion) =>
             setPdfAbierto(actual.archivos[idx] || null, hojaDe(actual.archivos[idx], validacion)) : undefined}
         />
-        <div className="flex justify-end pt-2">
-          <button
-            type="button"
-            onClick={() => descargarRevisiva(datosRevisivaLector(actual),
-              `Planilla revisiva ${actual.carpeta || `FF N ${actual.rendicion} ${actual.hoja}`}.pdf`.replace(/°/g, ''))}
-            className="inline-flex items-center gap-2 py-[7px] px-[13px] bg-marca text-white text-[13px] font-medium rounded-[7px] hover:bg-marca-hover transition-all cursor-pointer outline-none"
-          >
-            <Download className="w-4 h-4" />
-            Descargar planilla revisiva
-          </button>
-        </div>
         {pdfAbierto && <VisorPdf archivo={pdfAbierto} clave={clave} onCerrar={() => setPdfAbierto(null)} ancho={anchoPdf} onAncho={setAnchoPdf} pagina={paginaPdf} />}
       </div>
     );
   }
 
+  const total = (expedientes || []).length;
+  const regionesConDatos = new Set((expedientes || []).map(e => e.region)).size;
+  const hayFiltro = !!busqueda.trim() || filtro !== 'todos';
+  const FILTROS: Array<{ valor: Filtro; rotulo: string }> = [
+    { valor: 'todos', rotulo: 'Todos' },
+    { valor: 'error', rotulo: ROTULO_ESTADO.error },
+    { valor: 'revisar', rotulo: ROTULO_ESTADO.revisar },
+    { valor: 'ok', rotulo: ROTULO_ESTADO.ok },
+  ];
+
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-superficie rounded-[12px] border-[0.5px] border-linea flex items-center justify-center caja">
-            <Table2 className="w-6 h-6 text-tenue" />
-          </div>
-          <div>
-            <h2 className="text-xl font-medium tracking-tight text-slate-900">Expedientes del lector</h2>
-            <p className="text-xs text-tenue mt-0.5">
-              Auditados por el lector y exportados al Google Sheet{expedientes ? ` — ${expedientes.length} en total` : ''}.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => cargarExpedientes(true)}
-            disabled={cargando}
-            className="px-3 py-1.5 bg-superficie border border-linea-fuerte hover:bg-realce text-slate-700 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none inline-flex items-center gap-1.5 disabled:opacity-60"
-          >
-            {cargando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+    <div>
+      <Encabezado
+        titulo="Expedientes auditados"
+        detalle={expedientes
+          ? `${total} ${total === 1 ? 'expediente' : 'expedientes'} en ${regionesConDatos} ${regionesConDatos === 1 ? 'región' : 'regiones'}`
+          : 'Auditados por el lector y exportados al Google Sheet'}
+        acciones={<>
+          <button type="button" onClick={() => cargarExpedientes(true)} disabled={cargando} className={boton.secundario}>
+            {cargando ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />}
             Actualizar
           </button>
-          <button
-            type="button"
-            onClick={() => fijarClave('')}
-            className="px-3 py-1.5 bg-transparent text-slate-500 hover:text-slate-900 text-xs font-medium rounded-[7px] transition-all cursor-pointer outline-none border-none"
-            title="Olvidar la clave en este navegador"
-          >
+          <button type="button" onClick={() => fijarClave('')} className={boton.fantasma} title="Olvidar la clave en este navegador">
             Salir
           </button>
-        </div>
-      </div>
+        </>}
+      />
 
-      <div className="flex w-fit max-w-full overflow-x-auto p-[3px] bg-hundida rounded-[8px] mb-6 gap-[2px] items-center select-none">
-        {REGIONES.map(r => {
-          const cantidad = filtrados.filter(e => e.region === r).length;
-          return (
+      <Pestanas
+        rotulo="Región"
+        valor={region}
+        onCambio={setRegion}
+        opciones={REGIONES.map(r => ({
+          valor: r, rotulo: r,
+          cantidad: expedientes ? filtrados.filter(e => e.region === r).length : undefined,
+        }))}
+      />
+
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 my-3">
+        <div className="flex flex-wrap gap-1" role="group" aria-label="Filtrar por estado">
+          {FILTROS.map(f => (
             <button
-              key={r}
+              key={f.valor}
               type="button"
-              onClick={() => setRegion(r)}
+              aria-pressed={filtro === f.valor}
+              onClick={() => setFiltro(f.valor)}
               className={cn(
-                "transition-all duration-200 outline-none cursor-pointer text-[13px] py-[5px] px-[16px] border-none whitespace-nowrap",
-                region === r
-                  ? "bg-superficie border-[0.5px] border-linea rounded-[6px] text-acento font-medium shadow-none"
-                  : "bg-transparent text-tinta-2 font-normal"
+                "inline-flex items-center gap-1.5 h-[26px] px-[9px] rounded-[6px] border text-xs cursor-pointer transition-colors",
+                filtro === f.valor
+                  ? "border-transparent bg-hundida-2 text-tinta font-medium"
+                  : "border-linea bg-transparent text-tinta-2 hover:bg-realce"
               )}
             >
-              {r}{expedientes ? ` (${cantidad})` : ''}
+              {f.valor !== 'todos' && <Punto estado={f.valor} />}
+              {f.rotulo}
+              {expedientes && <span className="font-normal text-tenue cifras">{cuentaRegion[f.valor]}</span>}
             </button>
-          );
-        })}
-      </div>
-
-      <div className="relative mb-6">
-        <Search className="w-4 h-4 text-tenue absolute left-3 top-1/2 -translate-y-1/2" />
-        <input
-          type="text"
-          value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
-          placeholder="Buscar por N° de expediente, rendición, fondo, fecha o estado"
-          className="w-full bg-superficie border-[0.5px] border-linea rounded-[8px] pl-9 pr-3 py-2 text-sm outline-none focus:border-acento"
-        />
+          ))}
+        </div>
+        <label className="relative flex-[0_1_260px] min-w-[180px]">
+          <ListFilter className="w-3.5 h-3.5 text-tenue absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+          <input
+            type="text"
+            value={busqueda}
+            onChange={e => setBusqueda(e.target.value)}
+            placeholder={`Filtrar en ${region}`}
+            aria-label={`Filtrar los expedientes de ${region} por número, rendición, fondo, fecha o estado`}
+            className="w-full h-7 bg-campo border border-linea rounded-[6px] pl-8 pr-2.5 text-sm text-tinta placeholder:text-tenue outline-none focus:border-acento transition-colors"
+          />
+        </label>
       </div>
 
       {error && (
-        <div className="bg-error-suave border border-error-linea rounded-[12px] p-4 mb-6 text-xs text-error">{error}</div>
+        <BandaError className="mb-3" onReintentar={() => cargarExpedientes(true)}>{error}</BandaError>
       )}
 
-      {cargando && !expedientes ? (
-        <div className="p-16 text-center text-tenue text-sm flex items-center justify-center gap-2">
-          <Loader2 className="w-4 h-4 animate-spin" /> Leyendo el Google Sheet…
-        </div>
-      ) : grupos.length === 0 ? (
-        <div className="p-16 text-center border-[0.5px] border-dashed border-linea rounded-[12px] bg-superficie/50">
-          <p className="text-tenue font-medium text-sm">
-            {busqueda ? `No se encontraron expedientes de ${region} para "${busqueda}".` : `No hay expedientes de ${region} en el Google Sheet.`}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {grupos.map(g => {
-            const abierta = abiertas.has(g.titulo) || !!busqueda.trim();
-            const cuenta = (estado: string) => g.items.filter(e => e.estado.toUpperCase() === estado).length;
-            const errores = cuenta('ERROR');
-            const revisar = g.items.length - errores - cuenta('OK');
-            return (
-            <div key={g.titulo} className="bg-superficie border-[0.5px] border-linea rounded-[12px] overflow-hidden caja elevable-cabecera">
-              <button
-                type="button"
-                onClick={() => alternar(g.titulo)}
-                className="cabecera w-full flex flex-wrap items-center justify-between gap-2 px-5 py-4 bg-transparent border-none cursor-pointer outline-none text-left"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <ChevronRight className={cn("w-4 h-4 text-tenue transition-transform duration-200", abierta && "rotate-90")} />
-                  <span className="text-sm font-medium text-slate-800">{g.titulo}</span>
-                  <span className="text-xs text-tenue">{g.items.length} {g.items.length === 1 ? 'expediente' : 'expedientes'}</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {errores > 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-error-fondo text-error">{errores} con errores</span>}
-                  {revisar > 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800">{revisar} a revisar</span>}
-                  {errores === 0 && revisar === 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-ok-fondo text-ok-tinta">Todo OK</span>}
-                </div>
+      <Panel className="overflow-x-auto">
+        <div className="min-w-[840px]">
+          <div className="grid items-center gap-x-3 h-8 px-3.5 border-b border-linea text-xs text-tenue" style={{ gridTemplateColumns: COLUMNAS }}>
+            <span>Estado</span><span>Rendición</span><span>Expediente</span><span>Fecha</span>
+            <span className="text-right">Pagos</span><span>Hallazgos</span><span className="text-right">Importe</span>
+          </div>
+
+          {cargando && !expedientes ? (
+            <>
+              <FilasEsqueleto filas={9} columnas={COLUMNAS} />
+              <p className="sr-only" role="status">Leyendo el Google Sheet…</p>
+            </>
+          ) : grupos.length === 0 ? (
+            <Vacio accion={hayFiltro ? (
+              <button type="button" onClick={() => { setBusqueda(''); setFiltro('todos'); }}
+                className="text-sm font-medium text-acento bg-transparent border-none p-0 cursor-pointer hover:underline">
+                Quitar los filtros
               </button>
-              {abierta && (
-              <div className="space-y-3 px-4 pb-4">
-                {g.items.map(e => (
-                  <button
-                    key={e.id}
-                    type="button"
-                    onClick={() => irA('lector', e.id)}
-                    className="w-full text-left bg-lienzo/45 border-[0.5px] border-linea p-4 sm:px-5 rounded-[10px] flex flex-col sm:flex-row gap-4 sm:items-center justify-between hover:bg-superficie hover:border-linea-fuerte cursor-pointer outline-none caja elevable"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <EstadoChip estado={e.estado} />
-                      <span className="text-sm font-medium text-slate-800">FF N° {e.rendicion || '—'}</span>
-                      <span className="text-xs font-medium bg-hundida text-slate-500 border border-linea px-2 py-0.5 rounded-md font-mono">
-                        Exp. {e.expediente}{e.fecha ? ` (${e.fecha})` : ''}
+            ) : undefined}>
+              {error && !expedientes
+                ? 'No se pudieron leer los expedientes.'
+                : hayFiltro
+                  ? `Ningún expediente de ${region} coincide con el filtro.`
+                  : `Todavía no hay expedientes de ${region} en el Google Sheet.`}
+            </Vacio>
+          ) : grupos.map(g => {
+            const conHallazgos = g.errores > 0 || g.revisar > 0;
+            const abierta = hayFiltro || (alternadas[g.titulo] ?? conHallazgos);
+            return (
+              <React.Fragment key={g.titulo}>
+                <button
+                  type="button"
+                  onClick={() => alternar(g.titulo, abierta)}
+                  aria-expanded={abierta}
+                  className="w-full flex items-center gap-2 h-[34px] pl-2.5 pr-3.5 bg-barra border-none border-b border-linea cursor-pointer text-left hover:bg-barra-activa/60 transition-colors"
+                  style={{ borderBottom: '1px solid var(--color-linea)' }}
+                >
+                  <ChevronRight className={cn("w-3.5 h-3.5 text-tinta-2 transition-transform duration-150", abierta && "rotate-90")} aria-hidden="true" />
+                  <span className="text-sm font-semibold text-tinta">{g.titulo}</span>
+                  <span className="text-xs text-tenue">{g.total} {g.total === 1 ? 'expediente' : 'expedientes'}</span>
+                  <span className="flex-1" />
+                  <span className="flex items-center gap-3">
+                    {g.errores > 0 && <Contador estado="error">{g.errores} error</Contador>}
+                    {g.revisar > 0 && <Contador estado="revisar">{g.revisar} revisar</Contador>}
+                    {!conHallazgos && <Contador estado="ok">Todo OK</Contador>}
+                  </span>
+                </button>
+                {abierta && g.items.map(e => {
+                  const claves = hallazgosPorId.get(e.id) || [];
+                  return (
+                    <button
+                      key={e.id}
+                      type="button"
+                      onClick={() => irA('lector', e.id)}
+                      className="w-full grid items-center gap-x-3 h-9 px-3.5 bg-transparent border-none cursor-pointer text-left text-sm hover:bg-realce transition-colors"
+                      style={{ gridTemplateColumns: COLUMNAS, borderBottom: '1px solid var(--color-linea-suave)' }}
+                    >
+                      <span><EstadoBadge estado={estadoDe(e.estado)} /></span>
+                      <span className="font-medium text-tinta">FF N° {e.rendicion || '—'}</span>
+                      <span className="font-mono text-xs text-tinta-2 truncate">{e.expediente}</span>
+                      <span className="text-tinta-2 cifras">{e.fecha || '—'}</span>
+                      <span className="text-right text-tinta-2 cifras">{e.nPagos}</span>
+                      <span className="flex items-center gap-1 min-w-0 overflow-hidden">
+                        {claves.length === 0
+                          ? <span className="text-tenue">—</span>
+                          : claves.slice(0, 6).map(c => <Clave key={c.id} estado={c.estado}>{c.id}</Clave>)}
+                        {claves.length > 6 && <span className="text-xs text-tenue">+{claves.length - 6}</span>}
                       </span>
-                      <span className="text-xs text-tenue">{e.nPagos} {e.nPagos === 1 ? 'pago' : 'pagos'}</span>
-                    </div>
-                    <span className="text-sm font-mono font-medium text-slate-700 shrink-0">
-                      {typeof e.result.totalAmount === 'number' ? formatCurrency(e.result.totalAmount) : ''}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              )}
-            </div>
+                      <span className="text-right cifras text-tinta">
+                        {typeof e.result.totalAmount === 'number' ? formatCurrency(e.result.totalAmount) : ''}
+                      </span>
+                    </button>
+                  );
+                })}
+              </React.Fragment>
             );
           })}
         </div>
-      )}
-    </motion.div>
+      </Panel>
+    </div>
   );
 }

@@ -224,7 +224,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
           <button
             onClick={handlePrevPage}
             disabled={currentPage <= 1 || loading}
-            className="p-1.5 hover:bg-hundida rounded-lg text-slate-600 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed outline-none"
+            className="p-1.5 hover:bg-hundida rounded-[6px] text-slate-600 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed outline-none"
             title="Página Anterior"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -239,7 +239,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
           <button
             onClick={handleNextPage}
             disabled={currentPage >= totalPages || loading}
-            className="p-1.5 hover:bg-hundida rounded-lg text-slate-600 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed outline-none"
+            className="p-1.5 hover:bg-hundida rounded-[6px] text-slate-600 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed outline-none"
             title="Página Siguiente"
           >
             <ChevronRight className="w-5 h-5" />
@@ -251,7 +251,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
           <button
             onClick={handleZoomOut}
             disabled={loading || !pdf}
-            className="p-1.5 hover:bg-hundida rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
+            className="p-1.5 hover:bg-hundida rounded-[6px] text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
             title="Reducir Zoom"
           >
             <ZoomIn className="w-4 h-4 rotate-180 scale-x-[-1]" />
@@ -264,7 +264,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
           <button
             onClick={handleZoomIn}
             disabled={loading || !pdf}
-            className="p-1.5 hover:bg-hundida rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
+            className="p-1.5 hover:bg-hundida rounded-[6px] text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
             title="Aumentar Zoom"
           >
             <ZoomIn className="w-4 h-4" />
@@ -273,7 +273,7 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
           <button
             onClick={handleZoomReset}
             disabled={loading || !pdf}
-            className="ml-1 p-1.5 hover:bg-hundida rounded-lg text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
+            className="ml-1 p-1.5 hover:bg-hundida rounded-[6px] text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed outline-none"
             title="Restablecer vista"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -291,15 +291,15 @@ export function PdfCanvasViewer({ base64, initialPage = 1, fileName }: PdfCanvas
         )}
 
         {error && (
-          <div className="max-w-md mx-auto my-12 bg-superficie p-6 rounded-2xl border border-rose-200 shadow-sm flex flex-col items-center text-center gap-3">
+          <div className="max-w-md mx-auto my-12 bg-superficie p-6 rounded-[8px] border border-rose-200 shadow-sm flex flex-col items-center text-center gap-3">
             <AlertTriangle className="w-12 h-12 text-rose-500" />
-            <h4 className="text-base font-bold text-slate-900">No se pudo visualizar el PDF</h4>
+            <h4 className="text-base font-semibold text-slate-900">No se pudo visualizar el PDF</h4>
             <p className="text-sm text-slate-500 leading-relaxed">{error}</p>
           </div>
         )}
 
         {!error && (
-          <div className="bg-superficie rounded-xl shadow-md border border-slate-200 overflow-hidden shrink-0">
+          <div className="bg-superficie rounded-[8px] shadow-md border border-slate-200 overflow-hidden shrink-0">
             <canvas ref={canvasRef} className="block bg-white" />
           </div>
         )}

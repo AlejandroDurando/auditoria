@@ -40,11 +40,11 @@ function FichaMaterial({ m, grupos }: { m: Material; grupos: Record<string, stri
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-6 bg-superficie border-[0.5px] border-linea rounded-[12px] p-5 caja"
+      className="mt-6 bg-superficie border border-linea rounded-[8px] p-5 caja"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <span className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">Matrícula</span>
+          <span className="text-[11px] font-medium text-tenue">Matrícula</span>
           <p className="text-lg font-semibold text-acento tabular-nums">{m.matricula}</p>
           <p className="text-sm text-slate-800 break-words">{m.descripcion}</p>
         </div>
@@ -53,13 +53,13 @@ function FichaMaterial({ m, grupos }: { m: Material; grupos: Record<string, stri
       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mt-4">
         {datos.map(([rotulo, valor]) => (
           <div key={rotulo} className="min-w-0">
-            <dt className="text-[10px] font-medium uppercase tracking-[0.06em] text-tenue">{rotulo}</dt>
-            <dd className="text-[13px] text-slate-800 break-words">{valor}</dd>
+            <dt className="text-[11px] font-medium text-tenue">{rotulo}</dt>
+            <dd className="text-sm text-slate-800 break-words">{valor}</dd>
           </div>
         ))}
       </dl>
       <div className={cn(
-        "mt-4 rounded-[8px] px-3.5 py-3 text-[13px] leading-relaxed border",
+        "mt-4 rounded-[8px] px-3.5 py-3 text-sm leading-relaxed border",
         m.activo_fijo ? "bg-aviso-fondo border-aviso-linea/70 text-aviso-tinta" : "bg-marca-suave border-acento/15 text-ok-tinta"
       )}>
         {m.activo_fijo === true && (
@@ -156,7 +156,7 @@ export function Matriculador() {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-3xl mx-auto pt-2 pb-10">
       <div className="text-center mb-7">
-        <div className="w-11 h-11 mx-auto mb-3 bg-marca-suave rounded-[12px] border-[0.5px] border-acento/15 flex items-center justify-center">
+        <div className="w-11 h-11 mx-auto mb-3 bg-marca-suave rounded-[8px] border border-acento/15 flex items-center justify-center">
           <PackageSearch className="w-5 h-5 text-acento" />
         </div>
         <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Búsqueda de Materiales</h2>
@@ -192,10 +192,10 @@ export function Matriculador() {
               id="matriculador-lista"
               role="listbox"
               onMouseDown={e => e.preventDefault()}
-              className="absolute z-20 left-0 right-0 top-full mt-1 bg-campo border border-linea rounded-[8px] shadow-[0_10px_30px_rgba(0,0,0,0.10)] max-h-[296px] overflow-y-auto py-1"
+              className="absolute z-20 left-0 right-0 top-full mt-1 bg-campo border border-linea rounded-[8px] flotante max-h-[296px] overflow-y-auto py-1"
             >
               {materiales.length === 0 && (
-                <li className="px-3.5 py-3 text-[13px] text-tenue">Sin resultados para «{consulta.trim()}».</li>
+                <li className="px-3.5 py-3 text-sm text-tenue">Sin resultados para «{consulta.trim()}».</li>
               )}
               {materiales.map((m, i) => (
                 <li
@@ -215,7 +215,7 @@ export function Matriculador() {
                   }}
                   onClick={() => elegir(m)}
                   className={cn(
-                    "flex items-center gap-3 px-3.5 py-2.5 cursor-pointer text-[14px]",
+                    "flex items-center gap-3 px-3.5 py-2.5 cursor-pointer text-sm",
                     i === resaltado ? "bg-marca-suave" : "bg-campo"
                   )}
                 >
@@ -246,15 +246,15 @@ export function Matriculador() {
       </form>
 
       {cargando && (
-        <p className="flex items-center justify-center gap-2 text-[13px] text-tenue mt-6">
+        <p className="flex items-center justify-center gap-2 text-sm text-tenue mt-6">
           <Loader2 className="w-4 h-4 animate-spin" /> Cargando catálogo de matrículas…
         </p>
       )}
       {error && !cargando && (
-        <div className="mt-6 flex items-start gap-3 bg-error-fondo border-[0.5px] border-error-acento/30 rounded-[10px] p-4 text-[13px] text-error">
+        <div className="mt-6 flex items-start gap-3 bg-error-fondo border border-error-acento/30 rounded-[8px] p-4 text-sm text-error">
           <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
           <span className="flex-1">{error}</span>
-          <button type="button" onClick={() => cargar(clave)} className="flex items-center gap-1 text-[12px] font-medium text-error bg-transparent border-none cursor-pointer outline-none">
+          <button type="button" onClick={() => cargar(clave)} className="flex items-center gap-1 text-xs font-medium text-error bg-transparent border-none cursor-pointer outline-none">
             <RefreshCw className="w-3.5 h-3.5" /> Reintentar
           </button>
         </div>

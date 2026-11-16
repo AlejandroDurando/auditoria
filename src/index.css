@@ -1,164 +1,265 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
-/* ─── Colores ──────────────────────────────────────────────────────────────
+/* ─── Sistema de diseño ────────────────────────────────────────────────────
+   Una planilla de auditoria, no un dashboard: superficies planas, lineas de
+   1 px en vez de sombras, numeros alineados y color solo para lo que pide
+   atencion.
+
    Toda la pagina usa estos tokens (bg-superficie, text-tenue, border-linea…),
    nunca colores fijos: el modo oscuro solo redefine las variables.
 
    lienzo       fondo de la pagina
-   superficie   cajas, barra lateral, encabezado
-   hundida      fondos dentro de una caja (chips, pistas, campos de busqueda)
-   realce       hover sobre una superficie
-   linea        bordes
+   superficie   paneles, tablas, campos
+   barra        barra lateral y filas de grupo (carpetas)
+   hundida      fondos dentro de un panel (detalle desplegado, pistas)
+   realce       hover sobre una fila o un boton
+   linea        bordes · linea-suave entre filas · linea-fuerte en controles
    tinta        texto principal · tinta-2 secundario · tenue apagado
-   marca        verde EPE de los botones · acento: el mismo verde para texto
-   ok / error / aviso   estados de las validaciones
+   marca        color propio de la herramienta: accion primaria, links, foco
+   ok / aviso / error   estados OK, Revisar y Error de las validaciones
+   tira-*       celdas de la tira de validaciones
+
+   Escala: texto 11 · 12 · 13 · 15 · 20 px; pesos 400, 500 y 600; radios 4
+   (badges), 6 (controles) y 8 (paneles); espaciado en multiplos de 4.
 */
 @theme {
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  --color-lienzo: #E4DFD3;
-  --color-superficie: #FBF9F4;
-  --color-hundida: #EFEBE1;
-  --color-hundida-2: #E3DED1;
-  --color-realce: #F3EFE6;
-  --color-linea: #DFD9CB;
-  --color-linea-fuerte: #CBC4B3;
+  /* Escala tipografica: las clases de Tailwind caen en estos cinco tamaños. */
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 20px;
+  --text-base: 15px;
+  --text-base--line-height: 22px;
+  --text-lg: 15px;
+  --text-lg--line-height: 22px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 20px;
+  --text-2xl--line-height: 28px;
+  --text-3xl: 24px;
+  --text-3xl--line-height: 32px;
+
+  --color-lienzo: #FCFBF8;
+  --color-superficie: #FFFFFF;
+  --color-barra: #F3F1EA;
+  --color-barra-activa: #E5E1D6;
+  --color-hundida: #F6F4EE;
+  --color-hundida-2: #ECE8DE;
+  --color-realce: #F3F1EA;
+  --color-linea: #E4E0D6;
+  --color-linea-suave: #EEEBE2;
+  --color-linea-fuerte: #D3CEC1;
   --color-campo: #FFFFFF;
 
-  --color-tinta: #1A1A1A;
-  --color-tinta-2: #5E5C56;
-  --color-tenue: #87847B;
-  --color-tenue-2: #B5B1A6;
+  --color-tinta: #1B1B19;
+  --color-tinta-2: #55534D;
+  --color-tenue: #6B6860;
+  --color-tenue-2: #A9A598;
 
   --color-marca: #004741;
   --color-marca-hover: #00332F;
   --color-acento: #004741;
-  --color-marca-suave: #E1EDEA;
-  --color-marca-claro: #2E9C86;
+  --color-marca-suave: #E3EEEB;
+  --color-marca-claro: #2E8B74;
 
-  --color-ok-fondo: #D3EAE3;
-  --color-ok-tinta: #00463F;
-  --color-ok-linea: #A3DAC8;
-  --color-error: #A32D2D;
-  --color-error-fondo: #FAE3E2;
-  --color-error-suave: #FDF4F3;
+  --color-ok: #2E8B74;
+  --color-ok-fondo: #E1EFEA;
+  --color-ok-tinta: #1F5E4F;
+  --color-ok-linea: #BFDCD3;
+  --color-error: #8F1F1B;
+  --color-error-fondo: #FBE4E1;
+  --color-error-suave: #FDF3F2;
   --color-error-linea: #F0C3C1;
-  --color-error-acento: #E24B4A;
-  --color-aviso-fondo: #FFF3D1;
-  --color-aviso-linea: #EBC04A;
-  --color-aviso-tinta: #7A5C00;
-  --color-peligro: #DC2626;
-  --color-peligro-hover: #B91C1C;
+  --color-error-acento: #C2332D;
+  --color-aviso: #B87F00;
+  --color-aviso-fondo: #FBEFCB;
+  --color-aviso-linea: #E6CF8A;
+  --color-aviso-tinta: #6B4E00;
+  --color-peligro: #B3261E;
+  --color-peligro-hover: #8F1F1B;
 
-  /* Los chips "A revisar" se perdian sobre el fondo crema. */
-  --color-amber-50: #FDF0CF;
+  --color-tira-ok: #CBDDD7;
+  --color-tira-aviso: #E0A20B;
+  --color-tira-error: #B3261E;
+
+  /* Las escalas de Tailwind que quedan en el codigo (slate, amber, emerald,
+     rose…) se alinean con los tokens: grises calidos y los tres estados. */
+  --color-slate-50: #F6F4EE;
+  --color-slate-100: #EFECE4;
+  --color-slate-200: #E4E0D6;
+  --color-slate-300: #D3CEC1;
+  --color-slate-400: #85827A;
+  --color-slate-500: #6B6860;
+  --color-slate-600: #55534D;
+  --color-slate-700: #3B3A36;
+  --color-slate-800: #2A2926;
+  --color-slate-900: #1B1B19;
+  --color-slate-950: #111110;
+
+  --color-amber-50: #FBF3DC;
+  --color-amber-100: #FBEFCB;
+  --color-amber-200: #E6CF8A;
+  --color-amber-300: #D9B95A;
+  --color-amber-400: #E0A20B;
+  --color-amber-500: #B87F00;
+  --color-amber-600: #A06E00;
+  --color-amber-700: #7A5600;
+  --color-amber-800: #6B4E00;
+  --color-amber-900: #553E00;
+  --color-amber-950: #3D2C00;
+
+  --color-yellow-50: #FBF3DC;
+  --color-yellow-100: #FBEFCB;
+  --color-yellow-200: #E6CF8A;
+  --color-yellow-600: #A06E00;
+  --color-yellow-700: #7A5600;
+  --color-yellow-800: #6B4E00;
+  --color-yellow-900: #553E00;
+  --color-yellow-950: #3D2C00;
+
+  --color-emerald-50: #EEF6F3;
+  --color-emerald-100: #E1EFEA;
+  --color-emerald-200: #BFDCD3;
+  --color-emerald-500: #2E8B74;
+  --color-emerald-600: #257563;
+  --color-emerald-700: #1F5E4F;
+  --color-emerald-800: #184A3F;
+  --color-emerald-900: #12382F;
+
+  --color-red-50: #FDF3F2;
+  --color-red-100: #FBE4E1;
+  --color-red-200: #F0C3C1;
+  --color-red-500: #C2332D;
+  --color-red-600: #B3261E;
+  --color-red-700: #8F1F1B;
+  --color-red-800: #741916;
+
+  --color-rose-50: #FDF3F2;
+  --color-rose-100: #FBE4E1;
+  --color-rose-200: #F0C3C1;
+  --color-rose-500: #C2332D;
+  --color-rose-600: #B3261E;
+  --color-rose-700: #8F1F1B;
+  --color-rose-800: #741916;
 }
 
 :root {
   color-scheme: light;
-  --sombra-caja: 0 1px 2px rgba(56, 44, 20, 0.07), 0 4px 12px -3px rgba(56, 44, 20, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  --sombra-caja-alta: 0 2px 4px rgba(56, 44, 20, 0.08), 0 12px 28px -8px rgba(56, 44, 20, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  --sombra-boton: 0 1px 2px rgba(56, 44, 20, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  /* Sombra solo para lo que flota: buscador, menus, dialogos, panel del PDF. */
+  --sombra-flotante: 0 0 0 1px rgba(27, 27, 25, 0.04), 0 8px 24px -6px rgba(27, 27, 25, 0.18);
+  --foco: color-mix(in srgb, var(--color-acento) 55%, transparent);
 }
 
 .dark {
   color-scheme: dark;
-  --sombra-caja: 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 16px -6px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  --sombra-caja-alta: 0 2px 6px rgba(0, 0, 0, 0.55), 0 16px 32px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  --sombra-boton: 0 1px 2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --sombra-flotante: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 12px 32px -8px rgba(0, 0, 0, 0.7);
 
-  --color-lienzo: #0E1216;
-  --color-superficie: #171C21;
-  --color-hundida: #1E242A;
-  --color-hundida-2: #252C33;
-  --color-realce: #1F262D;
-  --color-linea: #2A323B;
-  --color-linea-fuerte: #3A444F;
-  --color-campo: #12171B;
+  --color-lienzo: #131416;
+  --color-superficie: #18191C;
+  --color-barra: #0E0F11;
+  --color-barra-activa: #24262A;
+  --color-hundida: #1C1E21;
+  --color-hundida-2: #25282C;
+  --color-realce: #1F2124;
+  --color-linea: #292C30;
+  --color-linea-suave: #212327;
+  --color-linea-fuerte: #3A3E44;
+  --color-campo: #101113;
 
-  --color-tinta: #E6EBEF;
-  --color-tinta-2: #B3BDC6;
-  --color-tenue: #8792A0;
-  --color-tenue-2: #5A6572;
+  --color-tinta: #EAE8E3;
+  --color-tinta-2: #B8B5AE;
+  --color-tenue: #929088;
+  --color-tenue-2: #5F5D58;
 
   --color-marca: #17806F;
   --color-marca-hover: #1C9883;
-  --color-acento: #52CBB3;
-  --color-marca-suave: #132F2A;
-  --color-marca-claro: #52CBB3;
+  --color-acento: #5CCDB6;
+  --color-marca-suave: #12302A;
+  --color-marca-claro: #5CCDB6;
 
-  --color-ok-fondo: #12352F;
-  --color-ok-tinta: #7EDCC6;
+  --color-ok: #3DB89A;
+  --color-ok-fondo: #12302A;
+  --color-ok-tinta: #86DCC8;
   --color-ok-linea: #1F5A4E;
-  --color-error: #F29191;
-  --color-error-fondo: #3A1D20;
-  --color-error-suave: #2A181A;
-  --color-error-linea: #6A2D31;
+  --color-error: #F2A09B;
+  --color-error-fondo: #3A1B1A;
+  --color-error-suave: #261515;
+  --color-error-linea: #6A2D2B;
   --color-error-acento: #E5534B;
+  --color-aviso: #E0A20B;
   --color-aviso-fondo: #33290F;
-  --color-aviso-linea: #8A6A1A;
-  --color-aviso-tinta: #F2D27A;
+  --color-aviso-linea: #6E5518;
+  --color-aviso-tinta: #F0CF7A;
+  --color-peligro: #C2332D;
+  --color-peligro-hover: #D9453E;
+
+  --color-tira-ok: #2B4A42;
+  --color-tira-aviso: #E0A20B;
+  --color-tira-error: #E5534B;
 
   /* Las escalas de Tailwind se dan vuelta: los tonos claros (fondos) pasan a
-     oscuros y los oscuros (texto) a claros. Los intermedios de los puntos de
-     estado (500) quedan. */
-  --color-slate-50: #1A2026;
-  --color-slate-100: #20272E;
-  --color-slate-200: #2B333B;
-  --color-slate-300: #3A444E;
-  --color-slate-400: #6B7782;
-  --color-slate-500: #8A96A1;
-  --color-slate-600: #A3AEB8;
-  --color-slate-700: #BAC4CD;
-  --color-slate-800: #D0D8DF;
-  --color-slate-900: #E3E9EE;
-  --color-slate-950: #EEF2F5;
+     oscuros y los oscuros (texto) a claros. */
+  --color-slate-50: #1C1E21;
+  --color-slate-100: #212327;
+  --color-slate-200: #292C30;
+  --color-slate-300: #3A3E44;
+  --color-slate-400: #7C7A74;
+  --color-slate-500: #929088;
+  --color-slate-600: #A6A39C;
+  --color-slate-700: #B8B5AE;
+  --color-slate-800: #D2CFC9;
+  --color-slate-900: #EAE8E3;
+  --color-slate-950: #F3F1ED;
 
-  --color-amber-50: #2E2512;
-  --color-amber-100: #3A2D12;
-  --color-amber-200: #5A4518;
-  --color-amber-300: #7A5D1C;
-  --color-amber-400: #E8A93A;
-  --color-amber-500: #F0B042;
-  --color-amber-600: #F2BC55;
-  --color-amber-700: #F5C76C;
-  --color-amber-800: #F7D27F;
-  --color-amber-900: #F9DD9A;
-  --color-amber-950: #FBE7B5;
+  --color-amber-50: #2A220E;
+  --color-amber-100: #33290F;
+  --color-amber-200: #6E5518;
+  --color-amber-300: #8A6A1A;
+  --color-amber-400: #E0A20B;
+  --color-amber-500: #E8AE2A;
+  --color-amber-600: #ECBA48;
+  --color-amber-700: #F0C665;
+  --color-amber-800: #F0CF7A;
+  --color-amber-900: #F5DC9C;
+  --color-amber-950: #F9E8BC;
 
-  --color-yellow-50: #29250F;
-  --color-yellow-100: #37310F;
-  --color-yellow-200: #574C15;
-  --color-yellow-600: #E8CF4A;
-  --color-yellow-700: #EDD866;
-  --color-yellow-800: #F0DF7E;
-  --color-yellow-900: #F4E79A;
-  --color-yellow-950: #F7EDB4;
+  --color-yellow-50: #2A220E;
+  --color-yellow-100: #33290F;
+  --color-yellow-200: #6E5518;
+  --color-yellow-600: #ECBA48;
+  --color-yellow-700: #F0C665;
+  --color-yellow-800: #F0CF7A;
+  --color-yellow-900: #F5DC9C;
+  --color-yellow-950: #F9E8BC;
 
-  --color-red-50: #2E1719;
-  --color-red-100: #3D1D20;
-  --color-red-200: #5C2A2E;
-  --color-red-500: #F06B6B;
-  --color-red-600: #F07C7C;
-  --color-red-700: #F49A9A;
-  --color-red-800: #F7B4B4;
+  --color-emerald-50: #0F2622;
+  --color-emerald-100: #12302A;
+  --color-emerald-200: #1F5A4E;
+  --color-emerald-500: #3DB89A;
+  --color-emerald-600: #55C6AB;
+  --color-emerald-700: #86DCC8;
+  --color-emerald-800: #A6E6D7;
+  --color-emerald-900: #C6F0E6;
 
-  --color-rose-50: #2E1719;
-  --color-rose-100: #3D1D20;
-  --color-rose-200: #5C2A2E;
-  --color-rose-500: #F06B7E;
-  --color-rose-600: #F27D8C;
-  --color-rose-700: #F49AA6;
-  --color-rose-800: #F7B4BE;
+  --color-red-50: #261515;
+  --color-red-100: #3A1B1A;
+  --color-red-200: #6A2D2B;
+  --color-red-500: #E5534B;
+  --color-red-600: #EC7A73;
+  --color-red-700: #F2A09B;
+  --color-red-800: #F6BDB9;
 
-  --color-emerald-50: #10261F;
-  --color-emerald-100: #13342A;
-  --color-emerald-500: #2FBF8F;
-  --color-emerald-600: #45CF9F;
-  --color-emerald-700: #6EDDB5;
-  --color-emerald-800: #9BE8CC;
-  --color-emerald-900: #C3F2E0;
+  --color-rose-50: #261515;
+  --color-rose-100: #3A1B1A;
+  --color-rose-200: #6A2D2B;
+  --color-rose-500: #E5534B;
+  --color-rose-600: #EC7A73;
+  --color-rose-700: #F2A09B;
+  --color-rose-800: #F6BDB9;
 
   --color-blue-50: #121F30;
   --color-blue-100: #17283D;
@@ -173,28 +274,31 @@
   --color-purple-700: #C4A3F2;
 }
 
-/* Hojas que imitan papel (planilla revisiva, planilla control): siguen
-   blancas en modo oscuro, como se van a imprimir. */
-.dark .papel {
+/* Hojas que imitan papel (planilla revisiva, planilla control): blancas y con
+   tinta negra tambien en modo oscuro, como se van a imprimir. */
+.papel, .dark .papel {
   color-scheme: light;
-  --sombra-caja: 0 4px 18px rgba(0, 0, 0, 0.5);
   --color-superficie: #FFFFFF;
-  --color-hundida: #EFEBE1;
-  --color-hundida-2: #E3DED1;
-  --color-linea: #DFD9CB;
-  --color-linea-fuerte: #CBC4B3;
-  --color-tinta: #1A1A1A;
-  --color-tinta-2: #5E5C56;
-  --color-tenue: #87847B;
+  --color-hundida: #F6F4EE;
+  --color-hundida-2: #ECE8DE;
+  --color-realce: #F3F1EA;
+  --color-linea: #E4E0D6;
+  --color-linea-suave: #EEEBE2;
+  --color-linea-fuerte: #D3CEC1;
+  --color-campo: #FFFFFF;
+  --color-tinta: #1B1B19;
+  --color-tinta-2: #55534D;
+  --color-tenue: #6B6860;
+  --color-tenue-2: #A9A598;
   --color-acento: #004741;
   --color-marca: #004741;
-  --color-slate-300: oklch(86.9% 0.022 252.894);
-  --color-slate-400: oklch(70.4% 0.04 256.788);
-  --color-slate-500: oklch(55.4% 0.046 257.417);
-  --color-slate-600: oklch(44.6% 0.043 257.281);
-  --color-slate-700: oklch(37.2% 0.044 257.287);
-  --color-slate-800: oklch(27.9% 0.041 260.031);
-  --color-slate-900: oklch(20.8% 0.042 265.755);
+  --color-slate-300: #CBD5E1;
+  --color-slate-400: #94A3B8;
+  --color-slate-500: #64748B;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1E293B;
+  --color-slate-900: #0F172A;
   color: var(--color-tinta);
 }
 
@@ -202,45 +306,62 @@ html, body {
   background-color: var(--color-lienzo);
   color: var(--color-tinta);
 }
+/* El tamaño base va en el body: el del html fija el rem del espaciado. */
+body {
+  font-size: 13px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
 
-/* Cajas con relieve: un borde fino y una sombra suave. */
+/* Foco visible con teclado en todos los controles (las clases outline-none
+   del codigo quedan sin efecto para :focus-visible). */
+:where(button, a, input, select, textarea, summary, [role="button"], [tabindex]):focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 1px;
+}
+
+/* Paneles planos: `caja` ya no agrega sombra, la separacion la da el borde.
+   `caja-alta` y `flotante` quedan para lo que flota. */
 @utility caja {
-  box-shadow: var(--sombra-caja);
+  box-shadow: none;
 }
 @utility caja-alta {
-  box-shadow: var(--sombra-caja-alta);
+  box-shadow: var(--sombra-flotante);
 }
-button.caja:hover {
-  box-shadow: var(--sombra-caja-alta);
+@utility flotante {
+  box-shadow: var(--sombra-flotante);
 }
-/* Cajas que reaccionan al mouse: se elevan un poco en vez de cambiar de
-   color (el color chocaba con el de las cajas de adentro). */
+/* Elementos que reaccionan al mouse: cambian el fondo, no se elevan. */
 @utility elevable {
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease, background-color 0.2s ease, border-color 0.2s ease;
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--sombra-caja-alta);
-  }
+  transition: background-color 0.12s ease, border-color 0.12s ease;
 }
-/* Igual, pero solo con el mouse sobre su encabezado (.cabecera): grupos y
-   pagos desplegables, que abiertos son altos. */
 @utility elevable-cabecera {
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease;
-  &:has(> .cabecera:hover) {
-    transform: translateY(-2px);
-    box-shadow: var(--sombra-caja-alta);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .elevable:hover, .elevable-cabecera:has(> .cabecera:hover) { transform: none; }
-}
-/* Botones secundarios (fondo de superficie con borde): un poco de relieve. */
-button.bg-superficie.border:not(.caja),
-label.bg-superficie.border:not(.caja) {
-  box-shadow: var(--sombra-boton);
+  transition: none;
 }
 
-.dark ::-webkit-scrollbar { width: 8px; height: 8px; }
-.dark ::-webkit-scrollbar-track { background: var(--color-lienzo); }
-.dark ::-webkit-scrollbar-thumb { background: var(--color-linea-fuerte); border-radius: 4px; }
-.dark ::-webkit-scrollbar-thumb:hover { background: var(--color-tenue-2); }
+/* Cifras alineadas: importes, fechas y contadores en columnas. */
+@utility cifras {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Filas esqueleto mientras carga una tabla. */
+@utility esqueleto {
+  background: var(--color-hundida-2);
+  border-radius: 3px;
+  animation: pulso 1.4s ease-in-out infinite;
+}
+@keyframes pulso {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto { animation: none; }
+}
+
+/* Barras de scroll finas, del color de las lineas. */
+* { scrollbar-width: thin; scrollbar-color: var(--color-linea-fuerte) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-linea-fuerte); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-tenue-2); }

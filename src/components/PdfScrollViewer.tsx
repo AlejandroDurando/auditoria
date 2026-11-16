@@ -60,7 +60,7 @@ function PageCanvas({ pdf, pageNum, scale, onRendered }: {
   }, [pdf, pageNum, scale]);
 
   return (
-    <div data-pagina={pageNum} className="bg-superficie rounded-lg shadow-md border border-slate-200 overflow-hidden shrink-0">
+    <div data-pagina={pageNum} className="bg-superficie rounded-[6px] shadow-md border border-slate-200 overflow-hidden shrink-0">
       <canvas ref={canvasRef} className="block" />
     </div>
   );
@@ -144,16 +144,16 @@ export function PdfScrollViewer({ base64, fileName, pagina }: Props) {
         <span className="text-xs text-slate-500 font-medium truncate max-w-[200px]">{fileName}</span>
         <div className="flex items-center gap-1">
           <button onClick={() => setScale(s => Math.max(s - 0.2, 0.6))} disabled={!pdf}
-            className="p-1.5 hover:bg-hundida-2 rounded-lg text-slate-600 disabled:opacity-30 outline-none" title="Reducir">
+            className="p-1.5 hover:bg-hundida-2 rounded-[6px] text-slate-600 disabled:opacity-30 outline-none" title="Reducir">
             <ZoomOut className="w-4 h-4" />
           </button>
           <span className="text-xs font-semibold text-slate-500 font-mono w-10 text-center">{Math.round(scale * 100)}%</span>
           <button onClick={() => setScale(s => Math.min(s + 0.2, 3.0))} disabled={!pdf}
-            className="p-1.5 hover:bg-hundida-2 rounded-lg text-slate-600 disabled:opacity-30 outline-none" title="Ampliar">
+            className="p-1.5 hover:bg-hundida-2 rounded-[6px] text-slate-600 disabled:opacity-30 outline-none" title="Ampliar">
             <ZoomIn className="w-4 h-4" />
           </button>
           <button onClick={() => setScale(1.2)} disabled={!pdf}
-            className="ml-1 p-1.5 hover:bg-hundida-2 rounded-lg text-slate-600 disabled:opacity-30 outline-none" title="Restablecer">
+            className="ml-1 p-1.5 hover:bg-hundida-2 rounded-[6px] text-slate-600 disabled:opacity-30 outline-none" title="Restablecer">
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -172,7 +172,7 @@ export function PdfScrollViewer({ base64, fileName, pagina }: Props) {
           </div>
         )}
         {error && (
-          <div className="max-w-sm mx-auto mt-16 bg-superficie p-6 rounded-2xl border border-rose-200 flex flex-col items-center gap-3 text-center caja">
+          <div className="max-w-sm mx-auto mt-16 bg-superficie p-6 rounded-[8px] border border-rose-200 flex flex-col items-center gap-3 text-center caja">
             <AlertTriangle className="w-10 h-10 text-rose-500" />
             <p className="text-sm text-slate-600">{error}</p>
           </div>

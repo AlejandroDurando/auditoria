@@ -134,11 +134,11 @@ export function GuiaTelefonica() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-6xl">
-      <div className="relative bg-superficie border-[0.5px] border-linea rounded-[12px] caja overflow-hidden flex flex-col md:h-[calc(100vh-56px-64px)] md:min-h-[520px]">
+      <div className="relative bg-superficie border border-linea rounded-[8px] caja overflow-hidden flex flex-col md:h-[calc(100vh-56px-64px)] md:min-h-[520px]">
         {/* Franja de color arriba, como la guia original. */}
         <div className="h-[5px] shrink-0 bg-linear-to-r from-marca to-marca-claro" />
 
-        <div className="shrink-0 px-5 md:px-7 pt-5 pb-4 border-b-[0.5px] border-linea">
+        <div className="shrink-0 px-5 md:px-7 pt-5 pb-4 border-b border-linea">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h2 className="flex items-center gap-3 text-[22px] font-semibold tracking-tight text-tinta">
               <BookUser className="w-6 h-6 text-acento shrink-0" />
@@ -176,7 +176,7 @@ export function GuiaTelefonica() {
                   type="button"
                   onClick={() => setZona(z)}
                   className={cn(
-                    "whitespace-nowrap transition-all duration-200 outline-none cursor-pointer text-[12.5px] py-[4px] px-[12px] border-none rounded-[6px]",
+                    "whitespace-nowrap transition-all duration-200 outline-none cursor-pointer text-xs py-[4px] px-[12px] border-none rounded-[6px]",
                     zona === z ? "bg-superficie text-acento font-medium caja" : "bg-transparent text-tinta-2"
                   )}
                 >
@@ -184,7 +184,7 @@ export function GuiaTelefonica() {
                 </button>
               ))}
             </div>
-            <span className="text-[12px] text-tenue">
+            <span className="text-xs text-tenue">
               {busqueda
                 ? busqueda.aproximada
                   ? `Sin coincidencias exactas: ${busqueda.resultados.length} ${busqueda.resultados.length === 1 ? 'parecido' : 'parecidos'}`
@@ -194,11 +194,11 @@ export function GuiaTelefonica() {
           </div>
         </div>
 
-        {error && <div className="shrink-0 px-7 py-3 text-xs text-error bg-error-suave border-b-[0.5px] border-error-linea">{error}</div>}
+        {error && <div className="shrink-0 px-7 py-3 text-xs text-error bg-error-suave border-b border-error-linea">{error}</div>}
 
         <div ref={lista} className="flex-1 min-h-0 overflow-y-auto">
           {/* Cabecera fija */}
-          <div className={cn("hidden md:grid sticky top-0 z-10 bg-hundida border-b-2 border-linea-fuerte text-[12px] font-bold uppercase tracking-[0.05em] text-tinta-2", COLUMNAS)}>
+          <div className={cn("hidden md:grid sticky top-0 z-10 bg-hundida border-b-2 border-linea-fuerte text-xs font-semibold text-tinta-2", COLUMNAS)}>
             <div className="px-7 py-3">Sector</div>
             <div className="px-7 py-3">Agente</div>
             <div className="px-4 py-3 text-center">Interno</div>
@@ -221,7 +221,7 @@ export function GuiaTelefonica() {
               if (r.tipo === 'zona') {
                 par = false;
                 return (
-                  <div key={`z-${r.zona}`} className="px-5 md:px-7 py-2 bg-marca-suave border-b-[0.5px] border-linea text-[11.5px] font-bold uppercase tracking-[0.08em] text-acento">
+                  <div key={`z-${r.zona}`} className="px-5 md:px-7 py-2 bg-marca-suave border-b border-linea text-[11.5px] font-semibold text-acento">
                     {r.zona}
                   </div>
                 );
@@ -232,18 +232,18 @@ export function GuiaTelefonica() {
                 <div
                   key={r.clave}
                   className={cn(
-                    "grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 items-center border-b-[0.5px] border-linea transition-colors hover:bg-marca-suave/70",
+                    "grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 items-center border-b border-linea transition-colors hover:bg-marca-suave/70",
                     COLUMNAS,
                     !par && "bg-hundida/45"
                   )}
                 >
                   {/* Sector (en el celular va arriba del nombre) */}
-                  <div className={cn("col-span-2 md:col-span-1 px-5 md:px-7 pt-2.5 md:py-3.5 text-[12px] md:text-[14.5px] md:font-semibold text-tenue md:text-tinta truncate", !r.sector && "hidden md:block")}
+                  <div className={cn("col-span-2 md:col-span-1 px-5 md:px-7 pt-2.5 md:py-3.5 text-xs md:text-[14.5px] md:font-semibold text-tenue md:text-tinta truncate", !r.sector && "hidden md:block")}
                     title={c.sector}>
                     {r.sector ? (
                       <>
                         <Resaltado texto={c.sector} tokens={marcas} />
-                        {busqueda && <span className="ml-2 align-middle text-[10.5px] font-normal text-tinta-2 px-1.5 py-[1px] rounded-[5px] bg-hundida">{c.zona}</span>}
+                        {busqueda && <span className="ml-2 align-middle text-[11px] font-normal text-tinta-2 px-1.5 py-[1px] rounded-[5px] bg-hundida">{c.zona}</span>}
                       </>
                     ) : null}
                   </div>
@@ -256,7 +256,7 @@ export function GuiaTelefonica() {
                         </React.Fragment>
                       ))
                     ) : null}
-                    {c.nota && <span className={cn("text-tinta-2", c.agentes.length && "block text-[12.5px]")}><Resaltado texto={c.nota} tokens={marcas} /></span>}
+                    {c.nota && <span className={cn("text-tinta-2", c.agentes.length && "block text-xs")}><Resaltado texto={c.nota} tokens={marcas} /></span>}
                   </div>
                   {/* Numeros: columnas propias en pantalla ancha, a la derecha en el celular */}
                   <div className="md:contents flex flex-col items-end gap-0.5 pr-5 md:pr-0 py-2.5 md:py-0">
@@ -273,7 +273,7 @@ export function GuiaTelefonica() {
           )}
         </div>
 
-        <div className="shrink-0 px-5 md:px-7 py-4 border-t-[0.5px] border-linea flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[13px] text-tenue">
+        <div className="shrink-0 px-5 md:px-7 py-4 border-t border-linea flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-tenue">
           <div className="flex items-center gap-2">
             EPE · Guía de contactos internos
             <button
@@ -288,7 +288,7 @@ export function GuiaTelefonica() {
           </div>
           <div className="flex flex-wrap gap-2.5">
             {(guia?.comandos || []).map(cmd => (
-              <span key={cmd.codigo} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[8px] bg-marca-suave border border-acento/25 text-acento text-[12.5px] font-semibold">
+              <span key={cmd.codigo} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[8px] bg-marca-suave border border-acento/25 text-acento text-xs font-semibold">
                 {/desactiv/i.test(cmd.detalle) ? <PhoneOff className="w-3.5 h-3.5" /> : <Phone className="w-3.5 h-3.5" />}
                 {cmd.detalle}: {cmd.codigo}
               </span>

@@ -116,8 +116,13 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
     codigos: ['103'],
     concepto: 'Materiales menores de seguridad (ropa, calzado y elementos de trabajo)',
     tipo: 'fijo',
-    firmantes: ['Andrés Blancato', 'Emanuel Duarte Durán', 'Pablo Tosetto'],
-    nota: 'Siempre con la autorización de Higiene y Seguridad, aunque el código lo pida solo para calzado y ropa: lo que se compra con este código se lo piden igual. Basta con cualquiera de los firmantes.',
+    firmantes: ['Carlos Alvarez', 'Pablo Tosetto'],
+    excepcion: {
+      motivo: 'El PIMyS lo inicia el propio sector Higiene y Seguridad',
+      agentes: ['Carlos Alvarez', 'Emanuel Georgis', 'Pablo Tosetto'],
+      firmantes: ['Andrés Blancato', 'Emanuel Duarte Durán'],
+    },
+    nota: 'Siempre con la autorización de Higiene y Seguridad, aunque el código lo pida solo para calzado y ropa: lo que se compra con este código se lo piden igual. Si lo inicia otro sector, firma Carlos Alvarez o Pablo Tosetto; si lo inicia Higiene y Seguridad, su jefe (Andrés Blancato o Emanuel Duarte Durán). Emanuel Georgis no autoriza.',
   },
   {
     codigos: ['602'],

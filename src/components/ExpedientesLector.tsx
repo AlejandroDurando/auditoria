@@ -201,24 +201,63 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
 const COLUMNAS = '6.5rem 5.75rem 9.25rem 5.75rem 3.25rem minmax(8.75rem, 1fr) 8.25rem';
 type Filtro = 'todos' | Estado;
 
-/** Datos de la planilla control de un expediente auditado: cabecera y, como
- *  observaciones, lo que no dio OK (N° de orden = PIMyS del pago). */
+/** Datos de la planilla control de un expediente auditado: la cabecera y,
+ *  como observaciones, lo que no dio OK. */
 export interface DatosPlanillaControl {
   sector: string; expediente: string; fondoFijo: string; fecha: string;
   filas: Array<{ orden: string; observacion: string }>;
 }
 
+// Palabras que marcan la parte de una observacion que dice que esta mal.
+const SENALA = /falta|no coincide|no figura|distint|difier|posterior|vencid|fuera de|no se pudo|no se encontr|no se ley|repetid|ilegible|no habilitad|no cuadra|no cumple|supera|excede|\bsin\b/i;
+
+const sinTildes = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+/** Observacion resumida para la planilla: la parte del texto que dice que
+ *  esta mal, sin la clave interna (V7, D2). El nombre del control va adelante
+ *  solo si el texto no lo nombra ("Pedido vs factura: No figura …"). */
+function resumen(titulo: string, texto: string): string {
+  const limpio = texto.replace(/\*\*/g, '').replace(/\s*\((?:OCR|IA)\)/g, '');
+  // Bloques ('Aprobador 1: … | Aprobador 2: … · Codigo 226: … FALTA'): el primero que señala el problema.
+  const bloques = limpio.split(/\s[·|]\s|\n/).map(x => x.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  let frase = (bloques.find(x => SENALA.test(x)) || bloques[0] || '').replace(/[.\s]+$/, '');
+  if (frase.length > 150) {
+    // Bloque largo: la oracion que señala el problema y, si entra, la anterior
+    // (el dato). No corta en 'S. A.' ni dentro de un importe.
+    const oraciones = frase.split(/(?<!\b[A-Z])\.\s+(?=[A-ZÁÉÍÓÚÑ0-9])/).map(x => x.trim()).filter(Boolean);
+    const n = Math.max(oraciones.findIndex(x => SENALA.test(x)), 0);
+    const conAnterior = n > 0 ? `${oraciones[n - 1]}. ${oraciones[n]}` : oraciones[n];
+    frase = conAnterior.length <= 150 ? conAnterior : oraciones[n];
+    if (frase.length > 150) frase = `${frase.slice(0, 147).trimEnd()}…`;
+  }
+  const nombrado = sinTildes(titulo).split(/[^a-z0-9]+/).filter(w => w.length >= 4)
+    .some(w => sinTildes(frase).includes(w));
+  return !frase ? titulo : nombrado ? frase : `${titulo}: ${frase}`;
+}
+
+// Documento del expediente al que corresponde cada control que no es de un pago.
+const DOCUMENTO_DE_EXPEDIENTE: Record<string, string> = { V14: 'balance', V15: 'libro_diario' };
+
+/** El N° de orden es el del documento en TIMBÓ: la carátula es el 1 y cada
+ *  pago sigue en el orden de la carpeta (el mismo de la lista Documentos). */
 function datosPlanillaControl(e: ExpedienteLector): DatosPlanillaControl {
-  const unaLinea = (t: string) => t.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
+  const ordenDe = (indice: number | undefined) => (indice !== undefined && indice >= 0 ? String(indice + 1) : '');
   return {
     sector: e.hoja,
     expediente: e.expediente,
     fondoFijo: e.rendicion,
     fecha: '',
     filas: hallazgosDe(e.result, e.estado).map(h => ({
-      orden: h.pago?.orderNumber || '',
-      observacion: unaLinea(`${h.id} ${h.titulo}: ${h.observaciones}`),
-    })),
+      orden: h.pago
+        // Sin el indice de documentos: caratula 1, primer pago 2…
+        ? ordenDe(h.pago.sourceFileIdx ?? (h.pagoIdx !== undefined ? h.pagoIdx + 1 : undefined))
+        : ordenDe(e.archivos.findIndex(a => a.tipo === DOCUMENTO_DE_EXPEDIENTE[h.id])),
+      observacion: resumen(h.titulo, h.observaciones),
+    }))
+      // En el orden de TIMBÓ; lo que no tiene documento, al final.
+      .map((f, i) => ({ f, i }))
+      .sort((a, b) => (Number(a.f.orden) || 9999) - (Number(b.f.orden) || 9999) || a.i - b.i)
+      .map(x => x.f),
   };
 }
 

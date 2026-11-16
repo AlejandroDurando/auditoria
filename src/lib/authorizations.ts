@@ -113,6 +113,13 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
     nota: 'Previa autorización del Área Control de Pérdidas, lo inicie quien lo inicie.',
   },
   {
+    codigos: ['103'],
+    concepto: 'Materiales menores de seguridad (ropa, calzado y elementos de trabajo)',
+    tipo: 'fijo',
+    firmantes: ['Andrés Blancato', 'Emanuel Duarte Durán', 'Pablo Tosetto'],
+    nota: 'Siempre con la autorización de Higiene y Seguridad, aunque el código lo pida solo para calzado y ropa: lo que se compra con este código se lo piden igual. Basta con cualquiera de los firmantes.',
+  },
+  {
     codigos: ['602'],
     concepto: 'Requiere autorización específica del responsable del área',
     tipo: 'fijo',
@@ -135,7 +142,11 @@ export const AUTORIZACIONES_POR_CODIGO: AutorizacionCodigo[] = [
 export const AUTORIZACIONES_POR_SECTOR: AutorizacionSector[] = [
   { sector: 'Capacitación', agentes: ['Julio Tascón'], jefes: ['Francisco Catinot'] },
   { sector: 'Ingeniería', agentes: ['Mario Alberto'], jefes: ['Carlos Curet'] },
-  { sector: 'Higiene y Seguridad', agentes: ['Carlos Alvarez'], jefes: ['Andrés Blancato'] },
+  {
+    sector: 'Higiene y Seguridad',
+    agentes: ['Carlos Alvarez', 'Emanuel Georgis', 'Pablo Tosetto'],
+    jefes: ['Andrés Blancato', 'Emanuel Duarte Durán'],
+  },
   {
     sector: 'Cómputos',
     agentes: ['Adrián Lapasin'],
@@ -156,6 +167,11 @@ export const AUTORIZACIONES_POR_SECTOR: AutorizacionSector[] = [
     sector: 'Compras Rafaela',
     agentes: ['Diego Cordero', 'Mauro Restelli'],
     jefes: ['Gustavo Alberdi'],
+  },
+  {
+    sector: 'Asesoría Letrada',
+    agentes: ['Natalia Heinicke', 'Alejandra Galle', 'Rodrigo Mazzarelli'],
+    jefes: ['Carlos Paganini'],
   },
 ];
 

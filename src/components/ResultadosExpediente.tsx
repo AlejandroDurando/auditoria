@@ -312,9 +312,17 @@ export function ResultadosExpediente({
                   const v4Val = p?.validations?.find(val => (val as any)?.code?.toLowerCase() === 'v4' || val?.id?.toLowerCase() === 'v4' || (val as any)?.code?.toLowerCase() === 'validation_v4');
                   const v4Obs = (v4Val?.observations || '').toUpperCase();
                   const cleanSigner = expectedSigner.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-                  const hasProperSignature = v4Obs.includes(expectedSigner.toUpperCase())
-                    || v4Obs.includes(cleanSigner)
-                    || (v4Val?.status === 'pass' && !v4Obs.includes('FALTA'));
+                  // Firma del Jefe Administrativo, segun V4: si V4 dice que falta
+                  // o dio Error, es Error (nunca "verificada" porque la
+                  // observacion nombre al que falta); sin V4 concluyente, Revisar.
+                  const falta = v4Obs.includes('FALTA');
+                  const nombrado = v4Obs.includes(expectedSigner.toUpperCase()) || v4Obs.includes(cleanSigner);
+                  const firma: Estado = !falta && (nombrado || v4Val?.status === 'pass') ? 'ok'
+                    : falta || v4Val?.status === 'fail' ? 'error'
+                    : 'revisar';
+                  const rotuloFirma = firma === 'ok' ? 'Firma verificada'
+                    : firma === 'error' ? `Falta la firma de ${expectedSigner}`
+                    : 'Revisar la firma';
 
                   return (
                     <div key={idx} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 py-1.5 border-b border-linea-suave last:border-b-0 text-sm">
@@ -324,7 +332,7 @@ export function ResultadosExpediente({
                       </span>
                       <span className="ml-auto flex items-center gap-3">
                         {p.amount !== undefined && p.amount > 0 && <span className="cifras">{formatCurrency(p.amount)}</span>}
-                        <EstadoBadge estado={hasProperSignature ? 'ok' : 'error'}>{hasProperSignature ? 'Firma verificada' : 'Firma no encontrada'}</EstadoBadge>
+                        <EstadoBadge estado={firma}>{rotuloFirma}</EstadoBadge>
                       </span>
                     </div>
                   );
@@ -334,6 +342,9 @@ export function ResultadosExpediente({
           )}
         </div>
       )}
+
+      {/* Indice de rotacion: con los avisos, antes de los pagos */}
+      {result?.rotacion && <IndiceRotacion rotacion={result.rotacion} />}
 
       {/* Planilla revisiva lista (auditoria con IA sin errores) */}
       {payments.length > 0 && !hasErrors && (onIrRevisiva || onIrPlanilla) && (
@@ -494,8 +505,6 @@ export function ResultadosExpediente({
         </Panel>
       )}
 
-      {result?.rotacion && <IndiceRotacion rotacion={result.rotacion} />}
-
       {/* Informe para copiar (auditoria con IA) */}
       {informeTexto !== undefined && (
         <div id="informe-copiable">
@@ -621,14 +630,8 @@ interface PaymentRowProps {
 }
 
 function PaymentRow({ idx, payment, isExpanded, onToggle, mode, conCodigos, onViewPdf }: PaymentRowProps) {
-  const [verOk, setVerOk] = useState(false);
   const validaciones = validacionesDePago(payment, mode);
   const estado = peorEstado(validaciones.map(v => v.estado));
-  const conHallazgo = validaciones.filter(v => v.estado !== 'ok');
-  const bien = validaciones.filter(v => v.estado === 'ok');
-  // Sin hallazgos, se abre para ver las validaciones: van todas. Con
-  // hallazgos, las OK quedan plegadas en una linea.
-  const mostrarOk = conHallazgo.length === 0 || verOk;
 
   const ver = (validacion?: string) => onViewPdf?.(payment.sourceFileIdx || 0, payment.pageNumber, validacion);
 
@@ -667,27 +670,8 @@ function PaymentRow({ idx, payment, isExpanded, onToggle, mode, conCodigos, onVi
           {payment?.leidoPorOcr && (
             <p className="px-3.5 pt-2 text-xs text-tenue">Leído por OCR: {payment.leidoPorOcr}</p>
           )}
-          {conHallazgo.map(v => (
-            <ValidacionFila
-              key={v.id}
-              v={v}
-              accion={payment.pageNumber && onViewPdf ? <BotonVer rotulo={`Ver el PDF (${v.id})`} onClick={() => ver(v.id.toLowerCase())} /> : undefined}
-            />
-          ))}
-          {conHallazgo.length > 0 && bien.length > 0 && (
-            <div className="flex items-center gap-3 px-3.5 h-[2.125rem] border-b border-linea-suave last:border-b-0">
-              <EstadoBadge estado="ok">{bien.length} {bien.length === 1 ? 'validación' : 'validaciones'} OK</EstadoBadge>
-              <button
-                type="button"
-                onClick={() => setVerOk(v => !v)}
-                aria-expanded={verOk}
-                className="text-xs font-medium text-acento bg-transparent border-none p-0 cursor-pointer hover:underline"
-              >
-                {verOk ? 'Ocultar' : 'Ver todas'}
-              </button>
-            </div>
-          )}
-          {mostrarOk && bien.map(v => (
+          {/* Todas las validaciones, en su orden (V1, V2…). */}
+          {validaciones.map(v => (
             <ValidacionFila
               key={v.id}
               v={v}

@@ -316,14 +316,13 @@ export function ExpedientesLector() {
   if (actual) {
     return (
       <div ref={columnaRef} style={anchoColumna ? { width: anchoColumna.ancho, maxWidth: 'none', marginLeft: anchoColumna.corrimiento } : undefined}>
-        {/* En pantallas angostas no se ve la ruta de la barra superior. */}
         <button
           type="button"
           onClick={() => volverA('lector')}
-          className="md:hidden mb-4 inline-flex items-center gap-1.5 text-xs text-tinta-2 hover:text-tinta cursor-pointer bg-transparent border-none p-0"
+          className={cn(boton.fantasma, '-ml-2 mb-3 h-[1.625rem] text-xs')}
         >
           <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
-          Expedientes auditados
+          Volver a los expedientes auditados
         </button>
         <ResultadosExpediente
           result={actual.result}

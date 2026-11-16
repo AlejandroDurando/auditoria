@@ -162,7 +162,8 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
                                     detalle: Fila[], resumen: Fila[] | undefined): ExpedienteLector {
   const [expediente, rendicion] = partesClave(clave);
   const cabecera = detalle[0];
-  const estado = texto(cabecera[4]);
+  let estado = texto(cabecera[4]);
+  let ajustado = false;
   const { fecha, responsable, auditado } = datosCabecera(texto(cabecera[5]));
   const { montoAsignado, saldoBanco, totales, importes } = leerResumen(resumen || []);
 
@@ -212,6 +213,7 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
     // 03/11/2026). Los bloques exportados antes lo traen en REVISAR.
     if (id === 'V9' && v.status === 'warning' && /esta fuera de la vigencia/.test(v.observations)) {
       v.status = 'pass';
+      ajustado = true;
     }
     // Codigos de gasto del PIMyS, para mostrarlos junto al numero.
     if (id === 'V3' && pagos.length) {
@@ -249,6 +251,15 @@ export function convertirExpediente(region: string, hoja: string, clave: string,
       vales.push({ numero: m[1], legible: false, textoExtraido: m[2] });
     }
     if (vales.length) p.vales = vales;
+  }
+
+  // Con un V9 corregido, el estado guardado en el Sheet ya no vale: se
+  // recalcula con las validaciones corregidas (FF 60 Compras: decia REVISAR
+  // y todos los pagos quedaban en verde).
+  if (ajustado) {
+    const todas = [...pagos.flatMap(p => p.validations), ...Object.values(deExpediente)];
+    estado = todas.some(v => v.status === 'fail') ? 'ERROR'
+      : todas.some(v => v.status === 'warning') ? 'REVISAR' : 'OK';
   }
 
   // V14 y V16 van a su lugar en el Balance si dieron OK o ERROR; un REVISAR,

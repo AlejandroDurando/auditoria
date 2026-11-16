@@ -4,6 +4,7 @@ import { AUTORIZACIONES_POR_CODIGO } from '../lib/authorizations';
 import { cn, formatCurrency } from '../lib/utils';
 import type { AuditResult, PaymentData } from '../lib/gemini';
 import { formatHistoryTitle, hasAccountingCode, renderBold, safeText, toSentenceCase } from '../lib/formato';
+import { destacarDatos } from '../lib/destacar';
 import {
   estadoGeneral, peorEstado, validacionesDeExpediente, validacionesDePago, type ValidacionVista,
 } from '../lib/hallazgos';
@@ -37,17 +38,20 @@ export interface ResultadosExpedienteProps {
   informeTexto?: string;
 }
 
-/** Texto de una observacion: respeta los saltos de linea y las **negritas**. */
-function Observacion({ texto, className }: { texto: string; className?: string }) {
+/** Texto de una observacion: respeta los saltos de linea y las **negritas**.
+ *  Con `clave` (V1, V6…), el dato a controlar de esa validacion va en negrita. */
+function Observacion({ texto, clave, className }: { texto: string; clave?: string; className?: string }) {
   const lineas = (texto || '').split('\n');
   return (
     <p className={cn('text-sm text-tinta-2 min-w-0 break-words', className)}>
-      {lineas.map((linea, i) => (
-        <React.Fragment key={i}>
-          {renderBold(linea)}
-          {i < lineas.length - 1 && <br />}
-        </React.Fragment>
-      ))}
+      {clave && !(texto || '').includes('**')
+        ? destacarDatos(clave, texto || '')
+        : lineas.map((linea, i) => (
+          <React.Fragment key={i}>
+            {renderBold(linea)}
+            {i < lineas.length - 1 && <br />}
+          </React.Fragment>
+        ))}
     </p>
   );
 }
@@ -67,8 +71,8 @@ function BotonVer({ onClick, rotulo }: { onClick: () => void; rotulo: string }) 
 }
 
 /** Renglon de una validacion: estado, clave, titulo, observacion y acceso al PDF. */
-function ValidacionFila({ v, accion, pie }: {
-  v: ValidacionVista; accion?: React.ReactNode; pie?: React.ReactNode; key?: React.Key;
+function ValidacionFila({ v, accion, pie, destacar }: {
+  v: ValidacionVista; accion?: React.ReactNode; pie?: React.ReactNode; destacar?: boolean; key?: React.Key;
 }) {
   return (
     <div className="flex items-start gap-3 px-3.5 py-2 border-b border-linea-suave last:border-b-0">
@@ -81,7 +85,7 @@ function ValidacionFila({ v, accion, pie }: {
             {pie}
           </span>
         </div>
-        <Observacion texto={v.observaciones} className={cn('flex-1 mt-0.5 @3xl:mt-0', v.estado !== 'ok' && 'text-tinta')} />
+        <Observacion texto={v.observaciones} clave={destacar ? v.id : undefined} className={cn('flex-1 mt-0.5 @3xl:mt-0', v.estado !== 'ok' && 'text-tinta')} />
       </div>
       {accion ?? <span className="w-[1.625rem] shrink-0" aria-hidden="true" />}
     </div>
@@ -91,7 +95,7 @@ function ValidacionFila({ v, accion, pie }: {
 /** Aviso que pide una accion o un control: borde, punto de estado y texto. */
 function Aviso({ estado, titulo, children }: { estado: Estado; titulo: string; children: React.ReactNode }) {
   return (
-    <div className="border border-linea rounded-[0.5rem] bg-superficie">
+    <div className="border border-linea rounded-[0.5rem] bg-superficie caja">
       <div className="flex items-start gap-2.5 px-3.5 py-3">
         <Punto estado={estado} className="mt-[0.4375rem]" />
         <div className="min-w-0 flex-1">
@@ -232,7 +236,7 @@ export function ResultadosExpediente({
       </div>
 
       {/* Resumen */}
-      <div className="mt-5 grid grid-cols-6 @2xl:grid-cols-[1fr_2fr_1fr_1fr_1fr] gap-px border border-linea rounded-[0.5rem] bg-linea overflow-hidden">
+      <div className="mt-5 grid grid-cols-6 @2xl:grid-cols-[1fr_2fr_1fr_1fr_1fr] gap-px border border-linea rounded-[0.5rem] bg-linea overflow-hidden caja">
         <Cifra rotulo={modo === 'Viáticos' ? 'Viáticos' : 'Pagos'} valor={String(payments.length)} className="col-span-2" />
         <Cifra
           rotulo="Importe total"
@@ -341,7 +345,7 @@ export function ResultadosExpediente({
 
       {/* Planilla revisiva lista (auditoria con IA sin errores) */}
       {payments.length > 0 && !hasErrors && (onIrRevisiva || onIrPlanilla) && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border border-linea rounded-[0.5rem] bg-superficie px-3.5 py-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border border-linea rounded-[0.5rem] bg-superficie caja px-3.5 py-3">
           <div className="flex items-start gap-2.5 min-w-0">
             <Punto estado="ok" className="mt-[0.4375rem]" />
             <div className="min-w-0">
@@ -629,6 +633,7 @@ function PaymentRow({ idx, payment, isExpanded, onToggle, mode, conCodigos, onVi
             <ValidacionFila
               key={v.id}
               v={v}
+              destacar={mode !== 'Viáticos'}
               accion={payment.pageNumber && onViewPdf ? <BotonVer rotulo={`Ver el PDF (${v.id})`} onClick={() => ver(v.id.toLowerCase())} /> : undefined}
             />
           ))}

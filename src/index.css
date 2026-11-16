@@ -2,9 +2,9 @@
 @import "tailwindcss";
 
 /* ─── Sistema de diseño ────────────────────────────────────────────────────
-   Una planilla de auditoria, no un dashboard: superficies planas, lineas de
-   1 px en vez de sombras, numeros alineados y color solo para lo que pide
-   atencion.
+   Una planilla de auditoria, no un dashboard: paneles blancos sobre un lienzo
+   mas oscuro, lineas de 1 px, numeros alineados y color solo para lo que
+   pide atencion.
 
    Toda la pagina usa estos tokens (bg-superficie, text-tenue, border-linea…),
    nunca colores fijos: el modo oscuro solo redefine las variables.
@@ -44,16 +44,16 @@
   --text-3xl: 1.5rem;
   --text-3xl--line-height: 2rem;
 
-  --color-lienzo: #FCFBF8;
+  --color-lienzo: #F3F1EB;
   --color-superficie: #FFFFFF;
-  --color-barra: #F3F1EA;
-  --color-barra-activa: #E5E1D6;
-  --color-hundida: #F6F4EE;
-  --color-hundida-2: #ECE8DE;
-  --color-realce: #F3F1EA;
-  --color-linea: #E4E0D6;
-  --color-linea-suave: #EEEBE2;
-  --color-linea-fuerte: #D3CEC1;
+  --color-barra: #E9E6DD;
+  --color-barra-activa: #DBD7CB;
+  --color-hundida: #F7F5F0;
+  --color-hundida-2: #EAE6DC;
+  --color-realce: #F1EEE7;
+  --color-linea: #D6D1C4;
+  --color-linea-suave: #E3DFD5;
+  --color-linea-fuerte: #C4BEB0;
   --color-campo: #FFFFFF;
 
   --color-tinta: #1B1B19;
@@ -152,6 +152,8 @@
   color-scheme: light;
   /* Sombra solo para lo que flota: buscador, menus, dialogos, panel del PDF. */
   --sombra-flotante: 0 0 0 1px rgba(27, 27, 25, 0.04), 0 8px 24px -6px rgba(27, 27, 25, 0.18);
+  /* Paneles: apenas despegados del fondo. */
+  --sombra-panel: 0 1px 2px rgba(27, 27, 25, 0.06), 0 1px 1px rgba(27, 27, 25, 0.03);
   --foco: color-mix(in srgb, var(--color-acento) 55%, transparent);
   /* Escala general de la interfaz: 1 = texto de 13 px. */
   --escala: 1.1;
@@ -160,17 +162,18 @@
 .dark {
   color-scheme: dark;
   --sombra-flotante: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 12px 32px -8px rgba(0, 0, 0, 0.7);
+  --sombra-panel: 0 1px 2px rgba(0, 0, 0, 0.45);
 
-  --color-lienzo: #131416;
-  --color-superficie: #18191C;
-  --color-barra: #0E0F11;
-  --color-barra-activa: #24262A;
-  --color-hundida: #1C1E21;
-  --color-hundida-2: #25282C;
-  --color-realce: #1F2124;
-  --color-linea: #292C30;
-  --color-linea-suave: #212327;
-  --color-linea-fuerte: #3A3E44;
+  --color-lienzo: #0F1012;
+  --color-superficie: #1A1C1F;
+  --color-barra: #090A0B;
+  --color-barra-activa: #23262A;
+  --color-hundida: #141618;
+  --color-hundida-2: #26292D;
+  --color-realce: #212327;
+  --color-linea: #33373C;
+  --color-linea-suave: #2A2D31;
+  --color-linea-fuerte: #454A51;
   --color-campo: #101113;
 
   --color-tinta: #EAE8E3;
@@ -282,10 +285,10 @@
 .papel, .dark .papel {
   color-scheme: light;
   --color-superficie: #FFFFFF;
-  --color-hundida: #F6F4EE;
+  --color-hundida: #F7F5F0;
   --color-hundida-2: #ECE8DE;
   --color-realce: #F3F1EA;
-  --color-linea: #E4E0D6;
+  --color-linea: #D6D1C4;
   --color-linea-suave: #EEEBE2;
   --color-linea-fuerte: #D3CEC1;
   --color-campo: #FFFFFF;
@@ -331,10 +334,10 @@ body {
   outline-offset: 1px;
 }
 
-/* Paneles planos: `caja` ya no agrega sombra, la separacion la da el borde.
+/* Paneles: fondo blanco sobre el lienzo, borde y una sombra minima (`caja`).
    `caja-alta` y `flotante` quedan para lo que flota. */
 @utility caja {
-  box-shadow: none;
+  box-shadow: var(--sombra-panel);
 }
 @utility caja-alta {
   box-shadow: var(--sombra-flotante);

@@ -35,6 +35,14 @@ function buildFilas(n: number): Fila[] {
   return Array.from({ length: n }, (_, i) => ({ id: i + 1, orden: '', observacion: '' }));
 }
 
+/** Renglones con que arranca la planilla: los que llegan con los datos del
+ *  expediente (lo que no dio OK) y, debajo, renglones en blanco hasta seis. */
+function filasIniciales(datos?: Array<{ orden: string; observacion: string }>): Fila[] {
+  const dadas = (datos || []).map((f, i) => ({ id: i + 1, orden: f.orden, observacion: f.observacion }));
+  const blancos = Math.max(6 - dadas.length, dadas.length ? 1 : 6);
+  return [...dadas, ...Array.from({ length: blancos }, (_, i) => ({ id: dadas.length + i + 1, orden: '', observacion: '' }))];
+}
+
 function descargarPDF(meta: Metadata, filas: Fila[]) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   doc.setFont('helvetica', 'normal');
@@ -108,20 +116,25 @@ function descargarPDF(meta: Metadata, filas: Fila[]) {
   doc.text('OBSERVACIONES', 57, y + 4.5);
   y += 7;
 
-  // Filas
+  // Filas: el alto sigue al texto de la observacion; si no entra, hoja nueva.
   for (const fila of filas) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    const lineas: string[] = doc.splitTextToSize(fila.observacion || '—', 136);
+    const alto = Math.max(7, lineas.length * 4 + 3);
+    if (y + alto > 280) { doc.addPage(); y = 15; }
     doc.setDrawColor(200, 198, 190);
     doc.setLineWidth(0.2);
-    doc.rect(15, y, 40, 7);
-    doc.rect(55, y, 140, 7);
+    doc.rect(15, y, 40, alto);
+    doc.rect(55, y, 140, alto);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(15, 110, 86);
     doc.text(fila.orden || '—', 17, y + 4.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(26, 26, 26);
-    doc.text(fila.observacion || '—', 57, y + 4.5, { maxWidth: 136 });
-    y += 7;
+    doc.text(lineas, 57, y + 4.5);
+    y += alto;
   }
 
   // Footer
@@ -143,7 +156,11 @@ function descargarPDF(meta: Metadata, filas: Fila[]) {
 }
 
 interface Props {
-  initialData?: { sector: string; expediente: string; fondoFijo: string; fecha: string } | null;
+  initialData?: {
+    sector: string; expediente: string; fondoFijo: string; fecha: string;
+    /** Observaciones ya cargadas (expediente auditado por el lector). */
+    filas?: Array<{ orden: string; observacion: string }>;
+  } | null;
 }
 
 export function PlanillaControlFF({ initialData }: Props) {
@@ -156,7 +173,7 @@ export function PlanillaControlFF({ initialData }: Props) {
     // completa, no con la fecha del expediente auditado.
     fecha: hoy(),
   }));
-  const [filas, setFilas] = useState<Fila[]>(buildFilas(6));
+  const [filas, setFilas] = useState<Fila[]>(() => filasIniciales(initialData?.filas));
   const prevInitialData = React.useRef(initialData);
 
   // Sincronizar cuando llegan nuevos datos de auditoría
@@ -169,7 +186,7 @@ export function PlanillaControlFF({ initialData }: Props) {
         fondoFijo: initialData.fondoFijo,
         fecha: hoy(),
       });
-      setFilas(buildFilas(6));
+      setFilas(filasIniciales(initialData.filas));
       setVista('formulario');
     }
   }, [initialData]);
@@ -181,7 +198,7 @@ export function PlanillaControlFF({ initialData }: Props) {
   }
 
   function agregarFila() {
-    setFilas(prev => [...prev, { id: prev.length + 1, observacion: '' }]);
+    setFilas(prev => [...prev, { id: prev.length + 1, orden: '', observacion: '' }]);
   }
 
   function actualizarFila(id: number, campo: 'orden' | 'observacion', valor: string) {

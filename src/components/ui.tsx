@@ -195,9 +195,9 @@ export function TituloSeccion({ children, cantidad, detalle, className }: {
   );
 }
 
-/** Panel con borde: contenedor de tablas y listas. Sin sombra. */
+/** Panel: contenedor de tablas y listas, blanco sobre el lienzo. */
 export function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn('border border-linea rounded-[0.5rem] bg-superficie overflow-hidden', className)}>{children}</div>;
+  return <div className={cn('border border-linea rounded-[0.5rem] bg-superficie overflow-hidden caja', className)}>{children}</div>;
 }
 
 /** Pestañas subrayadas (regiones, modos). */

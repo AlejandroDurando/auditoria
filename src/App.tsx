@@ -545,7 +545,7 @@ export default function App() {
   const [pdfReparticion, setPdfReparticion] = useState('');
   const [pdfGciaSuc, setPdfGciaSuc] = useState('');
   const [selectedSector, setSelectedSector] = useState('');
-  const [planillaInitialData, setPlanillaInitialData] = useState<{sector:string;expediente:string;fondoFijo:string;fecha:string} | null>(null);
+  const [planillaInitialData, setPlanillaInitialData] = useState<{sector:string;expediente:string;fondoFijo:string;fecha:string;filas?:Array<{orden:string;observacion:string}>} | null>(null);
 
   const [activeAuditId, setActiveAuditId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -573,7 +573,7 @@ export default function App() {
 
   const [pdfWidth, setPdfWidth] = useState(600);
   const [isDragging, setIsDragging] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(256);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
   const [sidebarOculta, setSidebarOculta] = useState(() => {
     try { return localStorage.getItem('sidebarOculta') === '1'; } catch { return false; }
   });
@@ -1387,7 +1387,11 @@ export default function App() {
         />
         <div className="h-11 shrink-0 pl-[1.125rem] pr-2.5 flex items-center gap-[0.5625rem] select-none">
           <Logo className="w-[1.375rem] h-[1.375rem] shrink-0" />
-          <span className="text-sm font-semibold text-tinta truncate">Auditor de expedientes</span>
+          <span className="flex-1 min-w-0 text-sm font-semibold text-tinta truncate">Auditor de expedientes</span>
+          <button type="button" onClick={alternarSidebar} title="Ocultar barra lateral" aria-label="Ocultar barra lateral"
+            className="w-[1.875rem] h-[1.875rem] flex items-center justify-center rounded-[0.375rem] bg-transparent border-none text-tinta-2 hover:bg-barra-activa/70 hover:text-tinta cursor-pointer transition-colors shrink-0">
+            <PanelLeft className="w-4 h-4" aria-hidden="true" />
+          </button>
         </div>
 
         <nav aria-label="Principal" className="flex-1 overflow-y-auto px-2.5 pt-1.5 pb-3 flex flex-col gap-0.5">
@@ -1433,10 +1437,6 @@ export default function App() {
           >
             {darkMode ? <Sun className="w-4 h-4 shrink-0" aria-hidden="true" /> : <Moon className="w-4 h-4 shrink-0" aria-hidden="true" />}
             <span className="truncate">{darkMode ? 'Modo claro' : 'Modo oscuro'}</span>
-          </button>
-          <button type="button" onClick={alternarSidebar} title="Ocultar barra lateral" aria-label="Ocultar barra lateral"
-            className="w-[1.875rem] h-[1.875rem] flex items-center justify-center rounded-[0.375rem] bg-transparent border-none text-tinta-2 hover:bg-barra-activa/70 hover:text-tinta cursor-pointer transition-colors shrink-0">
-            <PanelLeft className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </aside>}
@@ -1660,7 +1660,11 @@ export default function App() {
             </>
           )}
 
-          {activeTab === 'Lector' && <ExpedientesLector />}
+          {activeTab === 'Lector' && (
+            <ExpedientesLector
+              onPlanillaControl={(datos) => { setPlanillaInitialData(datos); setPlanillasOpen(true); setActiveTab('Planilla'); }}
+            />
+          )}
 
           {activeTab === 'Matriculador' && <Matriculador />}
 

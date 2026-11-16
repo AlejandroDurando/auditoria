@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, ExternalLink, ListFilter, Loader2, RefreshCw, X } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, ExternalLink, FileSpreadsheet, ListFilter, Loader2, RefreshCw, X } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 import type { ArchivoPdf, ExpedienteLector } from '../../api/expedientes';
 import { ResultadosExpediente } from './ResultadosExpediente';
@@ -201,7 +201,28 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
 const COLUMNAS = '6.5rem 5.75rem 9.25rem 5.75rem 3.25rem minmax(8.75rem, 1fr) 8.25rem';
 type Filtro = 'todos' | Estado;
 
-export function ExpedientesLector() {
+/** Datos de la planilla control de un expediente auditado: cabecera y, como
+ *  observaciones, lo que no dio OK (N° de orden = PIMyS del pago). */
+export interface DatosPlanillaControl {
+  sector: string; expediente: string; fondoFijo: string; fecha: string;
+  filas: Array<{ orden: string; observacion: string }>;
+}
+
+function datosPlanillaControl(e: ExpedienteLector): DatosPlanillaControl {
+  const unaLinea = (t: string) => t.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
+  return {
+    sector: e.hoja,
+    expediente: e.expediente,
+    fondoFijo: e.rendicion,
+    fecha: '',
+    filas: hallazgosDe(e.result, e.estado).map(h => ({
+      orden: h.pago?.orderNumber || '',
+      observacion: unaLinea(`${h.id} ${h.titulo}: ${h.observaciones}`),
+    })),
+  };
+}
+
+export function ExpedientesLector({ onPlanillaControl }: { onPlanillaControl?: (datos: DatosPlanillaControl) => void }) {
   const { clave, expedientes, cargando, error } = useExpedientesLector();
   const [busqueda, setBusqueda] = useState('');
   // El expediente abierto es parte de la direccion (#/lector/<id>): el "atras"
@@ -344,6 +365,12 @@ export function ExpedientesLector() {
               <Download className="w-3.5 h-3.5" aria-hidden="true" />
               Planilla revisiva
             </button>
+            {onPlanillaControl && (
+              <button type="button" onClick={() => onPlanillaControl(datosPlanillaControl(actual))} className={boton.secundario}>
+                <FileSpreadsheet className="w-3.5 h-3.5" aria-hidden="true" />
+                Planilla control
+              </button>
+            )}
           </>}
           onViewPdf={actual.archivos.length ? (idx, _pag, validacion) =>
             setPdfAbierto(actual.archivos[idx] || null, hojaDe(actual.archivos[idx], validacion)) : undefined}

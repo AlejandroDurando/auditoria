@@ -155,10 +155,10 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
     return () => { document.removeEventListener('mousedown', afuera); document.removeEventListener('keydown', tecla); };
   }, [desplegado]);
   let pago = 0;
-  // Caja ancha (ocupa lo que dejan las planillas). La lista se despliega
-  // debajo con el ancho de toda la fila y todos los documentos a la vista.
+  // La lista se despliega debajo con el ancho del nombre mas largo (con tope
+  // en el ancho de la pantalla) y todos los documentos a la vista.
   return (
-    <div ref={caja} className="flex-[1_1_14rem] min-w-0 max-w-full border border-linea-fuerte rounded-[0.375rem] bg-superficie">
+    <div ref={caja} className="relative min-w-[min(100%,17rem)] max-w-full border border-linea-fuerte rounded-[0.375rem] bg-superficie">
       <button
         type="button"
         onClick={() => setDesplegado(d => !d)}
@@ -170,7 +170,7 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
         <ChevronDown className={cn('w-3.5 h-3.5 text-tenue transition-transform', desplegado && 'rotate-180')} aria-hidden="true" />
       </button>
       {desplegado && (
-        <ol className="absolute z-30 left-0 right-0 top-full mt-1.5 m-0 p-1 list-none bg-superficie border border-linea rounded-[0.5rem] flotante">
+        <ol className="absolute z-30 left-0 top-full mt-1.5 w-max min-w-full max-w-[min(42rem,calc(100vw-2rem))] m-0 p-1 list-none bg-superficie border border-linea rounded-[0.5rem] flotante">
           {archivos.map(a => {
             const tipo = a.tipo || 'otro';
             const rotulo = tipo === 'pago' ? `Pago ${++pago}` : ROTULO_TIPO[tipo] || 'Documento';
@@ -185,7 +185,7 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
                   )}
                   title={a.nombre}
                 >
-                  <span className="w-[8.5rem] shrink-0 text-xs font-normal text-tenue whitespace-nowrap">{a.tipo ? rotulo : ''}</span>
+                  <span className="w-[4.75rem] sm:w-[8.5rem] shrink-0 text-xs font-normal text-tenue sm:whitespace-nowrap">{a.tipo ? rotulo : ''}</span>
                   <span className="min-w-0 break-words">{a.nombre.replace(/\.pdf$/i, '')}</span>
                 </button>
               </li>

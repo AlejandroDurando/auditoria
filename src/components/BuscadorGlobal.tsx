@@ -6,6 +6,7 @@ import type { ExpedienteLector } from '../../api/expedientes';
 import { cargarExpedientes, useExpedientesLector } from '../lib/expedientesLector';
 import { buscarEnGuia, cargarGuia, useGuia } from '../lib/guia';
 import { irA } from '../lib/navegacion';
+import { PESO, buscar, camposDePago, tokensDe, type Campo } from '../lib/busqueda';
 
 // Buscador del encabezado: busca a la vez en los expedientes del lector, en
 // el historial de auditorias del dashboard y en la guia telefonica. De cada
@@ -21,35 +22,15 @@ export interface EntradaHistorial {
   result: AuditResult;
 }
 
-const normalizar = (s: unknown) =>
-  (typeof s === 'string' ? s : s != null ? String(s) : '')
-    .normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-
-const palabras = (consulta: string) => normalizar(consulta).split(/[^a-z0-9ñ]+/).filter(Boolean);
-
-/** Los numeros tambien sin separadores: '30-71770897-7' se encuentra como
- *  '30717708977', '0005-00000822' como '000500000822' y '$1.104.293,01' como
- *  '1104293,01' o '110429301'. */
-const conNumerosJuntos = (t: string) =>
-  `${t} ${t.replace(/(?<=\d)[.\-/](?=\d)/g, '')} ${t.replace(/(?<=\d)[.\-/,](?=\d)/g, '')}`;
-
-// Texto de un pago en el que se busca: PIMyS, proveedor, codigos de gasto,
-// importe y lo que dicen sus validaciones (N° de factura, CUIT, aprobadores,
-// fechas, movil…). Se arma una sola vez por pago.
-const textosDePago = new WeakMap<PaymentData, string>();
-const textoPago = (p: PaymentData) => {
-  let t = textosDePago.get(p);
-  if (t === undefined) {
-    const importe = typeof p.amount === 'number' && !isNaN(p.amount)
-      ? `${p.amount.toFixed(2).replace('.', ',')} ${p.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}` : '';
-    t = conNumerosJuntos(normalizar([
-      `pimys ${p.orderNumber}`, p.providerName, (p.codigos || []).map(c => `codigo ${c}`).join(' '), importe,
-      p.leidoPorOcr ? 'ocr' : '', (p.validations || []).map(v => v?.observations || '').join(' '),
-      (p.vales || []).map(v => `vale ${v.numero}`).join(' '),
-    ].join(' ')));
-    textosDePago.set(p, t);
+// Campos de cada expediente y de sus pagos, armados una sola vez.
+const camposPagos = new WeakMap<PaymentData[], Array<{ pago: PaymentData; campos: Campo[] }>>();
+const pagosConCampos = (pagos: PaymentData[], archivos?: Array<{ nombre: string }>) => {
+  let c = camposPagos.get(pagos);
+  if (!c) {
+    c = pagos.map(p => ({ pago: p, campos: camposDePago(p, archivos?.[p.sourceFileIdx ?? -1]?.nombre) }));
+    camposPagos.set(pagos, c);
   }
-  return t;
+  return c;
 };
 
 /** Texto del expediente fuera de sus pagos: validaciones de expediente,
@@ -58,19 +39,9 @@ const textoResultado = (r: AuditResult | undefined) => !r ? '' : [
   r.balance_inversion?.validacion_v14?.detalle, r.balance_inversion?.conciliacion_total?.detalle,
   (r.validacionesExpediente || []).map(v => v.observations).join(' '),
   (r.duplicados || []).map(d => `${d.identificador} ${d.motivo}`).join(' '),
-  typeof r.totalAmount === 'number' ? `${r.totalAmount.toFixed(2).replace('.', ',')} ${r.totalAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}` : '',
 ].join(' ');
 
 const ESTADO: Record<string, string> = { OK: 'ok', ERROR: 'error con errores', REVISAR: 'revisar a revisar' };
-
-/** Todas las palabras de la consulta tienen que aparecer en el expediente o
- *  en uno de sus pagos. Si hizo falta mirar los pagos, se dice cual. */
-function coincide(cabecera: string, pagos: PaymentData[], tokens: string[]): { ok: boolean; pago?: PaymentData } {
-  const faltan = tokens.filter(t => !cabecera.includes(t));
-  if (!faltan.length) return { ok: true };
-  const pago = pagos.find(p => { const tp = textoPago(p); return faltan.every(t => tp.includes(t)); });
-  return pago ? { ok: true, pago } : { ok: false };
-}
 
 interface Resultado {
   clave: string;
@@ -79,6 +50,8 @@ interface Resultado {
   detalle: string;
   estado?: string;
   pago?: PaymentData;
+  /** Donde coincidio ('Factura 0002-00000098', 'Expediente 2026-00081008'). */
+  motivo?: string;
   abrir: () => void;
 }
 
@@ -128,46 +101,62 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
     return () => document.removeEventListener('mousedown', fuera);
   }, [abierto]);
 
-  const tokens = useMemo(() => palabras(consulta), [consulta]);
+  const tokens = useMemo(() => tokensDe(consulta), [consulta]);
 
   const grupos = useMemo(() => {
     if (!tokens.length) return { lector: [] as Resultado[], historial: [] as Resultado[], guia: [] as Resultado[], totalLector: 0, totalHistorial: 0, totalGuia: 0 };
     const deLector: Array<Resultado & { orden: number }> = [];
     for (const e of expedientes || []) {
-      const cabecera = conNumerosJuntos(normalizar([
-        `ff n ${e.rendicion} rendicion ${e.rendicion} fondo ${e.rendicion}`, e.hoja, e.region, `exp ${e.expediente} expediente`,
-        e.fecha, e.responsable, e.carpeta, ESTADO[e.estado.toUpperCase()] || e.estado, 'lector',
-        (e.archivos || []).map(a => a.nombre.replace(/\.pdf$/i, '')).join(' '), textoResultado(e.result),
-      ].join(' ')));
-      const c = coincide(cabecera, e.result.payments || [], tokens);
-      if (!c.ok) continue;
+      const r = e.result;
+      const cabecera: Campo[] = [
+        { etiqueta: 'FF', valor: e.rendicion, peso: PESO.ff, tipo: 'id' },
+        { etiqueta: 'Expediente', valor: e.expediente, peso: PESO.expediente, tipo: 'id', sufijo: true },
+        { etiqueta: 'Fondo', valor: `${e.hoja} ${e.region} ${e.carpeta || ''}`, peso: PESO.agencia, tipo: 'texto' },
+        { etiqueta: 'Responsable', valor: e.responsable || '', peso: PESO.responsable, tipo: 'texto' },
+        { etiqueta: 'Fecha', valor: e.fecha || '', peso: PESO.fecha, tipo: 'texto' },
+        { etiqueta: 'Importe total', valor: typeof r.totalAmount === 'number' ? String(r.totalAmount) : '', peso: PESO.importe, tipo: 'importe' },
+        { etiqueta: 'Estado', valor: `${ESTADO[e.estado.toUpperCase()] || e.estado} lector`, peso: PESO.estado, tipo: 'texto' },
+        { etiqueta: 'Documento', valor: (e.archivos || []).map(a => a.nombre.replace(/\.pdf$/i, '')).join(' · '), peso: PESO.archivo, tipo: 'texto' },
+        { etiqueta: 'Expediente', valor: textoResultado(r), peso: PESO.texto, tipo: 'texto' },
+      ];
+      const c = buscar(cabecera, pagosConCampos(r.payments || [], e.archivos), tokens);
+      if (!c) continue;
       deLector.push({
-        clave: `l-${e.id}`, tipo: 'lector', estado: e.estado, pago: c.pago,
+        clave: `l-${e.id}`, tipo: 'lector', estado: e.estado, pago: c.pago, motivo: c.motivo,
         titulo: `FF N° ${e.rendicion || '—'} · ${e.hoja}`,
         detalle: `Exp. ${e.expediente}${e.fecha ? ` (${e.fecha})` : ''} · ${e.region}`,
         abrir: () => onAbrirLector(e),
-        orden: Number((e.rendicion || '').replace(/\D/g, '')) || 0,
+        orden: c.puntos * 10000 + (Number((e.rendicion || '').replace(/\D/g, '')) || 0),
       });
     }
     deLector.sort((a, b) => b.orden - a.orden);
     const deHistorial: Resultado[] = [];
+    const ordenHistorial: number[] = [];
     for (const h of historial) {
       const r = h.result || ({} as AuditResult);
-      const cabecera = conNumerosJuntos(normalizar([
-        r.expedienteNumero, r.expedienteFecha, r.agenciaSucursal, r.fondoFijoNumero, `ff ${h.FF}`,
-        h.summary, r.responsable, r.mode, 'historial dashboard', textoResultado(r),
-      ].join(' ')));
-      const c = coincide(cabecera, r.payments || [], tokens);
-      if (!c.ok) continue;
+      const cabecera: Campo[] = [
+        { etiqueta: 'FF', valor: `${(r.fondoFijoNumero || '').replace(/\D/g, '')} ${h.FF || ''}`, peso: PESO.ff, tipo: 'id' },
+        { etiqueta: 'Expediente', valor: r.expedienteNumero || '', peso: PESO.expediente, tipo: 'id', sufijo: true },
+        { etiqueta: 'Fondo', valor: r.agenciaSucursal || '', peso: PESO.agencia, tipo: 'texto' },
+        { etiqueta: 'Responsable', valor: r.responsable || '', peso: PESO.responsable, tipo: 'texto' },
+        { etiqueta: 'Fecha', valor: r.expedienteFecha || '', peso: PESO.fecha, tipo: 'texto' },
+        { etiqueta: 'Importe total', valor: typeof r.totalAmount === 'number' ? String(r.totalAmount) : '', peso: PESO.importe, tipo: 'importe' },
+        { etiqueta: 'Resumen', valor: `${h.summary || ''} ${r.mode || ''} historial dashboard ${textoResultado(r)}`, peso: PESO.texto, tipo: 'texto' },
+      ];
+      const c = buscar(cabecera, pagosConCampos(r.payments || []), tokens);
+      if (!c) continue;
       const titulo = [r.agenciaSucursal, r.fondoFijoNumero].filter(Boolean).join(' — ')
         || (r.mode === 'Rapida' ? `${(r.payments || []).length} pagos sueltos` : `FF-${h.FF || 'sin ID'}`);
       deHistorial.push({
-        clave: `h-${h.id}`, tipo: 'historial', pago: c.pago, titulo,
+        clave: `h-${h.id}`, tipo: 'historial', pago: c.pago, motivo: c.motivo, titulo,
         detalle: [r.expedienteNumero ? `Exp. ${r.expedienteNumero}` : '',
           `auditado ${new Date(h.date).toLocaleDateString('es-AR')}`].filter(Boolean).join(' · '),
         abrir: () => onAbrirHistorial(h),
       });
+      ordenHistorial.push(c.puntos);
     }
+    const historialOrdenado = deHistorial.map((x, i) => ({ x, n: ordenHistorial[i] }))
+      .sort((a, b) => b.n - a.n).map(y => y.x);
     // Guia telefonica: solo coincidencias exactas; la seccion busca parecidos.
     const deGuia: Resultado[] = [];
     const enGuia = guia ? buscarEnGuia(guia, consulta) : null;
@@ -185,7 +174,7 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
     }
     return {
       lector: deLector.slice(0, MAXIMO), totalLector: deLector.length,
-      historial: deHistorial.slice(0, MAXIMO), totalHistorial: deHistorial.length,
+      historial: historialOrdenado.slice(0, MAXIMO), totalHistorial: historialOrdenado.length,
       guia: deGuia.slice(0, 8), totalGuia: deGuia.length,
     };
   }, [tokens, consulta, expedientes, historial, guia, onAbrirLector, onAbrirHistorial]);
@@ -232,9 +221,10 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-medium text-tinta truncate">{r.titulo}</span>
         <span className="block text-xs text-tenue truncate">{r.detalle}</span>
-        {r.pago && (
+        {(r.pago || r.motivo) && (
           <span className="block text-xs text-acento truncate mt-0.5">
-            Pago: {r.pago.providerName}{r.pago.orderNumber ? ` · PIMyS ${r.pago.orderNumber}` : ''}
+            {r.pago && <>Pago: {r.pago.providerName}{r.pago.orderNumber ? ` · PIMyS ${r.pago.orderNumber}` : ''}</>}
+            {r.motivo && !(r.pago && /^(PIMyS|Proveedor) /.test(r.motivo)) && <>{r.pago ? ' · ' : ''}{r.motivo}</>}
           </span>
         )}
       </span>
@@ -263,7 +253,7 @@ export function BuscadorGlobal({ historial, onAbrirLector, onAbrirHistorial }: {
         onChange={e => { setConsulta(e.target.value); setAbierto(true); }}
         onFocus={() => { setAbierto(true); if (clave) { cargarExpedientes(); cargarGuia(); } }}
         onKeyDown={alTeclear}
-        placeholder="Buscar expediente, proveedor, PIMyS…"
+        placeholder="Buscar FF, expediente, PIMyS, factura, proveedor…"
         aria-label="Buscar en todos los expedientes"
         className="w-full h-7 bg-campo border border-linea-fuerte rounded-[0.375rem] pl-8 pr-14 text-sm text-tinta placeholder:text-tenue outline-none transition-colors focus:border-acento [&::-webkit-search-cancel-button]:hidden"
       />

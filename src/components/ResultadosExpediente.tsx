@@ -254,7 +254,7 @@ export function ResultadosExpediente({
 
       {/* Documentos y planillas */}
       {(acciones || onNuevaAuditoria) && (
-        <div className="relative mt-4 flex flex-wrap items-start gap-2">
+        <div className="mt-4 flex flex-wrap items-start gap-2">
           {acciones}
           {onNuevaAuditoria && (
             <button type="button" onClick={onNuevaAuditoria} className={boton.secundario}>Nueva auditoría</button>

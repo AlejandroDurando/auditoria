@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, ExternalLink, FileSpreadsheet, ListFilter, Loader2, RefreshCw, X } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, ExternalLink, FileSpreadsheet, FileText, ListFilter, Loader2, RefreshCw, X } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 import type { ArchivoPdf, ExpedienteLector } from '../../api/expedientes';
 import { ResultadosExpediente } from './ResultadosExpediente';
@@ -155,20 +155,22 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
     return () => { document.removeEventListener('mousedown', afuera); document.removeEventListener('keydown', tecla); };
   }, [desplegado]);
   let pago = 0;
+  // Caja ancha (ocupa lo que dejan las planillas). La lista se despliega
+  // debajo con el ancho de toda la fila y todos los documentos a la vista.
   return (
-    <div ref={caja} className="relative">
+    <div ref={caja} className="flex-[1_1_14rem] min-w-0 max-w-full border border-linea-fuerte rounded-[0.375rem] bg-superficie">
       <button
         type="button"
         onClick={() => setDesplegado(d => !d)}
-        aria-haspopup="menu"
         aria-expanded={desplegado}
-        className={boton.secundario}
+        className="w-full h-[1.75rem] flex items-center gap-2 px-2.5 text-left text-sm font-medium text-tinta bg-transparent border-none rounded-[0.375rem] cursor-pointer hover:bg-realce transition-colors"
       >
-        Documentos <span className="font-normal text-tenue cifras">{archivos.length}</span>
-        <ChevronDown className="w-3.5 h-3.5 text-tenue" aria-hidden="true" />
+        <FileText className="w-3.5 h-3.5 text-tenue shrink-0" aria-hidden="true" />
+        <span className="flex-1 truncate">Documentos del expediente <span className="font-normal text-tenue cifras">({archivos.length})</span></span>
+        <ChevronDown className={cn('w-3.5 h-3.5 text-tenue transition-transform', desplegado && 'rotate-180')} aria-hidden="true" />
       </button>
       {desplegado && (
-        <ol role="menu" className="absolute z-30 right-0 top-full mt-1.5 w-[min(26.25rem,86vw)] max-h-[60vh] overflow-y-auto m-0 p-1 list-none bg-superficie border border-linea rounded-[0.5rem] flotante">
+        <ol className="absolute z-30 left-0 right-0 top-full mt-1.5 m-0 p-1 list-none bg-superficie border border-linea rounded-[0.5rem] flotante">
           {archivos.map(a => {
             const tipo = a.tipo || 'otro';
             const rotulo = tipo === 'pago' ? `Pago ${++pago}` : ROTULO_TIPO[tipo] || 'Documento';
@@ -176,16 +178,15 @@ function DocumentosExpediente({ archivos, abierto, onAbrir }: {
               <li key={a.clave}>
                 <button
                   type="button"
-                  role="menuitem"
                   onClick={() => { onAbrir(a); setDesplegado(false); }}
                   className={cn(
-                    "w-full flex items-baseline gap-3 px-2.5 py-1.5 rounded-[0.375rem] text-left text-sm cursor-pointer bg-transparent border-none hover:bg-realce transition-colors",
+                    "w-full flex items-baseline gap-3 px-2 py-1.5 rounded-[0.375rem] text-left text-sm cursor-pointer bg-transparent border-none hover:bg-realce transition-colors",
                     abierto?.clave === a.clave ? "text-acento font-medium" : "text-tinta"
                   )}
                   title={a.nombre}
                 >
-                  <span className="w-[7rem] shrink-0 text-xs font-normal text-tenue">{a.tipo ? rotulo : ''}</span>
-                  <span className="truncate">{a.nombre.replace(/\.pdf$/i, '')}</span>
+                  <span className="w-[8.5rem] shrink-0 text-xs font-normal text-tenue whitespace-nowrap">{a.tipo ? rotulo : ''}</span>
+                  <span className="min-w-0 break-words">{a.nombre.replace(/\.pdf$/i, '')}</span>
                 </button>
               </li>
             );

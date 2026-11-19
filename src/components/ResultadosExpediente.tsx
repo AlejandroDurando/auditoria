@@ -9,7 +9,7 @@ import {
   estadoGeneral, peorEstado, validacionesDeExpediente, validacionesDePago, type ValidacionVista,
 } from '../lib/hallazgos';
 import {
-  BotonCopiar, Clave, EstadoBadge, Etiqueta, Panel, Punto, TiraValidaciones, TituloSeccion, boton,
+  BotonCopiar, Clave, EstadoBadge, Etiqueta, Panel, Punto, ROTULO_ESTADO, TiraValidaciones, TituloSeccion, boton,
   type Estado,
 } from './ui';
 
@@ -177,6 +177,8 @@ export function ResultadosExpediente({
       ? (/^ff\b/i.test(result.fondoFijoNumero) ? result.fondoFijoNumero : `Fondo fijo ${result.fondoFijoNumero}`)
       : modo === 'Viáticos' ? 'Control de viáticos' : 'Resultado de la auditoría');
 
+  const agencia = result?.agenciaSucursal ? formatHistoryTitle(result.agenciaSucursal) : '';
+
   const codigoPatrimonio = (payment: PaymentData) => {
     const v3 = payment?.validations?.find(val => val?.id === 'v3');
     return ['200', '202'].find(c => v3 && hasAccountingCode(v3.observations, c)) || null;
@@ -187,6 +189,25 @@ export function ResultadosExpediente({
     const v3 = p?.validations?.find(val => val?.id === 'v3');
     return v3 ? hasAccountingCode(v3.observations, '226') : false;
   });
+  // Firma del Jefe Administrativo de cada pago del 226, segun V4: si V4 dice
+  // que falta o dio Error, es Error (nunca "verificada" porque la observacion
+  // nombre al que falta); sin V4 concluyente, Revisar. La zona sale primero de
+  // la agencia del expediente y, si no la nombra, del texto del pago.
+  const firmas226 = pagos226.map(p => {
+    const general = result?.agenciaSucursal || '';
+    const delPago = (p?.libroDiarioText || '') + ' ' + (p?.providerName || '');
+    const zona226 = zonaDe(general) || zonaDe(general + ' ' + delPago);
+    const firmante = zona226?.firmante || 'Jefe Administracion';
+    const v4 = p?.validations?.find(val => val?.id?.toLowerCase() === 'v4' || (val as any)?.code?.toLowerCase() === 'v4'
+      || (val as any)?.code?.toLowerCase() === 'validation_v4');
+    const obs = (v4?.observations || '').toUpperCase();
+    const falta = obs.includes('FALTA');
+    const nombrado = obs.includes(firmante.toUpperCase()) || obs.includes(firmante.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, ''));
+    const firma: Estado = !falta && (nombrado || v4?.status === 'pass') ? 'ok'
+      : falta || v4?.status === 'fail' ? 'error'
+      : 'revisar';
+    return { p, zona: zona226?.zona || 'no identificada', firmante, firma };
+  });
   const conCodigos = payments.some(p => p?.codigos?.length);
   const balance = result?.balance_inversion && modo !== 'Viáticos' ? result.balance_inversion : null;
   const v14 = delExpediente.find(v => v.id === 'V14');
@@ -195,59 +216,51 @@ export function ResultadosExpediente({
 
   return (
     <div className="@container">
-      {/* Identidad y estado */}
-      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-xl font-semibold tracking-[-0.01em] text-tinta">{tituloPantalla}</h1>
-            <EstadoBadge estado={estado} />
-          </div>
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs leading-5 text-tinta-2">
-            {[
-              result?.agenciaSucursal && <span>{formatHistoryTitle(result.agenciaSucursal)}</span>,
-              result?.expedienteNumero && (
-                <span className="inline-flex items-center gap-0.5">
-                  Exp. <span className="font-mono text-tinta ml-1">{result.expedienteNumero}</span>
-                  <BotonCopiar texto={result.expedienteNumero} rotulo="Copiar número de expediente" />
-                </span>
-              ),
-              result?.expedienteFecha && (
-                <span className="inline-flex items-center gap-0.5">
-                  <span className="cifras">{result.expedienteFecha}</span>
-                  <BotonCopiar texto={result.expedienteFecha} rotulo="Copiar fecha de expediente" />
-                </span>
-              ),
-              result?.responsable && <span>Responsable: {formatHistoryTitle(result.responsable)}</span>,
-              etiqueta && <span className="text-tenue">{etiqueta}</span>,
-            ].filter(Boolean).map((parte, i) => (
-              <React.Fragment key={i}>
-                {i > 0 && <span aria-hidden="true" className="text-tenue-2">·</span>}
-                {parte}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+      {/* Identidad: fondo fijo, agencia y cuenta de validaciones por estado */}
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <h1 className="text-xl font-semibold tracking-[-0.01em] text-tinta">
+          {tituloPantalla}
+          {agencia && <span className="ml-2 font-normal text-tinta-2">{agencia}</span>}
+        </h1>
+        <span className="flex flex-wrap items-center gap-x-3.5 gap-y-1" aria-label={`Estado ${ROTULO_ESTADO[estado]}`}>
+          <Cuenta estado="ok" n={cuenta.ok} />
+          <Cuenta estado="error" n={cuenta.error} />
+          <Cuenta estado="revisar" n={cuenta.revisar} />
+        </span>
+      </div>
+
+      {/* Datos para copiar: fecha, numero de expediente e importe */}
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1 text-[0.9375rem] leading-6 text-tinta">
+        {result?.expedienteFecha && (
+          <DatoCopiable rotulo="Fecha" texto={result.expedienteFecha} copiar="Copiar fecha de expediente" className="cifras" />
+        )}
+        {result?.expedienteNumero && (
+          <DatoCopiable rotulo="Expediente" texto={result.expedienteNumero} copiar="Copiar número de expediente" className="font-mono" />
+        )}
+        <DatoCopiable rotulo="Importe" texto={formatCurrency(totalImporte)} copiar="Copiar importe total" className="cifras font-semibold" />
+      </div>
+      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs leading-5 text-tenue">
+        {[
+          `${payments.length} ${modo === 'Viáticos' ? (payments.length === 1 ? 'viático' : 'viáticos') : (payments.length === 1 ? 'pago' : 'pagos')}`,
+          result?.responsable && `Responsable: ${formatHistoryTitle(result.responsable)}`,
+          etiqueta,
+        ].filter(Boolean).map((parte, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <span aria-hidden="true" className="text-tenue-2">·</span>}
+            <span>{parte}</span>
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* Documentos y planillas */}
+      {(acciones || onNuevaAuditoria) && (
+        <div className="relative mt-4 flex flex-wrap items-start gap-2">
           {acciones}
           {onNuevaAuditoria && (
             <button type="button" onClick={onNuevaAuditoria} className={boton.secundario}>Nueva auditoría</button>
           )}
         </div>
-      </div>
-
-      {/* Resumen */}
-      <div className="mt-5 grid grid-cols-6 @2xl:grid-cols-[1fr_2fr_1fr_1fr_1fr] gap-px border border-linea rounded-[0.5rem] bg-linea overflow-hidden caja">
-        <Cifra rotulo={modo === 'Viáticos' ? 'Viáticos' : 'Pagos'} valor={String(payments.length)} className="col-span-2" />
-        <Cifra
-          rotulo="Importe total"
-          valor={formatCurrency(totalImporte)}
-          className="col-span-4"
-          accion={<BotonCopiar texto={formatCurrency(totalImporte)} rotulo="Copiar importe total" className="w-6 h-6" />}
-        />
-        <Cifra rotulo="Error" valor={String(cuenta.error)} tono={cuenta.error ? 'error' : undefined} className="col-span-2" />
-        <Cifra rotulo="Revisar" valor={String(cuenta.revisar)} tono={cuenta.revisar ? 'revisar' : undefined} className="col-span-2" />
-        <Cifra rotulo="OK" valor={String(cuenta.ok)} className="col-span-2" />
-      </div>
+      )}
 
       {/* Avisos que piden una accion */}
       {(pagosPatrimonio.length > 0 || pagos226.length > 0
@@ -285,55 +298,27 @@ export function ResultadosExpediente({
           )}
 
           {pagos226.length > 0 && (
-            <Aviso estado="revisar" titulo="Código 226: controlar la firma del Jefe Administrativo">
-              <p className="text-sm text-tinta-2 mt-0.5">
-                Las compras del código <strong className="font-semibold text-tinta">226</strong> (mantenimiento de maquinarias menores) las autoriza
-                el Jefe Administrativo de la sucursal:{' '}
-                {ZONAS_226.map((z, i) => (
-                  <React.Fragment key={z.zona}>
-                    {i > 0 && '; '}
-                    {z.zona} ({z.alcance}), <strong className="font-medium text-tinta">{z.firmante}</strong>
-                  </React.Fragment>
-                ))}.
-              </p>
+            <Aviso
+              estado={peorEstado(firmas226.map(f => f.firma))}
+              titulo={firmas226.every(f => f.firma === 'ok')
+                ? 'Código 226: firma del Jefe Administrativo verificada'
+                : 'Código 226: controlar la firma del Jefe Administrativo'}
+            >
               <div className="mt-2 border-t border-linea-suave">
-                {pagos226.map((p, idx) => {
-                  // La zona sale primero de la agencia del expediente y, si no
-                  // la nombra, del texto del pago.
-                  const generalBranchText = result?.agenciaSucursal || '';
-                  const paymentBranchText = (p?.libroDiarioText || '') + ' ' + (p?.providerName || '');
-                  const zona226 = zonaDe(generalBranchText) || zonaDe(generalBranchText + ' ' + paymentBranchText);
-                  const expectedSigner = zona226?.firmante || 'Jefe Administracion';
-                  const zone = zona226?.zona || 'No identificada';
-
-                  const v4Val = p?.validations?.find(val => (val as any)?.code?.toLowerCase() === 'v4' || val?.id?.toLowerCase() === 'v4' || (val as any)?.code?.toLowerCase() === 'validation_v4');
-                  const v4Obs = (v4Val?.observations || '').toUpperCase();
-                  const cleanSigner = expectedSigner.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-                  // Firma del Jefe Administrativo, segun V4: si V4 dice que falta
-                  // o dio Error, es Error (nunca "verificada" porque la
-                  // observacion nombre al que falta); sin V4 concluyente, Revisar.
-                  const falta = v4Obs.includes('FALTA');
-                  const nombrado = v4Obs.includes(expectedSigner.toUpperCase()) || v4Obs.includes(cleanSigner);
-                  const firma: Estado = !falta && (nombrado || v4Val?.status === 'pass') ? 'ok'
-                    : falta || v4Val?.status === 'fail' ? 'error'
-                    : 'revisar';
-                  const rotuloFirma = firma === 'ok' ? 'Firma verificada'
-                    : firma === 'error' ? `Falta la firma de ${expectedSigner}`
-                    : 'Revisar la firma';
-
-                  return (
-                    <div key={idx} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 py-1.5 border-b border-linea-suave last:border-b-0 text-sm">
-                      <span className="font-medium text-tinta">{p.providerName ? toSentenceCase(p.providerName) : 'Proveedor no identificado'}</span>
-                      <span className="text-tenue">
-                        PIMyS <span className="font-mono text-xs">{p.orderNumber || 'S/N'}</span> · zona {zone} · requiere {expectedSigner}
-                      </span>
-                      <span className="ml-auto flex items-center gap-3">
-                        {p.amount !== undefined && p.amount > 0 && <span className="cifras">{formatCurrency(p.amount)}</span>}
-                        <EstadoBadge estado={firma}>{rotuloFirma}</EstadoBadge>
-                      </span>
-                    </div>
-                  );
-                })}
+                {firmas226.map(({ p, zona, firmante, firma }, idx) => (
+                  <div key={idx} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 py-1.5 border-b border-linea-suave last:border-b-0 text-sm">
+                    <span className="font-medium text-tinta">{p.providerName ? toSentenceCase(p.providerName) : 'Proveedor no identificado'}</span>
+                    <span className="text-tenue">
+                      PIMyS <span className="font-mono text-xs">{p.orderNumber || 'S/N'}</span> · zona {zona} · {firmante}
+                    </span>
+                    <span className="ml-auto flex items-center gap-3">
+                      {p.amount !== undefined && p.amount > 0 && <span className="cifras">{formatCurrency(p.amount)}</span>}
+                      <EstadoBadge estado={firma}>
+                        {firma === 'ok' ? 'Verificada' : firma === 'error' ? `Falta la firma de ${firmante}` : 'Revisar la firma'}
+                      </EstadoBadge>
+                    </span>
+                  </div>
+                ))}
               </div>
             </Aviso>
           )}
@@ -517,20 +502,27 @@ export function ResultadosExpediente({
 const COLUMNAS_PAGO = 'grid items-center gap-x-3 @lg:gap-x-3.5 grid-cols-[minmax(0,1fr)_auto_4.625rem_1rem] @lg:grid-cols-[4rem_minmax(0,1fr)_auto_4.875rem_2.75rem] @3xl:grid-cols-[4.5rem_minmax(0,1fr)_7.75rem_9.375rem_4.875rem_2.75rem]';
 const COLUMNAS_PAGO_CODIGO = '@2xl:grid-cols-[4rem_2.75rem_minmax(0,1fr)_auto_4.875rem_2.75rem] @3xl:grid-cols-[4.5rem_2.75rem_minmax(0,1fr)_7.75rem_9.375rem_4.875rem_2.75rem]';
 
-function Cifra({ rotulo, valor, tono, accion, className }: {
-  rotulo: string; valor: string; tono?: 'error' | 'revisar'; accion?: React.ReactNode; className?: string;
-}) {
+/** Cantidad de validaciones en un estado, junto al titulo. En cero, apagada. */
+function Cuenta({ estado, n }: { estado: Estado; n: number }) {
   return (
-    <div className={cn('px-4 py-3 min-w-0 bg-superficie @2xl:col-span-1', className)}>
-      <div className="text-xs text-tenue">{rotulo}</div>
-      <div className={cn(
-        'flex items-center gap-1 text-[1.125rem] leading-[1.625rem] font-semibold cifras',
-        tono === 'error' ? 'text-error' : tono === 'revisar' ? 'text-aviso-tinta' : 'text-tinta',
-      )}>
-        <span className="truncate">{valor}</span>
-        {accion}
-      </div>
-    </div>
+    <span className={cn(
+      'inline-flex items-center gap-1.5 text-sm whitespace-nowrap cifras',
+      n === 0 ? 'text-tenue' : estado === 'ok' ? 'text-tinta-2' : estado === 'error' ? 'text-error font-medium' : 'text-aviso-tinta font-medium',
+    )}>
+      <Punto estado={estado} className={cn('w-2 h-2', n === 0 && 'opacity-40')} />
+      {ROTULO_ESTADO[estado]} ({n})
+    </span>
+  );
+}
+
+/** Dato del encabezado con su boton de copiar. */
+function DatoCopiable({ rotulo, texto, copiar, className }: { rotulo: string; texto: string; copiar: string; className?: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 min-w-0">
+      <span className="text-xs text-tenue">{rotulo}</span>
+      <span className={className}>{texto}</span>
+      <BotonCopiar texto={texto} rotulo={copiar} className="-ml-0.5" />
+    </span>
   );
 }
 

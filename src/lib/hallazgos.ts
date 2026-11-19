@@ -24,11 +24,23 @@ type Modo = AuditResult['mode'];
 /** Validaciones de un pago, en orden. El lector trae cada una con su titulo;
  *  la auditoria con IA usa la lista fija del modo, y la que no vino queda en
  *  Revisar ("dato no analizado"). */
+/** Orden en que se controla un pago: primero el PIMyS y despues la factura
+ *  (fecha, importe, numero, proveedor) y, con ella, el detalle: V13 (pedido
+ *  vs factura) va despues de V8 y no al final, como en el Sheet. */
+function enOrdenDeControl<T extends { id: string }>(lista: T[]): T[] {
+  const v13 = lista.find(v => v.id.toLowerCase() === 'v13');
+  const iV8 = lista.findIndex(v => v.id.toLowerCase() === 'v8');
+  if (!v13 || iV8 < 0) return lista;
+  const resto = lista.filter(v => v !== v13);
+  resto.splice(resto.findIndex(v => v.id.toLowerCase() === 'v8') + 1, 0, v13);
+  return resto;
+}
+
 export function validacionesDePago(pago: PaymentData | undefined, modo: Modo): ValidacionVista[] {
   const lista = (pago?.validations || []).filter(Boolean);
   const conTitulos = lista.length > 0 && lista.every(v => v.title);
   const plantilla = conTitulos
-    ? lista.map(v => ({ id: v.id, label: v.id.toUpperCase(), title: v.title as string }))
+    ? enOrdenDeControl(lista.map(v => ({ id: v.id, label: v.id.toUpperCase(), title: v.title as string })))
     : modo === 'Viáticos' ? VALIDATIONS_VIATICOS : VALIDATIONS.filter(v => v.id !== 'v14');
   return plantilla.map(v => {
     const res = lista.find(r => r.id && r.id.toLowerCase() === v.id.toLowerCase());

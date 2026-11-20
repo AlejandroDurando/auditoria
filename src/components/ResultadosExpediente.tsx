@@ -596,7 +596,7 @@ function PaymentRow({ idx, payment, isExpanded, onToggle, mode, conCodigos, onVi
         className={cn(COLUMNAS_PAGO, conCodigos && COLUMNAS_PAGO_CODIGO, 'min-h-9 px-3.5 cursor-pointer select-none hover:bg-realce transition-colors', isExpanded && 'bg-realce')}
       >
         <span className="hidden @lg:block font-mono text-xs font-medium text-tinta truncate" title={payment?.orderNumber}>{payment?.orderNumber}</span>
-        {conCodigos && <span className="hidden @2xl:block font-mono text-xs text-tinta-2 truncate">{payment?.codigos?.join(' · ')}</span>}
+        {conCodigos && <span className="hidden @2xl:flex flex-col py-1 font-mono text-xs leading-tight text-tinta-2">{payment?.codigos?.map(c => <span key={c}>{c}</span>)}</span>}
         <span className="min-w-0 py-1.5 @lg:py-0">
           <span className="flex items-center gap-2 min-w-0">
             <span className="truncate" title={payment?.providerName}>{toSentenceCase(payment?.providerName || '')}</span>
